@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CommentLead — 评论线索挖掘仪表盘</title>
+  <style>
+    :root {
+      --bg-0: #0d1117;
+      --bg-1: #161b27;
+      --bg-2: #1c2333;
+      --bg-3: #232d42;
+      --border: #2a3548;
+      --t1: #e8edf5;
+      --t2: #8b9ab5;
+      --t3: #5a6882;
+      --accent: #4f8ef7;
+      --accent-h: #3a7af5;
+      --accent-glow: rgba(79,142,247,0.13);
+      --ga: #10b981;
+      --gb: #f59e0b;
+      --gc: #818cf8;
+      --gd: #6b7280;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warn: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-0);
+      color: var(--t1);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      font-size: 14px;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 180px;
+      background: var(--bg-1);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .sb-logo {
+      padding: 18px 16px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .logo-icon {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, #4f8ef7, #9333ea);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .logo-sub { font-size: 11px; color: var(--t3); margin-top: 3px; }
+    .sb-nav { padding: 10px 8px; flex: 1; overflow-y: auto; }
+    .nav-sec {
+      font-size: 10px; font-weight: 600; color: var(--t3);
+      text-transform: uppercase; letter-spacing: 0.8px;
+      padding: 8px 10px 4px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 10px; border-radius: 8px; cursor: pointer;
+      font-size: 13px; color: var(--t2); transition: all 0.14s;
+      margin-bottom: 1px;
+    }
+    .nav-item:hover { background: var(--bg-3); color: var(--t1); }
+    .nav-item.active { background: var(--accent-glow); color: var(--accent); }
+    .nav-item .ni { width: 18px; text-align: center; font-size: 14px; }
+    .nav-badge {
+      margin-left: auto; background: var(--accent); color: #fff;
+      font-size: 10px; padding: 1px 7px; border-radius: 10px; display: none;
+    }
+    .sb-foot {
+      padding: 12px 10px;
+      border-top: 1px solid var(--border);
+    }
+    .status-chip {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg-2); border-radius: 8px;
+      padding: 8px 10px; font-size: 12px; color: var(--t2);
+    }
+    .dot-live {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--ga); animation: blink 2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* ── Main ── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .topbar {
+      height: 52px; padding: 0 22px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .topbar-title { font-size: 15px; font-weight: 600; }
+    .ptabs { display: flex; gap: 4px; }
+    .ptab {
+      padding: 5px 13px; border-radius: 20px; font-size: 12px;
+      cursor: pointer; border: 1px solid var(--border); color: var(--t2); transition: all .14s;
+    }
+    .ptab.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .ptab.dim { opacity: .35; cursor: default; }
+    .content { flex: 1; overflow-y: auto; padding: 18px 22px 24px; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .card-header {
+      padding: 13px 16px; display: flex; align-items: center;
+      justify-content: space-between; border-bottom: 1px solid var(--border);
+    }
+    .card-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .card-body { padding: 16px; }
+
+    /* ── Stats grid ── */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+      margin-bottom: 18px;
+    }
+    .stat-card {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px; cursor: pointer; transition: all .14s;
+    }
+    .stat-card:hover { border-color: var(--accent); }
+    .stat-card.on { border-color: var(--accent); background: var(--accent-glow); }
+    .stat-label {
+      font-size: 11.5px; color: var(--t2); margin-bottom: 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .grade-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .stat-value { font-size: 30px; font-weight: 700; line-height: 1; }
+    .stat-sub { font-size: 11px; color: var(--t3); margin-top: 4px; }
+
+    /* ── Form ── */
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-label { font-size: 11.5px; color: var(--t2); font-weight: 500; }
+    .form-input, .form-select {
+      background: var(--bg-1); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 11px; color: var(--t1);
+      font-size: 13px; outline: none; transition: border-color .14s;
+      width: 100%;
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--accent); }
+    .form-input::placeholder { color: var(--t3); }
+    .form-select { cursor: pointer; }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 8px 18px; border-radius: 8px; font-size: 13px;
+      font-weight: 500; cursor: pointer; border: none; transition: all .14s;
+      white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-h); }
+    .btn-primary:disabled { opacity: .45; cursor: not-allowed; }
+    .btn-ghost {
+      background: var(--bg-3); color: var(--t1);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--t2); }
+    .btn-sm { padding: 5px 11px; font-size: 12px; }
+
+    /* ── Mode toggle ── */
+    .mode-toggle {
+      display: flex; background: var(--bg-1); border-radius: 8px;
+      padding: 3px; gap: 2px; border: 1px solid var(--border);
+    }
+    .mode-btn {
+      padding: 5px 13px; border-radius: 6px; font-size: 12.5px;
+      cursor: pointer; color: var(--t2); transition: all .14s;
+    }
+    .mode-btn.on { background: var(--accent); color: #fff; }
+
+    /* ── Progress ── */
+    .progress-wrap { display: none; margin-bottom: 14px; }
+    .progress-wrap.show { display: block; }
+    .progress-track { height: 4px; background: var(--bg-1); border-radius: 2px; overflow: hidden; }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #9333ea);
+      border-radius: 2px; transition: width .35s ease; width: 0%;
+    }
+    .progress-txt { font-size: 11.5px; color: var(--t2); margin-top: 5px; }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .ftabs { display: flex; gap: 6px; }
+    .ftab {
+      padding: 5px 13px; border-radius: 20px; font-size: 12.5px;
+      cursor: pointer; border: 1px solid var(--border); color: var(--t2); transition: all .14s;
+    }
+    .ftab.on { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+    .export-btns { display: flex; gap: 7px; }
+
+    /* ── Table ── */
+    .table-wrap { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .t-head {
+      display: grid;
+      grid-template-columns: 60px 1fr 220px;
+      padding: 9px 16px; background: var(--bg-1);
+      font-size: 11px; font-weight: 600; color: var(--t3);
+      text-transform: uppercase; letter-spacing: .5px;
+      border-bottom: 1px solid var(--border);
+    }
+    .t-body { max-height: calc(100vh - 250px); overflow-y: auto; }
+    .t-row {
+      display: grid;
+      grid-template-columns: 60px 1fr 220px;
+      padding: 11px 16px; border-bottom: 1px solid var(--border);
+      align-items: start; transition: background .1s; font-size: 13px;
+    }
+    .t-row:last-child { border-bottom: none; }
+    .t-row:hover { background: var(--bg-3); }
+    .row-num { color: var(--t3); font-size: 12px; }
+    .comment-text {
+      color: var(--t1); line-height: 1.45;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .reason-tag {
+      display: inline-block; background: var(--bg-1); color: var(--t3);
+      font-size: 10.5px; padding: 1px 7px; border-radius: 10px;
+      margin-top: 3px; max-width: 220px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .user-cell {
+      display: flex; align-items: center; gap: 7px;
+      cursor: pointer; padding-right: 4px;
+    }
+    .avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(135deg, #4f8ef7, #9333ea);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: #fff;
+      flex-shrink: 0; overflow: hidden;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .uname {
+      font-size: 12.5px; color: var(--t1); font-weight: 500;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .grade-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: 6px;
+      font-size: 12px; font-weight: 700;
+    }
+    .g-A { background: rgba(16,185,129,.15); color: var(--ga); }
+    .g-B { background: rgba(245,158,11,.15); color: var(--gb); }
+    .g-C { background: rgba(129,140,248,.15); color: var(--gc); }
+    .g-D { background: rgba(107,114,128,.15); color: var(--gd); }
+    .score-cell { font-size: 13px; font-weight: 600; }
+    .sh { color: var(--ga); } .sm { color: var(--gb); } .sl { color: var(--gd); }
+    .likes-cell { color: var(--t2); font-size: 12.5px; }
+    .time-cell { color: var(--t3); font-size: 12px; }
+    .act-cell { display: flex; gap: 4px; }
+    .act-btn {
+      padding: 3px 8px; border-radius: 5px; font-size: 11px; cursor: pointer;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--t2); transition: all .14s;
+    }
+    .act-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .user-col { display: flex; flex-direction: column; gap: 4px; cursor: pointer; }
+    .uid-line { font-size: 12.5px; color: var(--accent); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .social-links { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 1px; }
+    .social-link {
+      display: inline-block; padding: 2px 7px; border-radius: 4px;
+      font-size: 11px; font-weight: 600; text-decoration: none;
+      background: var(--bg-1); border: 1px solid var(--border);
+      color: var(--t2); transition: all .12s;
+    }
+    .social-link:hover { border-color: var(--accent); color: var(--accent); }
+    .bio-snippet { font-size: 11px; color: var(--t3); line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
+    .row-acts { display: flex; gap: 4px; padding-top: 3px; }
+
+    /* ── Empty state ── */
+    .empty { padding: 56px 20px; text-align: center; color: var(--t3); }
+    .empty-icon { font-size: 38px; margin-bottom: 10px; }
+    .empty-txt { font-size: 14px; color: var(--t2); }
+    .empty-sub { font-size: 12px; margin-top: 6px; }
+
+    /* ── Modal ── */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.65);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100; opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    .overlay.show { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 16px; width: 430px; max-width: 92vw;
+      max-height: 90vh; overflow-y: auto;
+      transform: translateY(18px); transition: transform .2s;
+    }
+    .overlay.show .modal { transform: translateY(0); }
+    .modal-hd {
+      padding: 16px 18px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; background: var(--bg-2); z-index: 1;
+    }
+    .modal-title { font-size: 14px; font-weight: 600; }
+    .modal-x {
+      width: 28px; height: 28px; border-radius: 6px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--t3); font-size: 16px; transition: background .14s;
+    }
+    .modal-x:hover { background: var(--bg-3); color: var(--t1); }
+    .modal-bd { padding: 18px; }
+    .modal-ft {
+      padding: 13px 18px; border-top: 1px solid var(--border);
+      display: flex; justify-content: flex-end; gap: 8px;
+    }
+    .profile-hd { display: flex; gap: 14px; align-items: center; margin-bottom: 16px; }
+    .profile-av {
+      width: 54px; height: 54px; border-radius: 50%;
+      background: linear-gradient(135deg,#4f8ef7,#9333ea);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 700; color: #fff; flex-shrink: 0; overflow: hidden;
+    }
+    .profile-av img { width:100%; height:100%; object-fit:cover; }
+    .profile-name { font-size: 16px; font-weight: 700; }
+    .profile-handle { font-size: 12.5px; color: var(--t3); margin-top: 2px; }
+    .profile-stats {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px;
+    }
+    .pstat {
+      background: var(--bg-1); border-radius: 8px; padding: 10px; text-align: center;
+    }
+    .pstat-v { font-size: 16px; font-weight: 700; }
+    .pstat-l { font-size: 10.5px; color: var(--t3); margin-top: 2px; }
+    .profile-bio {
+      font-size: 12.5px; color: var(--t2); line-height: 1.5;
+      background: var(--bg-1); padding: 10px 12px; border-radius: 8px; margin-bottom: 14px;
+    }
+    .pclist { display: flex; flex-direction: column; gap: 7px; max-height: 180px; overflow-y: auto; }
+    .pc-item {
+      background: var(--bg-1); border-radius: 8px; padding: 8px 11px;
+      font-size: 12.5px; color: var(--t2); line-height: 1.45;
+      display: flex; gap: 8px; align-items: flex-start;
+    }
+
+    /* ── Toast ── */
+    #toast-box {
+      position: fixed; top: 14px; right: 14px;
+      display: flex; flex-direction: column; gap: 7px; z-index: 200;
+    }
+    .toast {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 11px 15px; font-size: 13px;
+      display: flex; align-items: center; gap: 9px;
+      box-shadow: 0 6px 24px rgba(0,0,0,.45);
+      animation: tIn .18s ease; max-width: 320px;
+    }
+    @keyframes tIn { from{transform:translateX(16px);opacity:0} to{transform:translateX(0);opacity:1} }
+    .toast.s { border-left: 3px solid var(--success); }
+    .toast.e { border-left: 3px solid var(--danger); }
+    .toast.i { border-left: 3px solid var(--accent); }
+    .toast.w { border-left: 3px solid var(--warn); }
+
+    /* ── Spinner ── */
+    .spin {
+      width: 15px; height: 15px; border: 2px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: rot .75s linear infinite; display: inline-block; flex-shrink: 0;
+    }
+    @keyframes rot { to{transform:rotate(360deg)} }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── Quick-start cards ── */
+    .qs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+    .qs-list { font-size: 12.5px; color: var(--t2); line-height: 2; }
+    .qs-list strong { color: var(--t1); }
+    .grade-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12.5px; }
+    .grade-tag {
+      font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 5px; min-width: 30px; text-align: center;
+    }
+    code {
+      background: var(--bg-1); padding: 1px 5px; border-radius: 4px;
+      font-size: 12px; font-family: 'SF Mono', monospace; color: var(--t2);
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* search layout */
+    .search-grid {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;
+    }
+
+    /* ── Video Picker ── */
+    .vpicker-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .vpicker-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
+    .vcards-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+    }
+    .vcard {
+      background: var(--bg-2); border: 2px solid var(--border);
+      border-radius: 10px; overflow: hidden; cursor: pointer;
+      transition: all .15s; position: relative;
+    }
+    .vcard:hover { border-color: var(--t2); transform: translateY(-1px); }
+    .vcard.selected { border-color: var(--accent); background: var(--accent-glow); }
+    .vcard-thumb {
+      width: 100%; height: 90px;
+      background: var(--bg-3) center/cover no-repeat;
+      position: relative;
+    }
+    .vcard-rank {
+      position: absolute; top: 5px; left: 5px;
+      background: rgba(0,0,0,.7); color: #fff;
+      font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+    }
+    .vcard-sel-badge {
+      position: absolute; top: 5px; right: 5px;
+      background: var(--accent); color: #fff;
+      font-size: 10px; padding: 2px 6px; border-radius: 4px; display: none;
+    }
+    .vcard.selected .vcard-sel-badge { display: block; }
+    .vcard-body { padding: 8px 10px; }
+    .vcard-author { font-size: 10.5px; color: var(--t3); margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .vcard-title {
+      font-size: 12px; color: var(--t1); line-height: 1.4;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden; margin-bottom: 7px; min-height: 34px;
+    }
+    .vcard-stats { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 6px; }
+    .vcard-stat { font-size: 11px; color: var(--t2); }
+    .vcard-reason {
+      font-size: 10.5px; color: var(--accent);
+      background: rgba(79,142,247,.1); padding: 2px 6px;
+      border-radius: 4px; text-align: center; line-height: 1.4;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .vcard-no-thumb {
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; color: var(--t3);
+    }
+    /* cfg-grid removed — now using flex/grid inline */
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ Sidebar ═══════════════ -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="logo-row">
+      <div class="logo-icon">🎯</div>
+      CommentLead
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-item active" data-tab="search" onclick="gotoTab('search')">
+      <span class="ni">🔍</span> 工作台
+      <span class="nav-badge" id="nb">0</span>
+    </div>
+    <div class="nav-item" data-tab="config" onclick="gotoTab('config')">
+      <span class="ni">⚙️</span> 设置
+    </div>
+  </nav>
+  <div class="sb-foot">
+    <div class="status-chip">
+      <div class="dot-live" id="status-dot"></div>
+      <span id="status-txt">TikHub API</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════════ Main ═══════════════ -->
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="page-title">工作台</span>
+  </div>
+
+  <div class="content">
+
+    <!-- JS compat: hidden stat placeholders -->
+    <div id="tab-dashboard" style="display:none">
+      <span id="ds-tot"></span><span id="ds-a"></span><span id="ds-b"></span>
+      <span id="ds-c"></span><span id="ds-d"></span>
+      <div id="ds-recent"><div id="ds-recent-body"></div></div>
+    </div>
+
+    <!-- ═══ TAB: search (工作台) ═══ -->
+    <div id="tab-search" class="tab">
+
+      <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <div class="form-group">
+          <div class="form-label">模式</div>
+          <div class="mode-toggle">
+            <div class="mode-btn on" id="m-kw" onclick="setMode('keyword')">关键词</div>
+            <div class="mode-btn" id="m-url" onclick="setMode('url')">视频链接</div>
+          </div>
+        </div>
+        <div class="form-group" style="flex:1;min-width:240px">
+          <div class="form-label" id="q-label">搜索关键词</div>
+          <input id="q-input" class="form-input" type="text"
+            placeholder="例：card declined tiktok shop / payment failed / 虚拟卡怎么买"
+            onkeydown="if(event.key==='Enter')startScraping()">
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" id="btn-go" onclick="startScraping()">🔍 搜索相关视频</button>
+          <button class="btn btn-ghost" onclick="loadDemo()">演示</button>
+          <button class="btn btn-ghost" onclick="clearAll()">清空</button>
+        </div>
+      </div>
+
+      <div class="progress-wrap" id="prog-wrap">
+        <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+        <div class="progress-txt" id="prog-txt">准备中...</div>
+      </div>
+
+      <div id="video-picker" style="display:none;margin-bottom:14px">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title" id="vp-title">📹 AI 推荐视频</span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span id="vp-sel-count" style="font-size:12px;color:var(--t2)">已选 0 个</span>
+              <button class="btn btn-ghost btn-sm" onclick="toggleAllVideos()">全选/取消</button>
+              <button class="btn btn-primary btn-sm" id="btn-scrape" onclick="scrapeSelectedVideos()">🚀 抓取评论</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding:12px 16px">
+            <div class="vcards-grid" id="video-cards"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="ftabs">
+          <div class="ftab on" data-f="all" onclick="setFilter('all')">全部 (<span id="fc-all">0</span>)</div>
+          <div class="ftab" data-f="A" onclick="setFilter('A')" style="color:var(--ga)">A 强需求 (<span id="fc-a">0</span>)</div>
+          <div class="ftab" data-f="B" onclick="setFilter('B')" style="color:var(--gb)">B 潜在 (<span id="fc-b">0</span>)</div>
+          <div class="ftab" data-f="C" onclick="setFilter('C')" style="color:var(--gc)">C 弱兴趣 (<span id="fc-c">0</span>)</div>
+          <div class="ftab" data-f="D" onclick="setFilter('D')" style="color:var(--gd)">D 无效 (<span id="fc-d">0</span>)</div>
+        </div>
+        <div class="export-btns">
+          <button class="btn btn-ghost btn-sm" onclick="doExport('csv')">⬇ CSV</button>
+          <button class="btn btn-ghost btn-sm" onclick="doExport('json')">⬇ JSON</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="t-head">
+          <div>等级</div><div>评论内容</div><div>用户 / 社媒</div>
+        </div>
+        <div class="t-body" id="res-body">
+          <div class="empty">
+            <div class="empty-icon">🔍</div>
+            <div class="empty-txt">输入关键词开始抓取评论</div>
+            <div class="empty-sub">或点击『演示』快速预览效果</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /tab-search -->
+
+    <!-- ═══ TAB: config (设置) ═══ -->
+    <div id="tab-config" class="tab" style="display:none">
+
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-header"><span class="card-title">🔑 API 接入</span></div>
+        <div class="card-body">
+          <div class="form-group" style="margin-bottom:14px">
+            <div class="form-label">TikHub Token <span style="color:var(--danger)">*</span></div>
+            <div style="display:flex;gap:8px">
+              <input id="cfg-token" class="form-input" type="password" style="flex:1"
+                placeholder="Bearer Token — 在 user.tikhub.io/dashboard 获取" autocomplete="off">
+              <a class="btn btn-ghost btn-sm" href="https://user.tikhub.io/dashboard"
+                target="_blank" style="text-decoration:none">获取 →</a>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-group">
+              <div class="form-label">AI 引擎</div>
+              <select id="cfg-provider" class="form-select" onchange="onProviderChange()">
+                <option value="keyword">关键词规则（免费）</option>
+                <option value="gemini">Google Gemini 2.5 Flash</option>
+                <option value="openai">OpenAI GPT-4o mini</option>
+              </select>
+            </div>
+            <div class="form-group" id="ai-key-wrap">
+              <div class="form-label" style="display:flex;justify-content:space-between">
+                AI API Key
+                <a id="ai-key-link" href="#" target="_blank"
+                  style="font-size:11px;color:var(--accent)">获取 Key →</a>
+              </div>
+              <input id="cfg-aikey" class="form-input" type="password"
+                placeholder="Gemini: AIza...  /  OpenAI: sk-..." autocomplete="off">
+            </div>
+          </div>
+          <div id="ai-batch-wrap" style="display:none">
+            <input id="cfg-batch" type="number" value="15" min="5" max="30">
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-header">
+          <span class="card-title">🎯 业务关键词</span>
+          <span style="font-size:12px;color:var(--t2)">命中则自动标 A 级</span>
+        </div>
+        <div class="card-body">
+          <div class="form-group" style="margin-bottom:12px">
+            <div class="form-label">业务描述 <span style="font-weight:400;color:var(--t3)">（用于 AI 生成关键词）</span></div>
+            <div style="display:flex;gap:8px">
+              <input id="cfg-biz" class="form-input" style="flex:1"
+                placeholder="例：我销售虚拟信用卡，面向跨境电商卖家 / SaaS工具，目标是中小企业">
+              <button class="btn btn-ghost btn-sm" id="btn-genkw" onclick="generateKeywords()">🤖 AI 生成</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="form-label" style="display:flex;justify-content:space-between">
+              关键词库 <span id="kw-count" style="font-weight:400;color:var(--t3)"></span>
+            </div>
+            <textarea id="cfg-kw" class="form-input" rows="4"
+              style="resize:vertical;font-family:inherit;line-height:1.8"
+              placeholder="逗号分隔；或填写业务描述后点「AI 生成」自动填充"
+              oninput="updateKwCount()"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="btn btn-primary" onclick="saveConfig()">💾 保存配置</button>
+        <span id="cfg-save-hint" style="font-size:12px;color:var(--success)"></span>
+      </div>
+
+    </div><!-- /tab-config -->
+
+  </div><!-- /content -->
+</main>
+
+<!-- ═══════════════ User Modal ═══════════════ -->
+<div class="overlay" id="modal-overlay">
+  <div class="modal" id="modal">
+    <div class="modal-hd">
+      <span class="modal-title">用户资料</span>
+      <div class="modal-x" onclick="closeModal()">✕</div>
+    </div>
+    <div class="modal-bd" id="modal-bd">
+      <div style="text-align:center;padding:28px;color:var(--t3)">
+        <div class="spin" style="width:22px;height:22px;margin:0 auto 10px"></div>
+        加载中...
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">关闭</button>
+      <button class="btn btn-primary btn-sm" id="modal-link-btn" style="display:none">🔗 TikTok 主页</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast-box"></div>
+
+<!-- ═══════════════ Script ═══════════════ -->
+<script>
+'use strict';
+
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+const S = {
+  tab: 'dashboard',
+  mode: 'keyword',
+  filter: 'all',
+  comments: [],
+  pickedVideos: [],
+  selectedAwemeIds: new Set(),
+  config: {
+    token: '',
+    provider: 'keyword',
+    aiKey: '',
+    batch: 15,
+    biz: '',
+    keywords: [],
+    keywordsI18n: []   // auto-translated, not shown in UI
+  }
+};
+
+const TITLES = { search:'工作台', config:'设置' };
+const GRADE_LABEL = { A:'强需求', B:'潜在需求', C:'弱兴趣', D:'无效' };
+
+// ─────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────
+function gotoTab(t) {
+  if (t === 'dashboard' || t === 'results') t = 'search';
+  S.tab = t;
+  document.querySelectorAll('.tab').forEach(el => el.style.display = 'none');
+  document.getElementById('tab-' + t).style.display = 'block';
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.tab === t));
+  document.getElementById('page-title').textContent = TITLES[t] || t;
+}
+
+// ─────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────
+function onProviderChange() {
+  const p = document.getElementById('cfg-provider').value;
+  const show = p !== 'keyword';
+  document.getElementById('ai-key-wrap').style.display = show ? 'block' : 'none';
+  document.getElementById('ai-batch-wrap').style.display = show ? 'flex' : 'none';
+  const linkEl = document.getElementById('ai-key-link');
+  if (p === 'gemini') {
+    linkEl.href = 'https://aistudio.google.com/app/apikey';
+    linkEl.textContent = '获取 Gemini Key →';
+  } else if (p === 'openai') {
+    linkEl.href = 'https://platform.openai.com/api-keys';
+    linkEl.textContent = '获取 OpenAI Key →';
+  }
+}
+
+function saveConfig() {
+  S.config.token    = document.getElementById('cfg-token').value.trim();
+  S.config.provider = document.getElementById('cfg-provider').value;
+  S.config.aiKey    = document.getElementById('cfg-aikey').value.trim();
+  S.config.batch    = parseInt(document.getElementById('cfg-batch').value) || 15;
+  S.config.biz      = document.getElementById('cfg-biz').value.trim();
+  S.config.keywords = document.getElementById('cfg-kw').value
+    .split(',').map(s => s.trim()).filter(Boolean);
+  try { localStorage.setItem('cl_cfg', JSON.stringify(S.config)); } catch(_) {}
+  toast('配置已保存', 's');
+  updateStatusDot();
+  const hint = document.getElementById('cfg-save-hint');
+  hint.textContent = '✓ 已保存';
+  setTimeout(() => { hint.textContent = ''; }, 2200);
+  // auto-translate custom keywords in background if AI is available
+  if (S.config.keywords.length && S.config.provider !== 'keyword' && S.config.aiKey) {
+    expandKeywordsI18n();
+  }
+}
+
+function loadConfigUI() {
+  document.getElementById('cfg-token').value    = S.config.token;
+  document.getElementById('cfg-provider').value = S.config.provider;
+  document.getElementById('cfg-aikey').value    = S.config.aiKey;
+  document.getElementById('cfg-batch').value    = S.config.batch;
+  document.getElementById('cfg-biz').value      = S.config.biz || '';
+  document.getElementById('cfg-kw').value       = S.config.keywords.join(', ');
+  onProviderChange();
+  updateKwCount();
+}
+
+// Translate custom keywords to all major languages via AI, store in keywordsI18n
+async function expandKeywordsI18n() {
+  const kws = S.config.keywords;
+  if (!kws.length) return;
+  const langs = 'Spanish,Portuguese,Indonesian,Thai,Vietnamese,Arabic,Hindi,Japanese,Korean,French,German,Turkish,Russian,Malay,Tagalog';
+  const prompt = `Translate each keyword/phrase below into every language listed (${langs}).
+Return ONLY a raw JSON array of strings — all translations flat, no nesting, no markdown fences.
+Keywords: ${kws.map(k => `"${k}"`).join(', ')}`;
+  try {
+    let translations = [];
+    if (S.config.provider === 'gemini') {
+      const r = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${S.config.aiKey}`,
+        { method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ contents:[{ parts:[{ text: prompt }] }],
+            generationConfig:{ maxOutputTokens:2000, temperature:0.1 } }) }
+      );
+      if (r.ok) {
+        const d = await r.json();
+        const txt = d.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+        const m = txt.replace(/^```[a-z]*\n?/,'').replace(/\n?```$/,'').trim().match(/\[[\s\S]*\]/);
+        if (m) translations = JSON.parse(m[0]);
+      }
+    } else if (S.config.provider === 'openai') {
+      const r = await fetch('https://api.openai.com/v1/chat/completions', {
+        method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer '+S.config.aiKey},
+        body: JSON.stringify({ model:'gpt-4o-mini',
+          messages:[{ role:'user', content: prompt }], temperature:0.1, max_tokens:2000 })
+      });
+      if (r.ok) {
+        const d = await r.json();
+        const txt = d.choices?.[0]?.message?.content || '[]';
+        const m = txt.replace(/^```[a-z]*\n?/,'').replace(/\n?```$/,'').trim().match(/\[[\s\S]*\]/);
+        if (m) translations = JSON.parse(m[0]);
+      }
+    }
+    if (translations.length) {
+      S.config.keywordsI18n = translations.map(s => (s+'').toLowerCase().trim()).filter(Boolean);
+      try { localStorage.setItem('cl_cfg', JSON.stringify(S.config)); } catch(_) {}
+    }
+  } catch(e) { /* silent — i18n expansion is best-effort */ }
+}
+
+function updateKwCount() {
+  const kws = (document.getElementById('cfg-kw').value || '')
+    .split(',').map(s => s.trim()).filter(Boolean);
+  const el = document.getElementById('kw-count');
+  if (el) el.textContent = kws.length ? `${kws.length} 个关键词` : '';
+}
+
+async function generateKeywords() {
+  const biz = document.getElementById('cfg-biz').value.trim();
+  if (!biz) { toast('请先填写业务描述', 'w'); return; }
+  if (!S.config.aiKey || S.config.provider === 'keyword') {
+    toast('请先在「AI 引擎」中配置 Gemini 或 OpenAI Key', 'w'); return;
+  }
+  const btn = document.getElementById('btn-genkw');
+  btn.disabled = true;
+  btn.textContent = '生成中...';
+  try {
+    const prompt = `你是一个营销关键词分析师。根据以下业务描述，生成 15-20 个高意图关键词（用户在评论中表达购买意向、遇到问题、寻求推荐等），中英文均可，适合用于在 TikTok 评论中识别潜在客户。
+业务描述：${biz}
+要求：
+- 每个关键词 1-4 个词，贴近真实用户表达习惯
+- 覆盖：购买意向、使用问题、竞品对比、推荐需求等场景
+- 只返回关键词列表，逗号分隔，不要编号或额外说明`;
+
+    let keywords = '';
+    if (S.config.provider === 'gemini') {
+      const r = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${S.config.aiKey}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.3, maxOutputTokens: 300 } }) }
+      );
+      if (!r.ok) throw new Error('Gemini ' + r.status);
+      const d = await r.json();
+      keywords = d.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+    } else {
+      const r = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + S.config.aiKey },
+        body: JSON.stringify({ model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: prompt }], max_tokens: 300, temperature: 0.3 })
+      });
+      if (!r.ok) throw new Error('OpenAI ' + r.status);
+      const d = await r.json();
+      keywords = d.choices?.[0]?.message?.content?.trim() || '';
+    }
+    if (!keywords) throw new Error('AI 未返回内容，请重试');
+    // strip any stray fences
+    keywords = keywords.replace(/```[\s\S]*?```/g, '').trim();
+    document.getElementById('cfg-kw').value = keywords;
+    updateKwCount();
+    toast('关键词已生成，检查后点击「保存配置」', 's');
+  } catch (err) {
+    toast('生成失败：' + err.message, 'e');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🤖 AI 生成';
+  }
+}
+
+function updateStatusDot() {
+  const ok = !!S.config.token;
+  document.getElementById('status-dot').style.background = ok ? 'var(--ga)' : 'var(--gd)';
+  document.getElementById('status-txt').textContent = ok ? 'Token 已配置' : 'TikHub API';
+}
+
+// ─────────────────────────────────────────
+// SEARCH MODE
+// ─────────────────────────────────────────
+function setMode(m) {
+  S.mode = m;
+  document.getElementById('m-kw').classList.toggle('on', m === 'keyword');
+  document.getElementById('m-url').classList.toggle('on', m === 'url');
+  document.getElementById('q-label').textContent = m === 'keyword' ? '搜索关键词' : 'TikTok 视频链接';
+  document.getElementById('q-input').placeholder = m === 'keyword'
+    ? '例：card declined tiktok shop  /  payment failed  /  虚拟卡怎么买'
+    : '例：https://www.tiktok.com/@user/video/7304809083817774382';
+  document.getElementById('btn-go').textContent = m === 'keyword' ? '🔍 搜索相关视频' : '🚀 开始抓取';
+  if (m === 'url') document.getElementById('video-picker').style.display = 'none';
+}
+
+// ─────────────────────────────────────────
+// TIKHUB API
+// ─────────────────────────────────────────
+const BASE = 'https://api.tikhub.io';
+
+async function tkGet(path, params = {}) {
+  if (!S.config.token) throw new Error('请先在「API 配置」中填写 TikHub Token');
+  const url = new URL(BASE + path);
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v));
+  });
+  let resp;
+  try {
+    resp = await fetch(url.toString(), {
+      headers: { Authorization: 'Bearer ' + S.config.token }
+    });
+  } catch (err) {
+    if (err.name === 'TypeError') {
+      throw new Error('网络请求失败（CORS 或网络问题）。请检查 Token，或通过本地代理转发请求。');
+    }
+    throw err;
+  }
+  if (!resp.ok) {
+    const txt = await resp.text().catch(() => resp.statusText);
+    throw new Error(`TikHub API ${resp.status}: ${txt.slice(0, 180)}`);
+  }
+  return resp.json();
+}
+
+function fmtNum(n) {
+  if (!n) return '0';
+  return n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'K' : String(n);
+}
+
+async function apiSearchVideosWithMeta(kw, count = 12) {
+  const d = await tkGet('/api/v1/tiktok/app/v3/fetch_video_search_result', {
+    keyword: kw, count, offset: 0
+  });
+  // API returns data.search_item_list[].aweme_info; fall back to legacy shapes
+  const rawList = d?.data?.search_item_list || d?.data?.data || d?.data?.aweme_list || (Array.isArray(d?.data) ? d.data : []);
+  const list = rawList.map(item => item?.aweme_info || item);
+  return list.map(v => {
+    const st = v.statistics || v.stats || {};
+    const author = v.author || {};
+    const uid = author.unique_id || author.uniqueId || '';
+    const aid = v.aweme_id || v.id || '';
+    return {
+      awemeId:      aid,
+      title:        v.desc || v.title || '（无标题）',
+      coverUrl:     v.video?.cover?.url_list?.[0] || v.video?.origin_cover?.url_list?.[0]
+                    || v.video?.dynamic_cover?.url_list?.[0] || '',
+      playCount:    st.play_count    || st.playCount    || 0,
+      likeCount:    st.digg_count    || st.diggCount    || 0,
+      commentCount: st.comment_count || st.commentCount || 0,
+      shareCount:   st.share_count   || st.shareCount   || 0,
+      author:       author.nickname  || uid || '未知',
+      uniqueId:     uid,
+      videoUrl:     v.share_url || (uid ? `https://www.tiktok.com/@${uid}/video/${aid}` : ''),
+      engagementScore: (st.digg_count||0)*1 + (st.comment_count||0)*3 + (st.share_count||0)*2,
+    };
+  }).filter(v => v.awemeId);
+}
+
+// ── AI ranks videos by relevance + engagement ──
+async function aiRankVideos(videos, keyword) {
+  // Fallback: sort by engagement if no AI key
+  if (!S.config.aiKey || S.config.provider === 'keyword') {
+    return [...videos]
+      .sort((a, b) => b.engagementScore - a.engagementScore)
+      .slice(0, 5)
+      .map((v, i) => ({ rank: i+1, awemeId: v.awemeId, reason: '综合热度最高' }));
+  }
+  const prompt = `You are analyzing TikTok search results for keyword: "${keyword}".
+Pick the best 5 videos (most relevant to commercial/problem-solving intent + high engagement). Sort by relevance.
+Return ONLY a raw JSON array, no markdown:
+[{"rank":1,"awemeId":"...","reason":"3-word reason"}]
+
+Videos:
+${videos.map((v,i) => `${i+1}. ID:${v.awemeId} likes:${fmtNum(v.likeCount)} comments:${fmtNum(v.commentCount)} title:"${v.title.slice(0,80)}"`).join('\n')}`;
+  const r = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${S.config.aiKey}`,
+    { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0.1, maxOutputTokens:600} }) }
+  );
+  if (!r.ok) throw new Error('Gemini ' + r.status);
+  const d = await r.json();
+  const txt = d.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+  return parseJsonArray(txt);
+}
+
+// ── Render video picker cards ──
+function showVideoPicker(videos, ranked) {
+  S.pickedVideos = videos; // store full meta
+  const grid = document.getElementById('video-cards');
+  // ranked is array of {rank, awemeId, reason}
+  const orderedIds = ranked.map(r => r.awemeId);
+  const reasonMap  = Object.fromEntries(ranked.map(r => [r.awemeId, r.reason]));
+  const ordered    = orderedIds.map(id => videos.find(v => v.awemeId === id)).filter(Boolean);
+  // default: all selected
+  S.selectedAwemeIds = new Set(ordered.map(v => v.awemeId));
+
+  grid.innerHTML = ordered.map((v, i) => {
+    const thumbStyle = v.coverUrl
+      ? `background-image:url(${ha(v.coverUrl)})`
+      : 'background:var(--bg-3)';
+    return `<div class="vcard selected" data-id="${ha(v.awemeId)}" onclick="toggleVideoCard(this)">
+      <div class="vcard-thumb ${v.coverUrl ? '' : 'vcard-no-thumb'}" style="${thumbStyle}">
+        <div class="vcard-rank">#${i+1}</div>
+        <div class="vcard-sel-badge">✓ 已选</div>
+      </div>
+      <div class="vcard-body">
+        <div class="vcard-author">@${h(v.author)}</div>
+        <div class="vcard-title" title="${ha(v.title)}">${h(v.title)}</div>
+        <div class="vcard-stats">
+          <span class="vcard-stat">❤️ ${fmtNum(v.likeCount)}</span>
+          <span class="vcard-stat">💬 ${fmtNum(v.commentCount)}</span>
+          <span class="vcard-stat">↗ ${fmtNum(v.shareCount)}</span>
+        </div>
+        <div class="vcard-reason">${h(reasonMap[v.awemeId] || '相关视频')}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const n = ordered.length;
+  document.getElementById('vp-title').innerHTML = `📹 AI 推荐视频 <span style="font-size:11px;color:var(--t2);font-weight:400">（共 ${n} 个，点击卡片切换选中）</span>`;
+  document.getElementById('video-picker').style.display = 'block';
+  updateSelCount();
+}
+
+function toggleVideoCard(el) {
+  const id = el.dataset.id;
+  if (S.selectedAwemeIds.has(id)) S.selectedAwemeIds.delete(id);
+  else S.selectedAwemeIds.add(id);
+  el.classList.toggle('selected', S.selectedAwemeIds.has(id));
+  updateSelCount();
+}
+
+function toggleAllVideos() {
+  const cards = document.querySelectorAll('.vcard');
+  const allSel = [...cards].every(c => c.classList.contains('selected'));
+  cards.forEach(c => {
+    const id = c.dataset.id;
+    if (allSel) { S.selectedAwemeIds.delete(id); c.classList.remove('selected'); }
+    else { S.selectedAwemeIds.add(id); c.classList.add('selected'); }
+  });
+  updateSelCount();
+}
+
+function updateSelCount() {
+  document.getElementById('vp-sel-count').textContent = `已选 ${S.selectedAwemeIds.size} 个`;
+  document.getElementById('btn-scrape').disabled = S.selectedAwemeIds.size === 0;
+}
+
+async function apiGetAwemeId(videoUrl) {
+  const d = await tkGet('/api/v1/tiktok/web/get_aweme_id', { url: videoUrl });
+  return d?.data?.aweme_id || d?.aweme_id || d?.data || null;
+}
+
+async function apiFetchComments(awemeId, cursor, count) {
+  const d = await tkGet('/api/v1/tiktok/web/fetch_post_comment', {
+    aweme_id: awemeId, cursor, count, current_region: 'US'
+  });
+  return {
+    list:      d?.data?.comments || d?.comments || [],
+    hasMore:   d?.data?.has_more ?? d?.has_more ?? false,
+    nextCursor: d?.data?.cursor ?? d?.cursor ?? 0
+  };
+}
+
+async function apiFetchUser(uniqueId) {
+  const d = await tkGet('/api/v1/tiktok/web/fetch_user_profile', { uniqueId });
+  const userInfo = d?.data?.userInfo || d?.data?.user || d?.data || null;
+  if (!userInfo) return null;
+  // Merge user + stats into one flat object for easy display
+  const user  = userInfo.user  || userInfo;
+  const stats = userInfo.stats || userInfo.statsV2 || {};
+  return { ...user, ...stats };
+}
+
+// ─────────────────────────────────────────
+// KEYWORD SCORING
+// ─────────────────────────────────────────
+// ── Built-in multilingual signal keywords ──────────────────────────────────────
+// A-grade: explicit demand / problem / solution-seeking
+const A_KW = [
+  // EN
+  'how to','where can i buy','need help','card declined','payment failed',
+  'account banned','looking for','help me','how do i','any solution','not working',
+  'still not working','what should i do','is there a way','tried everything',
+  'anyone know','looking to buy','does anyone','can someone','please help',
+  // ZH
+  '怎么买','有没有','求推荐','付款失败','被拒','封号','收款被冻结','怎么解决','求助','买不了','无法付款',
+  // ES (Spanish)
+  'cómo comprar','necesito ayuda','pago fallido','cuenta bloqueada','buscando',
+  'dónde comprar','no funciona','alguna solución','cómo puedo','qué debo hacer',
+  'alguien sabe','cómo lo hago','todavía no funciona','me pueden ayudar',
+  // PT (Portuguese/Brazilian)
+  'como comprar','preciso de ajuda','pagamento falhou','conta bloqueada','procurando',
+  'onde comprar','não funciona','alguma solução','como posso','o que devo fazer',
+  'alguém sabe','como faço','ainda não funciona','me ajuda',
+  // ID (Indonesian)
+  'cara beli','butuh bantuan','pembayaran gagal','akun diblokir','mencari',
+  'di mana beli','tidak berfungsi','ada solusi','gimana caranya','harus gimana',
+  'ada yang tau','masih tidak bisa','tolong bantu',
+  // TH (Thai)
+  'วิธีซื้อ','ต้องการความช่วยเหลือ','ชำระเงินล้มเหลว','บัญชีถูกระงับ','กำลังหา',
+  'ซื้อที่ไหน','ไม่ทำงาน','มีวิธีแก้ไหม','ทำยังไง','ใครรู้บ้าง','ช่วยด้วย',
+  // VI (Vietnamese)
+  'cách mua','cần giúp đỡ','thanh toán thất bại','tài khoản bị khóa','tìm kiếm',
+  'mua ở đâu','không hoạt động','có giải pháp','làm thế nào','phải làm gì',
+  'ai biết không','vẫn không được','giúp mình với',
+  // AR (Arabic)
+  'كيف أشتري','أحتاج مساعدة','فشل الدفع','حساب محظور','أبحث عن',
+  'أين أشتري','لا يعمل','هل هناك حل','كيف أفعل','ماذا يجب أن أفعل',
+  'هل يعرف أحد','لا يزال لا يعمل','ساعدوني',
+  // HI (Hindi)
+  'कैसे खरीदें','मदद चाहिए','भुगतान विफल','खाता बंद','खोज रहा हूं',
+  'कहाँ खरीदें','काम नहीं कर रहा','कोई समाधान है','कैसे करूं','क्या करूं',
+  'कोई जानता है','अभी भी नहीं','मेरी मदद करो',
+  // JA (Japanese)
+  '買い方','助けてください','支払い失敗','アカウント停止','探しています',
+  'どこで買える','動かない','解決方法ありますか','どうやって','どうすれば',
+  '知っている人','まだ動かない','教えてください',
+  // KO (Korean)
+  '구매 방법','도움이 필요해','결제 실패','계정 정지','찾고 있어',
+  '어디서 사','작동 안 해','해결책 있나','어떻게 해','어떻게 해야',
+  '아는 사람','아직도 안 돼','도와주세요',
+  // FR (French)
+  'comment acheter','besoin d aide','paiement échoué','compte bloqué','je cherche',
+  'où acheter','ne fonctionne pas','une solution','comment faire','que dois je faire',
+  'quelqu un sait','toujours pas','aidez moi',
+  // DE (German)
+  'wie kaufen','brauche hilfe','zahlung fehlgeschlagen','konto gesperrt','suche',
+  'wo kaufen','funktioniert nicht','gibt es eine lösung','wie kann ich','was soll ich tun',
+  'weiß jemand','immer noch nicht','bitte helfen',
+  // TR (Turkish)
+  'nasıl satın alınır','yardıma ihtiyacım var','ödeme başarısız','hesap engellendi',
+  'arıyorum','nereden satın alınır','çalışmıyor','bir çözüm var mı','nasıl yapabilirim',
+  'ne yapmalıyım','bilen var mı','hala çalışmıyor','yardım edin',
+  // RU (Russian)
+  'как купить','нужна помощь','оплата не прошла','аккаунт заблокирован','ищу',
+  'где купить','не работает','есть решение','как мне','что делать',
+  'кто знает','всё ещё не работает','помогите',
+  // MS (Malay)
+  'cara beli','perlukan bantuan','pembayaran gagal','akaun disekat','mencari',
+  'di mana beli','tidak berfungsi','ada penyelesaian','macam mana','apa yang patut saya buat',
+  'ada sesiapa tahu','tolong bantu saya',
+  // TL (Filipino/Tagalog)
+  'paano bumili','kailangan ng tulong','nabigo ang bayad','na-ban ang account',
+  'naghahanap','saan bibili','hindi gumagana','may solusyon ba','paano ko gagawin',
+  'ano ang gagawin','may nakaalam ba','tulungan mo ako'
+];
+// B-grade: potential demand – price / channel / tutorial inquiry
+const B_KW = [
+  // EN
+  'buy','price','cost','where','how much','worth it','any good','which one',
+  'tutorial','guide','setup','good deal','recommend','review','legit','reliable',
+  // ZH
+  '价格','在哪','多少钱','怎么用','推荐一下','哪里买','好用吗','值得吗','怎么设置',
+  // ES
+  'precio','coste','dónde','cuánto cuesta','vale la pena','tutorial','guía','recomendación',
+  // PT
+  'preço','custo','onde','quanto custa','vale a pena','tutorial','guia','recomendação',
+  // ID
+  'harga','biaya','dimana','berapa','worth it','tutorial','panduan','rekomendasiin',
+  // TH
+  'ราคา','ค่าใช้จ่าย','ที่ไหน','เท่าไหร่','คุ้มค่า','วิธีใช้','แนะนำ',
+  // VI
+  'giá','chi phí','ở đâu','bao nhiêu','có đáng không','hướng dẫn','gợi ý',
+  // AR
+  'سعر','تكلفة','أين','كم يكلف','يستحق','دليل','توصية',
+  // HI
+  'कीमत','लागत','कहाँ','कितना','लायक है','ट्यूटोरियल','सिफारिश',
+  // JA
+  '値段','料金','どこで','いくら','おすすめ','使い方','レビュー','やり方',
+  // KO
+  '가격','비용','어디서','얼마','추천','사용법','리뷰','방법',
+  // FR
+  'prix','coût','où','combien','ça vaut','tutoriel','guide','recommandation',
+  // DE
+  'preis','kosten','wo','wie viel','wert','anleitung','empfehlung',
+  // TR
+  'fiyat','maliyet','nerede','ne kadar','değer mi','rehber','öneri',
+  // RU
+  'цена','стоимость','где','сколько','стоит того','руководство','рекомендация',
+  // MS
+  'harga','kos','di mana','berapa','berbaloi','tutorial','cadangan',
+  // TL
+  'presyo','gastos','saan','magkano','sulit ba','gabay','rekomendasyon'
+];
+// C-grade: weak interest / positive reaction
+const C_KW = [
+  // EN
+  'nice','cool','great','amazing','love this','interesting','not bad','awesome',
+  // ZH
+  '不错','很好','厉害','牛','好的','哇','赞','太棒了',
+  // ES
+  'genial','increíble','me encanta','interesante','no está mal','buenísimo',
+  // PT
+  'legal','incrível','adoro','interessante','não é mal','ótimo',
+  // ID
+  'keren','mantap','suka','menarik','lumayan','bagus banget','oke',
+  // TH
+  'เจ๋ง','สุดยอด','ชอบ','น่าสนใจ','ไม่เลว','เยี่ยม',
+  // VI
+  'tuyệt','hay','thích','thú vị','không tệ','tốt lắm',
+  // AR
+  'رائع','مذهل','أحب','مثير للاهتمام','ليس سيئا','ممتاز',
+  // HI
+  'बढ़िया','अद्भुत','पसंद','दिलचस्प','बुरा नहीं','शानदार',
+  // JA
+  'すごい','いいね','好き','面白い','悪くない','素晴らしい',
+  // KO
+  '멋지다','굿','좋아','흥미롭다','나쁘지않아','대박',
+  // FR
+  'génial','incroyable','j adore','intéressant','pas mal','super',
+  // DE
+  'toll','unglaublich','liebe','interessant','nicht schlecht','super','großartig',
+  // TR
+  'harika','inanılmaz','seviyorum','ilginç','fena değil','süper',
+  // RU
+  'круто','невероятно','люблю','интересно','неплохо','отлично',
+  // MS
+  'hebat','luar biasa','suka','menarik','tidak buruk','bagus',
+  // TL
+  'ganda','astig','gusto ko','kawili-wili','hindi masama','magaling'
+];
+
+function kwScore(text) {
+  if (!text) return { grade: 'D', score: 5, reason: '空评论' };
+  const t = text.toLowerCase();
+  const bare = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim();
+  if (bare.length < 3) return { grade: 'D', score: 5, reason: '纯表情/极短' };
+
+  // Custom keywords (highest priority) — also check auto-translated variants
+  const allCust = [...S.config.keywords, ...S.config.keywordsI18n];
+  const hitCust = allCust.filter(k => k && t.includes(k.toLowerCase()));
+  if (hitCust.length) return { grade: 'A', score: Math.min(75 + hitCust.length * 6, 98), reason: `关键词: ${hitCust.slice(0,2).join(', ')}` };
+
+  const hitA = A_KW.filter(k => t.includes(k));
+  if (hitA.length) return { grade: 'A', score: Math.min(68 + hitA.length * 5, 95), reason: `A词: ${hitA.slice(0,2).join(', ')}` };
+
+  const hitB = B_KW.filter(k => t.includes(k));
+  if (hitB.length) return { grade: 'B', score: Math.min(42 + hitB.length * 5, 70), reason: `B词: ${hitB.slice(0,2).join(', ')}` };
+
+  // 疑问句带长度门槛（排除单个表情+问号）
+  if ((t.includes('?') || t.includes('？')) && bare.length >= 8)
+    return { grade: 'B', score: 38, reason: '疑问句' };
+
+  const hitC = C_KW.filter(k => t.includes(k));
+  // C 级：命中 C 词且内容有实质长度（排除纯表情包回复）
+  if (hitC.length && bare.length >= 6) return { grade: 'C', score: 24, reason: `C词: ${hitC[0]}` };
+
+  return { grade: 'D', score: 10, reason: '无需求信号' };
+}
+
+// ─────────────────────────────────────────
+// AI SCORING
+// ─────────────────────────────────────────
+const AI_PROMPT = `You are a strict TikTok comment sales-lead classifier. Your job is to identify comments that show ANY level of purchase intent, need, curiosity, or engagement with the product/service.
+
+Grading rules:
+A = Strong demand: explicit problem seeking solution, "where to buy", "how to get", payment/account issues, direct request for product
+B = Potential demand: asking price/cost/link/channel, asking for tutorial/setup/guide, product comparison, asking for recommendation
+C = Weak interest: genuine positive reaction with substance (not just emoji), asking about specs/features, sharing relevant personal experience, tagging others to show the product
+D = No value: pure emoji only, memes, spam, very short filler ("lol", "haha", "ok"), completely off-topic, gibberish
+
+IMPORTANT:
+- Be strict: only grade C or above if there is GENUINE engagement beyond empty reactions
+- A comment that is just praise emojis or filler words = D
+- A comment with substance + positive reaction = C
+- When in doubt between C and D, choose D
+- Return ONLY a raw JSON array, NO markdown fences, NO extra text. Keep "reason" under 5 words.
+[{"id":1,"grade":"A","score":82,"reason":"needs payment fix"}]`;
+
+function parseJsonArray(txt) {
+  // Strip ```json ... ``` code fences if present
+  const stripped = txt.replace(/^```[a-z]*\n?/, '').replace(/\n?```$/, '').trim();
+  const m = stripped.match(/\[[\s\S]*\]/);
+  return m ? JSON.parse(m[0]) : [];
+}
+
+async function aiScoreBatch(batch, provider) {
+  const items = batch.map((c, i) => `${i+1}. "${c.text.replace(/"/g, "'").slice(0, 120)}"`).join('\n');
+  if (provider === 'openai') {
+    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.config.aiKey },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: AI_PROMPT + '\n\nComments:\n' + items }],
+        temperature: 0.1, max_tokens: 1200
+      })
+    });
+    if (!r.ok) throw new Error('OpenAI ' + r.status);
+    const d = await r.json();
+    return parseJsonArray(d.choices?.[0]?.message?.content || '[]');
+  } else {
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${S.config.aiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: AI_PROMPT + '\n\nComments:\n' + items }] }],
+          generationConfig: { temperature: 0.1, maxOutputTokens: 3000 }
+        })
+      }
+    );
+    if (!r.ok) throw new Error('Gemini ' + r.status);
+    const d = await r.json();
+    const txt = d.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+    return parseJsonArray(txt);
+  }
+}
+
+async function scoreAll(comments) {
+  if (S.config.provider === 'keyword') {
+    return comments.map((c, i) => ({ idx: i, ...kwScore(c.text) }));
+  }
+  const results = [];
+  const bs = S.config.batch;
+  for (let i = 0; i < comments.length; i += bs) {
+    const batch = comments.slice(i, i + bs);
+    try {
+      const scores = await aiScoreBatch(batch, S.config.provider);
+      batch.forEach((c, j) => {
+        const s = scores.find(x => x.id === j + 1);
+        results.push({ idx: i + j, grade: s?.grade || 'D', score: s?.score || 10, reason: s?.reason || '' });
+      });
+    } catch (e) {
+      console.warn('AI batch error, falling back to keyword:', e.message);
+      batch.forEach((c, j) => results.push({ idx: i + j, ...kwScore(c.text) }));
+    }
+    setProgress(65 + Math.round((i / comments.length) * 30), `AI 评分中 ${i + batch.length}/${comments.length}...`);
+  }
+  return results;
+}
+
+// ─────────────────────────────────────────
+// MAIN SCRAPING FLOW
+// ─────────────────────────────────────────
+
+// Keyword mode: search → AI rank → show picker
+async function startScraping() {
+  const q = document.getElementById('q-input').value.trim();
+  if (!q) { toast('请输入关键词或视频链接', 'w'); return; }
+  if (!S.config.token) { toast('请先配置 TikHub Token', 'e'); gotoTab('config'); return; }
+
+  if (S.mode === 'url') {
+    await scrapeByUrl(q);
+  } else {
+    await searchAndShowPicker(q);
+  }
+}
+
+async function searchAndShowPicker(keyword) {
+  const btn = document.getElementById('btn-go');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> AI 搜索中...';
+  setProgress(0, '搜索相关视频...');
+  document.getElementById('video-picker').style.display = 'none';
+  try {
+    setProgress(20, '调用 TikHub 搜索...');
+    const videos = await apiSearchVideosWithMeta(keyword, 12);
+    if (!videos.length) throw new Error('未搜索到视频，请换一个关键词');
+    setProgress(55, `已找到 ${videos.length} 个视频，AI 分析相关性...`);
+    const ranked = await aiRankVideos(videos, keyword);
+    if (!ranked.length) throw new Error('AI 未能返回推荐结果，请重试');
+    setProgress(100, '完成！');
+    setTimeout(hideProgress, 800);
+    showVideoPicker(videos, ranked);
+    toast(`已推荐 ${ranked.length} 个高相关度视频，点击卡片选择后抓取`, 'i');
+  } catch (err) {
+    console.error(err);
+    toast('搜索失败：' + err.message, 'e');
+    hideProgress();
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔍 搜索相关视频';
+  }
+}
+
+// URL mode: direct scrape
+async function scrapeByUrl(videoUrl) {
+  const btn = document.getElementById('btn-go');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> 抓取中...';
+  setProgress(0, '解析视频链接...');
+  try {
+    setProgress(10, '解析视频 ID...');
+    const id = await apiGetAwemeId(videoUrl);
+    if (!id) throw new Error('无法从链接提取视频 ID，请确认链接有效');
+    await scrapeComments([String(id)]);
+  } catch (err) {
+    console.error(err);
+    toast('抓取失败：' + err.message, 'e');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🚀 开始抓取';
+    setTimeout(hideProgress, 2200);
+  }
+}
+
+// Called by the picker button
+async function scrapeSelectedVideos() {
+  if (!S.selectedAwemeIds || S.selectedAwemeIds.size === 0) {
+    toast('请先选择至少一个视频', 'w'); return;
+  }
+  const btn = document.getElementById('btn-scrape');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> 抓取中...';
+  try {
+    await scrapeComments([...S.selectedAwemeIds]);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🚀 抓取选中视频评论';
+  }
+}
+
+// Core scrape: given aweme IDs → fetch comments → score → merge
+async function scrapeComments(awemeIds) {
+  const TARGET = 100;   // target valid (non-empty) comments
+  const PER_CALL = 20;  // comments per API request
+  const raw = [];
+  setProgress(15, `开始抓取评论，目标 ${TARGET} 条有效评论...`);
+  try {
+    outer:
+    for (let vi = 0; vi < awemeIds.length; vi++) {
+      let cursor = 0, hasMore = true;
+      while (hasMore) {
+        const res = await apiFetchComments(awemeIds[vi], cursor, PER_CALL);
+        for (const c of res.list) {
+          const text = (c.text || c.content || '').trim();
+          if (!text) continue;   // skip empty comments
+          raw.push({
+            id: c.cid || c.comment_id || `${awemeIds[vi]}_${raw.length}`,
+            text,
+            user: {
+              uid:       c.user?.uid || c.user?.id || '',
+              nickname:  c.user?.nickname || '未知用户',
+              uniqueId:  c.user?.uniqueId || c.user?.unique_id || '',
+              avatarUrl: typeof c.user?.avatarThumb === 'string' ? c.user.avatarThumb
+                : c.user?.avatarThumb?.url_list?.[0]
+                || (typeof c.user?.avatarMedium === 'string' ? c.user.avatarMedium : c.user?.avatarMedium?.url_list?.[0])
+                || c.user?.avatar_thumb?.url_list?.[0] || '',
+              secUid:    c.user?.secUid || c.user?.sec_uid || '',
+              signature: c.user?.signature || ''
+            },
+            likes:   c.digg_count || 0,
+            time:    c.create_time ? new Date(c.create_time * 1000).toLocaleDateString('zh-CN') : '-',
+            awemeId: awemeIds[vi],
+            grade: null, score: null, reason: null
+          });
+          if (raw.length >= TARGET) break outer;  // reached target, stop all loops
+        }
+        cursor = res.nextCursor;
+        hasMore = res.hasMore && res.list.length > 0;
+        const pct = 15 + Math.round((raw.length / TARGET) * 45);
+        setProgress(Math.min(pct, 60), `视频 ${vi+1}/${awemeIds.length}：已获取 ${raw.length}/${TARGET} 条...`);
+        if (!res.list.length) break;
+      }
+    }
+
+    if (!raw.length) throw new Error('未获取到评论（视频可能已关闭评论区或无公开评论）');
+
+    setProgress(62, `正在对 ${raw.length} 条评论打分...`);
+    const scores = await scoreAll(raw);
+    scores.forEach(s => {
+      if (raw[s.idx]) { raw[s.idx].grade = s.grade; raw[s.idx].score = s.score; raw[s.idx].reason = s.reason; }
+    });
+    raw.forEach(c => { if (!c.grade) { c.grade = 'D'; c.score = 10; c.reason = '未评分'; } });
+
+    // 只保留 A/B/C 级，丢弃无需求的 D 级
+    const kept = raw.filter(c => c.grade !== 'D');
+
+    S.comments = [...S.comments, ...kept];
+    setProgress(100, '完成！');
+    syncStats();
+    renderTable();
+    updateBadge();
+    const ab = kept.filter(c => c.grade === 'A' || c.grade === 'B').length;
+    const total = raw.length;
+    toast(`抓取完成！共扫描 ${total} 条，有需求 A+B+C 共 ${kept.length} 条（A+B 级线索 ${ab} 条）`, 's');
+    setTimeout(hideProgress, 2200);
+    gotoTab('results');
+  } catch (err) {
+    console.error(err);
+    toast('抓取失败：' + err.message, 'e');
+    hideProgress();
+  }
+}
+
+function clearAll() {
+  if (!S.comments.length) return;
+  if (!confirm('确定清空所有已抓取的评论数据？')) return;
+  S.comments = [];
+  syncStats();
+  renderTable();
+  updateBadge();
+  toast('已清空', 'i');
+}
+
+// ─────────────────────────────────────────
+// PROGRESS
+// ─────────────────────────────────────────
+function setProgress(pct, txt) {
+  document.getElementById('prog-wrap').classList.add('show');
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-txt').textContent = txt;
+}
+function hideProgress() {
+  document.getElementById('prog-wrap').classList.remove('show');
+}
+
+// ─────────────────────────────────────────
+// STATS
+// ─────────────────────────────────────────
+function syncStats() {
+  const tot = S.comments.length;
+  const a = S.comments.filter(c => c.grade === 'A').length;
+  const b = S.comments.filter(c => c.grade === 'B').length;
+  const cv = S.comments.filter(c => c.grade === 'C').length;
+  const d = S.comments.filter(c => c.grade === 'D').length;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('ds-tot', tot); set('sr-tot', tot); set('fc-all', tot);
+  set('ds-a', a);  set('sr-a', a);  set('fc-a', a);
+  set('ds-b', b);  set('sr-b', b);  set('fc-b', b);
+  set('ds-c', cv); set('sr-c', cv); set('fc-c', cv);
+  set('ds-d', d);  set('sr-d', d);  set('fc-d', d);
+}
+
+function updateBadge() {
+  const nb = document.getElementById('nb');
+  nb.style.display = S.comments.length ? 'inline' : 'none';
+  nb.textContent = S.comments.length;
+}
+
+// ─────────────────────────────────────────
+// FILTER
+// ─────────────────────────────────────────
+function setFilter(f) {
+  S.filter = f;
+  document.querySelectorAll('.ftab').forEach(el => el.classList.toggle('on', el.dataset.f === f));
+  renderTable();
+}
+
+// ─────────────────────────────────────────
+// RENDER TABLE
+// ─────────────────────────────────────────
+function renderTable() {
+  const list = S.filter === 'all' ? S.comments : S.comments.filter(c => c.grade === S.filter);
+  const body = document.getElementById('res-body');
+
+  if (!list.length) {
+    body.innerHTML = `<div class="empty">
+      <div class="empty-icon">💬</div>
+      <div class="empty-txt">${S.comments.length ? '该分类暂无评论' : '还没有抓取数据'}</div>
+      <div class="empty-sub">${S.comments.length ? '切换筛选条件或重新抓取' : '前往「搜索抓取」开始第一次采集'}</div>
+    </div>`;
+  } else {
+    body.innerHTML = list.map((c, i) => row(c, i + 1)).join('');
+  }
+
+  // dashboard preview
+  const ab = S.comments.filter(c => c.grade === 'A' || c.grade === 'B').slice(0, 8);
+  const dsRecent = document.getElementById('ds-recent');
+  const dsBody = document.getElementById('ds-recent-body');
+  if (ab.length) {
+    dsRecent.style.display = 'block';
+    dsBody.innerHTML = ab.map((c, i) => row(c, i + 1)).join('');
+  } else {
+    dsRecent.style.display = 'none';
+  }
+}
+
+function extractSocialLinks(bio) {
+  if (!bio) return [];
+  const links = [];
+  const urlRe = /https?:\/\/[^\s\u4e00-\u9fa5，。！？、；：\u201c\u201d\u2018\u2019【】（）…,]+/g;
+  let m;
+  while ((m = urlRe.exec(bio)) !== null) {
+    const url = m[0].replace(/[.,;!?'")>]+$/, '');
+    let label = 'Link';
+    if (/instagram\.com/i.test(url))          label = 'IG';
+    else if (/wa\.me|whatsapp/i.test(url))    label = 'WA';
+    else if (/youtube\.com|youtu\.be/i.test(url)) label = 'YT';
+    else if (/facebook\.com|fb\.com/i.test(url))  label = 'FB';
+    else if (/twitter\.com|x\.com/i.test(url))    label = 'X';
+    else if (/t\.me\/|telegram/i.test(url))       label = 'TG';
+    else if (/linkedin\.com/i.test(url))          label = 'LI';
+    else if (/weibo\.com/i.test(url))             label = '微博';
+    else { const d = url.match(/\/\/(?:www\.)?([^/]+)/); if (d) label = d[1].split('.')[0].toUpperCase().slice(0, 6); }
+    links.push({ label, url });
+  }
+  return links.slice(0, 5);
+}
+
+function row(c, n) {
+  const idx    = S.comments.indexOf(c);
+  const handle = c.user.uniqueId || '';
+  const nick   = c.user.nickname  || '?';
+  const sig    = c.user.signature || '';
+  const socials = extractSocialLinks(sig);
+  const socialHtml = socials.length
+    ? `<div class="social-links">${socials.map(l =>
+        `<a class="social-link" href="${ha(l.url)}" target="_blank" onclick="event.stopPropagation()">${h(l.label)}</a>`
+      ).join('')}</div>`
+    : (sig ? `<div class="bio-snippet">${h(sig.slice(0, 55))}${sig.length > 55 ? '…' : ''}</div>` : '');
+  return `<div class="t-row">
+    <div style="padding-top:2px">
+      <span class="grade-badge g-${c.grade}">${c.grade}</span>
+    </div>
+    <div>
+      <div class="comment-text">${h(c.text)}</div>
+      ${c.reason ? `<span class="reason-tag" title="${ha(c.reason)}">${h(c.reason)}</span>` : ''}
+    </div>
+    <div class="user-col" onclick="openUserModal(${idx})">
+      <div class="uid-line">${handle ? '@' + h(handle) : h(nick)}</div>
+      ${socialHtml}
+      <div class="row-acts" onclick="event.stopPropagation()">
+        <button class="act-btn" onclick="copyText(${idx})">复制</button>
+        ${handle ? `<button class="act-btn" onclick="openTikTok(${idx})">主页</button>` : ''}
+        <button class="act-btn" onclick="openUserModal(${idx})">资料</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function h(s)  { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function ha(s) { return String(s||'').replace(/"/g,'&quot;'); }
+
+function copyText(idx) {
+  const c = S.comments[idx];
+  if (!c) return;
+  navigator.clipboard.writeText(c.text).then(() => toast('已复制到剪贴板', 's'));
+}
+function openTikTok(idx) {
+  const c = S.comments[idx];
+  if (c?.user?.uniqueId) window.open('https://www.tiktok.com/@' + c.user.uniqueId, '_blank');
+}
+
+// ─────────────────────────────────────────
+// USER MODAL
+// ─────────────────────────────────────────
+async function openUserModal(idx) {
+  const c = S.comments[idx];
+  if (!c) return;
+  const overlay = document.getElementById('modal-overlay');
+  const bd = document.getElementById('modal-bd');
+  bd.innerHTML = `<div style="text-align:center;padding:28px;color:var(--t3)">
+    <div class="spin" style="width:22px;height:22px;margin:0 auto 10px"></div>加载中...
+  </div>`;
+  overlay.classList.add('show');
+  document.getElementById('modal-link-btn').style.display = 'none';
+
+  let profile = null;
+  if (c.user.uniqueId && S.config.token) {
+    try { profile = await apiFetchUser(c.user.uniqueId); } catch(e) { console.warn(e); }
+  }
+
+  const userComments = S.comments.filter(x =>
+    x.user.uniqueId === c.user.uniqueId || (x.user.uid && x.user.uid === c.user.uid)
+  );
+  const nick = profile?.nickname || c.user.nickname || '未知用户';
+  const handle = profile?.uniqueId || profile?.unique_id || c.user.uniqueId || '';
+  const bio = profile?.signature || '—';
+  // avatarMedium is a direct URL string in the new API response
+  const avatarSrc = profile?.avatarMedium || profile?.avatarLarger
+    || profile?.avatar_medium?.url_list?.[0] || c.user.avatarUrl;
+  const initial = nick.charAt(0).toUpperCase();
+  const fmt = n => (n == null || n === '') ? '0' : n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'K' : String(n);
+
+  bd.innerHTML = `
+    <div class="profile-hd">
+      <div class="profile-av">
+        ${avatarSrc ? `<img src="${ha(avatarSrc)}" onerror="this.parentElement.innerHTML='${initial}'">` : initial}
+      </div>
+      <div>
+        <div class="profile-name">${h(nick)}</div>
+        <div class="profile-handle">${handle ? '@' + h(handle) : '未知账号'}</div>
+      </div>
+    </div>
+    ${profile ? `
+    <div class="profile-stats">
+      <div class="pstat"><div class="pstat-v">${fmt(profile.followerCount ?? profile.follower_count)}</div><div class="pstat-l">粉丝</div></div>
+      <div class="pstat"><div class="pstat-v">${fmt(profile.followingCount ?? profile.following_count)}</div><div class="pstat-l">关注</div></div>
+      <div class="pstat"><div class="pstat-v">${fmt(profile.heartCount ?? profile.heart ?? profile.total_favorited)}</div><div class="pstat-l">获赞</div></div>
+    </div>
+    <div class="profile-bio">${h(bio)}</div>
+    ` : `<div style="font-size:12px;color:var(--warn);background:var(--bg-1);padding:9px 12px;border-radius:8px;margin-bottom:14px">
+      ⚠️ 无法获取完整资料（需有效 Token 且账号公开）</div>`}
+    <div style="font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">该用户评论记录 (${userComments.length})</div>
+    <div class="pclist">
+      ${userComments.map(x => `
+        <div class="pc-item">
+          <span class="grade-badge g-${x.grade}" style="width:22px;height:22px;font-size:10px;flex-shrink:0">${x.grade}</span>
+          <span>${h(x.text)}</span>
+        </div>
+      `).join('') || '<div style="color:var(--t3);font-size:12px">无评论记录</div>'}
+    </div>`;
+
+  if (handle) {
+    const lb = document.getElementById('modal-link-btn');
+    lb.style.display = 'inline-flex';
+    lb.onclick = () => window.open('https://www.tiktok.com/@' + handle, '_blank');
+  }
+}
+
+function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); }
+
+// ─────────────────────────────────────────
+// EXPORT
+// ─────────────────────────────────────────
+function doExport(fmt) {
+  const list = S.filter === 'all' ? S.comments : S.comments.filter(c => c.grade === S.filter);
+  if (!list.length) { toast('没有可导出的数据', 'w'); return; }
+
+  if (fmt === 'csv') {
+    const cols = ['序号','评论内容','用户昵称','账号','等级','分数','评分理由','点赞数','时间','视频ID','主页链接'];
+    const rows = list.map((c, i) => [
+      i+1,
+      `"${(c.text||'').replace(/"/g,'""')}"`,
+      `"${(c.user.nickname||'').replace(/"/g,'""')}"`,
+      c.user.uniqueId||'',
+      c.grade||'',
+      c.score||'',
+      `"${(c.reason||'').replace(/"/g,'""')}"`,
+      c.likes||0, c.time||'', c.awemeId||'',
+      c.user.uniqueId ? `https://www.tiktok.com/@${c.user.uniqueId}` : ''
+    ]);
+    dl('\uFEFF' + [cols.join(','), ...rows.map(r => r.join(','))].join('\n'),
+      `commentlead_${Date.now()}.csv`, 'text/csv;charset=utf-8');
+  } else {
+    const data = list.map(c => ({
+      comment_id: c.id, text: c.text,
+      user: { nickname: c.user.nickname, unique_id: c.user.uniqueId, uid: c.user.uid,
+              avatar: c.user.avatarUrl,
+              profile_url: c.user.uniqueId ? `https://www.tiktok.com/@${c.user.uniqueId}` : null },
+      grade: c.grade, grade_label: GRADE_LABEL[c.grade]||'',
+      score: c.score, reason: c.reason,
+      likes: c.likes, time: c.time, aweme_id: c.awemeId
+    }));
+    dl(JSON.stringify(data, null, 2), `commentlead_${Date.now()}.json`, 'application/json');
+  }
+  toast(`已导出 ${list.length} 条数据`, 's');
+}
+
+function dl(content, name, mime) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+  a.download = name; a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ─────────────────────────────────────────
+// DEMO DATA
+// ─────────────────────────────────────────
+function loadDemo() {
+  const demo = [
+    { grade:'A', score:92, reason:'A词: card declined', text:"My card keeps getting declined on TikTok shop, I've tried everything. Anyone know how to fix this?", user:{ nickname:'Sarah_M', uniqueId:'sarah_m88', uid:'u1', avatarUrl:'' }, likes:47, time:'2025/4/28', awemeId:'demo001' },
+    { grade:'A', score:88, reason:'A词: payment failed', text:"Payment failed again!! I need help, I've been trying to pay for ads for 3 days", user:{ nickname:'AdsBoss', uniqueId:'ads_boss99', uid:'u2', avatarUrl:'' }, likes:23, time:'2025/4/27', awemeId:'demo001' },
+    { grade:'A', score:85, reason:'关键词: 付款失败', text:"跨境收款老是被冻结，有没有靠谱的解决方案？求推荐虚拟卡", user:{ nickname:'跨境王者', uniqueId:'cbking2024', uid:'u3', avatarUrl:'' }, likes:61, time:'2025/4/26', awemeId:'demo002' },
+    { grade:'B', score:65, reason:'B词: where can i buy', text:"Where can I buy a virtual card for TikTok ads? Any recommendations?", user:{ nickname:'MarketingPro', uniqueId:'mktpro77', uid:'u4', avatarUrl:'' }, likes:15, time:'2025/4/25', awemeId:'demo001' },
+    { grade:'B', score:58, reason:'B词: price', text:"What's the price for this type of virtual card? Is it worth it?", user:{ nickname:'Lisa_Digital', uniqueId:'lisa_dig', uid:'u5', avatarUrl:'' }, likes:8, time:'2025/4/25', awemeId:'demo002' },
+    { grade:'B', score:55, reason:'疑问句', text:"Does this work with Facebook Ads as well? Looking to scale my dropshipping", user:{ nickname:'DropshipKing', uniqueId:'dship_k', uid:'u6', avatarUrl:'' }, likes:12, time:'2025/4/24', awemeId:'demo001' },
+    { grade:'B', score:52, reason:'关键词: 怎么买', text:"这个虚拟卡怎么买？有没有中文教程？", user:{ nickname:'新手卖家', uniqueId:'newbie_seller', uid:'u7', avatarUrl:'' }, likes:34, time:'2025/4/23', awemeId:'demo002' },
+    { grade:'C', score:25, reason:'C词: nice', text:"Nice video! Very helpful content 👏", user:{ nickname:'TechFan', uniqueId:'techfan01', uid:'u8', avatarUrl:'' }, likes:5, time:'2025/4/22', awemeId:'demo001' },
+    { grade:'C', score:22, reason:'C词: 不错', text:"讲得不错，收藏了", user:{ nickname:'路人甲', uniqueId:'lurker123', uid:'u9', avatarUrl:'' }, likes:3, time:'2025/4/21', awemeId:'demo002' },
+    { grade:'D', score:5, reason:'纯表情/极短', text:"😂😂😂", user:{ nickname:'EmojiGuy', uniqueId:'emoji_g', uid:'u10', avatarUrl:'' }, likes:2, time:'2025/4/20', awemeId:'demo001' },
+    { grade:'D', score:8, reason:'无需求信号', text:"First!!!", user:{ nickname:'FirstComment', uniqueId:'first_c', uid:'u11', avatarUrl:'' }, likes:1, time:'2025/4/20', awemeId:'demo002' },
+    { grade:'A', score:91, reason:'A词: account banned', text:"My TikTok seller account got banned, I urgently need an alternative payment solution", user:{ nickname:'Seller_Jake', uniqueId:'jake_sells', uid:'u12', avatarUrl:'' }, likes:78, time:'2025/4/19', awemeId:'demo001' },
+  ].map((c, i) => ({ ...c, id: 'demo_' + i }));
+
+  S.comments = [...S.comments, ...demo];
+  syncStats();
+  renderTable();
+  updateBadge();
+  toast('已加载 12 条演示数据', 'i');
+  gotoTab('results');
+}
+
+// ─────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────
+const TOAST_ICON = { s:'✓', e:'✕', i:'ℹ', w:'⚠' };
+const TOAST_COLOR = { s:'var(--success)', e:'var(--danger)', i:'var(--accent)', w:'var(--warn)' };
+function toast(msg, type = 'i') {
+  const box = document.getElementById('toast-box');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = `<span style="font-weight:700;color:${TOAST_COLOR[type]}">${TOAST_ICON[type]}</span> ${h(msg)}`;
+  box.appendChild(el);
+  setTimeout(() => {
+    el.style.cssText += 'opacity:0;transform:translateX(14px);transition:all .25s';
+    setTimeout(() => el.remove(), 260);
+  }, 3500);
+}
+
+// ─────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Load config from localStorage
+try {
+  const saved = JSON.parse(localStorage.getItem('cl_cfg') || '{}');
+  Object.assign(S.config, saved);
+} catch(_) {}
+
+loadConfigUI();
+updateStatusDot();
+gotoTab('search');
+setTimeout(() => toast('欢迎使用 CommentLead！输入关键词开始抓取，或点「演示」快速预览', 'i'), 600);
+</script>
+</body>
+</html>
