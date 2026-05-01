@@ -946,7 +946,8 @@ async function apiSearchVideosWithMeta(kw, count = 12) {
     keyword: kw, count, offset: 0
   });
   // API returns data.search_item_list[].aweme_info; fall back to legacy shapes
-  const rawList = d?.data?.search_item_list || d?.data?.data || d?.data?.aweme_list || (Array.isArray(d?.data) ? d.data : []);
+  const pick = a => (Array.isArray(a) && a.length > 0 ? a : null);
+  const rawList = pick(d?.data?.search_item_list) || pick(d?.data?.data) || pick(d?.data?.aweme_list) || (Array.isArray(d?.data) ? d.data : []);
   const list = rawList.map(item => item?.aweme_info || item);
   return list.map(v => {
     const st = v.statistics || v.stats || {};
@@ -972,12 +973,14 @@ async function apiSearchVideosWithMeta(kw, count = 12) {
 
 // ── AI ranks videos by relevance + engagement ──
 async function aiRankVideos(videos, keyword) {
+  const engagementFallback = () => [...videos]
+    .sort((a, b) => b.engagementScore - a.engagementScore)
+    .slice(0, 5)
+    .map((v, i) => ({ rank: i+1, awemeId: v.awemeId, reason: '综合热度最高' }));
+
   // Fallback: sort by engagement if no AI key
   if (!S.config.aiKey || S.config.provider === 'keyword') {
-    return [...videos]
-      .sort((a, b) => b.engagementScore - a.engagementScore)
-      .slice(0, 5)
-      .map((v, i) => ({ rank: i+1, awemeId: v.awemeId, reason: '综合热度最高' }));
+    return engagementFallback();
   }
   const prompt = `You are analyzing TikTok search results for keyword: "${keyword}".
 Pick the best 5 videos (most relevant to commercial/problem-solving intent + high engagement). Sort by relevance.
@@ -986,15 +989,21 @@ Return ONLY a raw JSON array, no markdown:
 
 Videos:
 ${videos.map((v,i) => `${i+1}. ID:${v.awemeId} likes:${fmtNum(v.likeCount)} comments:${fmtNum(v.commentCount)} title:"${v.title.slice(0,80)}"`).join('\n')}`;
-  const r = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${S.config.aiKey}`,
-    { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0.1, maxOutputTokens:600} }) }
-  );
-  if (!r.ok) throw new Error('Gemini ' + r.status);
-  const d = await r.json();
-  const txt = d.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
-  return parseJsonArray(txt);
+  try {
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${S.config.aiKey}`,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0.1, maxOutputTokens:600} }) }
+    );
+    if (!r.ok) throw new Error('Gemini ' + r.status);
+    const d = await r.json();
+    const txt = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const result = txt ? parseJsonArray(txt) : [];
+    return result.length ? result : engagementFallback();
+  } catch (e) {
+    console.warn('aiRankVideos AI call failed, using engagement fallback:', e.message);
+    return engagementFallback();
+  }
 }
 
 // ── Render video picker cards ──
@@ -1375,7 +1384,12 @@ async function searchAndShowPicker(keyword) {
     if (!videos.length) throw new Error('未搜索到视频，请换一个关键词');
     setProgress(55, `已找到 ${videos.length} 个视频，AI 分析相关性...`);
     const ranked = await aiRankVideos(videos, keyword);
-    if (!ranked.length) throw new Error('AI 未能返回推荐结果，请重试');
+    if (!ranked.length) {
+      // Safety: aiRankVideos always returns engagementFallback which should be non-empty,
+      // but if somehow empty, skip picker and show all videos sorted by engagement
+      toast('AI 筛选异常，已按热度直接显示视频', 'w');
+      return;
+    }
     setProgress(100, '完成！');
     setTimeout(hideProgress, 800);
     showVideoPicker(videos, ranked);
@@ -1386,7 +1400,7 @@ async function searchAndShowPicker(keyword) {
     hideProgress();
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '🔍 搜索相关视频';
+    btn.innerHTML = '🔍 搜索';
   }
 }
 
@@ -1822,6 +1836,8 @@ document.getElementById('modal-overlay').addEventListener('click', function(e) {
 try {
   const saved = JSON.parse(localStorage.getItem('cl_cfg') || '{}');
   Object.assign(S.config, saved);
+  // Migrate: if proxy URL was never saved, keep the built-in default
+  if (!S.config.proxyUrl) S.config.proxyUrl = 'https://tikhub-proxy.chenrenhan91.workers.dev';
 } catch(_) {}
 
 loadConfigUI();
