@@ -659,6 +659,7 @@
           <span id="fc-d" style="display:none">0</span>
         </div>
         <div class="export-btns">
+          <button id="btn-continue" class="btn btn-ghost btn-sm" onclick="continueScrapingMore()" style="display:none;border-color:var(--accent);color:var(--accent)">⚡ 继续抓取 100 条</button>
           <button class="btn btn-ghost btn-sm" onclick="doExport('csv')">⬇ CSV</button>
           <button class="btn btn-ghost btn-sm" onclick="doExport('json')">⬇ JSON</button>
         </div>
@@ -966,6 +967,10 @@ const S = {
   comments: [],
   pickedVideos: [],
   selectedAwemeIds: new Set(),
+  // ── continue-scraping state ──
+  lastAwemeIds: [],      // aweme IDs used in last scrape
+  lastCursors: {},       // { awemeId: cursor } — where to resume
+  seenIds: new Set(),    // comment IDs already fetched (dedup)
   config: {
     token: '',
     provider: 'keyword',
@@ -1715,22 +1720,38 @@ async function scrapeSelectedVideos() {
 }
 
 // Core scrape: given aweme IDs → fetch comments → score → merge
-async function scrapeComments(awemeIds) {
+// opts.resume = true  → continue from S.lastCursors, skip S.seenIds
+async function scrapeComments(awemeIds, opts = {}) {
+  const resume = opts.resume === true;
   const TARGET = 100;   // target valid (non-empty) comments
   const PER_CALL = 20;  // comments per API request
   const raw = [];
-  setProgress(15, `开始抓取评论，目标 ${TARGET} 条有效评论...`);
+
+  // Initialise cursors: resume from last position or start fresh
+  const cursors = {};
+  for (const id of awemeIds) {
+    cursors[id] = resume ? (S.lastCursors[id] ?? 0) : 0;
+  }
+  if (!resume) {
+    S.seenIds = new Set();
+    S.lastCursors = {};
+  }
+
+  setProgress(15, `${resume ? '继续' : '开始'}抓取评论，目标 ${TARGET} 条有效评论...`);
   try {
     outer:
     for (let vi = 0; vi < awemeIds.length; vi++) {
-      let cursor = 0, hasMore = true;
+      let cursor = cursors[awemeIds[vi]] ?? 0;
+      let hasMore = true;
       while (hasMore) {
         const res = await apiFetchComments(awemeIds[vi], cursor, PER_CALL);
         for (const c of res.list) {
           const text = (c.text || c.content || '').trim();
           if (!text) continue;   // skip empty comments
+          const cid = c.cid || c.comment_id || `${awemeIds[vi]}_${raw.length}`;
+          if (S.seenIds.has(cid)) continue;  // skip already-fetched comments
           raw.push({
-            id: c.cid || c.comment_id || `${awemeIds[vi]}_${raw.length}`,
+            id: cid,
             text,
             user: {
               uid:       c.user?.uid || c.user?.id || '',
@@ -1748,9 +1769,14 @@ async function scrapeComments(awemeIds) {
             awemeId: awemeIds[vi],
             grade: null, score: null, reason: null
           });
-          if (raw.length >= TARGET) break outer;  // reached target, stop all loops
+          if (raw.length >= TARGET) {
+            // Save resume cursor for this video
+            S.lastCursors[awemeIds[vi]] = res.nextCursor;
+            break outer;
+          }
         }
         cursor = res.nextCursor;
+        S.lastCursors[awemeIds[vi]] = cursor;
         hasMore = res.hasMore && res.list.length > 0;
         const pct = 15 + Math.round((raw.length / TARGET) * 45);
         setProgress(Math.min(pct, 60), `视频 ${vi+1}/${awemeIds.length}：已获取 ${raw.length}/${TARGET} 条...`);
@@ -1770,14 +1796,19 @@ async function scrapeComments(awemeIds) {
     // 只保留 A/B/C 级，丢弃无需求的 D 级
     const kept = raw.filter(c => c.grade !== 'D');
 
+    // Record seen IDs and last used aweme IDs for continue-scraping
+    raw.forEach(c => S.seenIds.add(c.id));
+    S.lastAwemeIds = awemeIds;
+
     S.comments = [...S.comments, ...kept];
     setProgress(100, '完成！');
     syncStats();
     renderTable();
     updateBadge();
+    updateContinueBtn();
     const ab = kept.filter(c => c.grade === 'A' || c.grade === 'B').length;
     const total = raw.length;
-    toast(`抓取完成！共扫描 ${total} 条，有需求 A+B+C 共 ${kept.length} 条（A+B 级线索 ${ab} 条）`, 's');
+    toast(`${resume ? '继续抓取完成！' : '抓取完成！'}共扫描 ${total} 条，有需求 A+B+C 共 ${kept.length} 条（A+B 级线索 ${ab} 条）`, 's');
     setTimeout(hideProgress, 2200);
     gotoTab('results');
   } catch (err) {
@@ -1791,10 +1822,34 @@ function clearAll() {
   if (!S.comments.length) return;
   if (!confirm('确定清空所有已抓取的评论数据？')) return;
   S.comments = [];
+  S.lastAwemeIds = [];
+  S.lastCursors = {};
+  S.seenIds = new Set();
   syncStats();
   renderTable();
   updateBadge();
+  updateContinueBtn();
   toast('已清空', 'i');
+}
+
+// ── Continue scraping: resume from last cursor with same videos ──
+async function continueScrapingMore() {
+  if (!S.lastAwemeIds.length) { toast('没有可继续的抓取任务，请先搜索', 'w'); return; }
+  const btn = document.getElementById('btn-continue');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> 抓取中...';
+  try {
+    await scrapeComments(S.lastAwemeIds, { resume: true });
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '⚡ 继续抓取 100 条';
+  }
+}
+
+function updateContinueBtn() {
+  const btn = document.getElementById('btn-continue');
+  if (!btn) return;
+  btn.style.display = S.lastAwemeIds.length ? 'inline-flex' : 'none';
 }
 
 // ─────────────────────────────────────────
