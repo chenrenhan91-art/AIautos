@@ -430,6 +430,133 @@
     code { background: var(--bg-1); padding: 1px 5px; border-radius: 4px; font-size: 12px; font-family: 'SF Mono', monospace; color: var(--t2); }
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
+
+    /* ─── Subscribe Button (Uiverse by Yaya12085) ─── */
+    .button {
+      width: fit-content;
+      display: flex;
+      padding: 1.2em 1rem;
+      cursor: pointer;
+      gap: 0.4rem;
+      font-weight: bold;
+      border-radius: 30px;
+      text-shadow: 2px 2px 3px rgb(136 0 136 / 50%);
+      background: linear-gradient(15deg, #880088, #aa2068, #cc3f47, #de6f3d, #f09f33, #de6f3d, #cc3f47, #aa2068, #880088) no-repeat;
+      background-size: 300%;
+      color: #fff;
+      border: none;
+      background-position: left center;
+      box-shadow: 0 30px 10px -20px rgba(0,0,0,.2);
+      transition: background .3s ease;
+      font-size: 12px;
+      line-height: 1;
+    }
+    .button:hover {
+      background-size: 320%;
+      background-position: right center;
+    }
+    .button:hover svg { fill: #fff; }
+    .button svg { width: 23px; fill: #f09f33; transition: .3s ease; }
+
+    /* ─── Pricing Page ─── */
+    .pricing-hero {
+      text-align: center; padding: 36px 0 28px;
+    }
+    .pricing-hero h1 { font-size: 26px; font-weight: 800; letter-spacing: -.4px; margin-bottom: 8px; }
+    .pricing-hero p { font-size: 14px; color: var(--t2); }
+
+    .plan-toggle {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; margin-bottom: 32px;
+    }
+    .plan-toggle-btn {
+      padding: 6px 18px; border-radius: 20px; font-size: 12.5px; font-weight: 500;
+      cursor: pointer; border: 1px solid var(--border); color: var(--t2); transition: all .15s;
+      background: transparent; position: relative;
+    }
+    .plan-toggle-btn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .plan-toggle-badge {
+      position: absolute; top: -8px; right: -4px;
+      background: #22c55e; color: #fff; font-size: 9.5px; font-weight: 700;
+      padding: 2px 5px; border-radius: 8px; white-space: nowrap;
+    }
+
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+      max-width: 880px; margin: 0 auto 40px;
+    }
+    .plan-card {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      transition: transform .18s, box-shadow .18s;
+      position: relative;
+    }
+    .plan-card:hover { transform: translateY(-4px); box-shadow: 0 20px 48px rgba(0,0,0,.35); }
+    .plan-card.featured {
+      border-color: #aa2068;
+      box-shadow: 0 0 0 1px #aa2068, 0 12px 40px rgba(170,32,104,.18);
+    }
+    .plan-popular-badge {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(90deg,#880088,#cc3f47);
+      color: #fff; font-size: 10.5px; font-weight: 700;
+      padding: 4px 14px; border-radius: 0 0 10px 10px;
+      letter-spacing: .5px;
+    }
+    .plan-hd {
+      padding: 28px 24px 18px; border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+    .plan-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; letter-spacing: .2px; }
+    .plan-desc { font-size: 12px; color: var(--t2); margin-bottom: 16px; min-height: 36px; }
+    .plan-price-wrap { margin-bottom: 4px; min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .plan-price {
+      font-size: 36px; font-weight: 800; line-height: 1;
+      background: linear-gradient(135deg,#cc3f47,#f09f33);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .plan-price-unit { font-size: 14px; font-weight: 500; color: var(--t2); margin-left: 3px; -webkit-text-fill-color: unset; }
+    .plan-price-note { font-size: 11px; color: var(--t3); margin-top: 4px; }
+    .plan-price-placeholder {
+      font-size: 13px; color: var(--t3); font-style: italic; text-align: center;
+      padding: 6px 12px; border: 1px dashed var(--border); border-radius: 8px;
+      background: var(--bg-1);
+    }
+    .plan-body { padding: 18px 24px; }
+    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 9px; margin-bottom: 20px; }
+    .plan-features li { font-size: 12.5px; color: var(--t2); display: flex; align-items: flex-start; gap: 8px; }
+    .plan-features li .fi { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+    .plan-features li.disabled { opacity: .38; }
+    .plan-cta {
+      width: 100%; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 600;
+      cursor: pointer; border: none; transition: all .15s; text-align: center;
+    }
+    .plan-cta-primary {
+      background: linear-gradient(135deg,#880088,#cc3f47,#f09f33);
+      color: #fff; box-shadow: 0 4px 14px rgba(204,63,71,.3);
+    }
+    .plan-cta-primary:hover { opacity: .9; box-shadow: 0 6px 20px rgba(204,63,71,.42); }
+    .plan-cta-ghost {
+      background: transparent; color: var(--t2); border: 1px solid var(--border);
+    }
+    .plan-cta-ghost:hover { color: var(--t1); border-color: var(--border-2); background: var(--bg-3); }
+
+    .pricing-compare {
+      max-width: 880px; margin: 0 auto 32px;
+    }
+    .compare-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--t1); }
+    .compare-table { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .compare-row {
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+      border-bottom: 1px solid var(--border); font-size: 12.5px;
+    }
+    .compare-row:last-child { border-bottom: none; }
+    .compare-row.thead { background: var(--bg-3); font-weight: 700; font-size: 11.5px; color: var(--t2); }
+    .compare-row > div { padding: 10px 16px; }
+    .compare-row > div:not(:first-child) { text-align: center; border-left: 1px solid var(--border); }
+    .compare-chk { color: var(--ga); font-size: 14px; }
+    .compare-x { color: var(--t3); font-size: 14px; }
+    .compare-val { color: var(--t1); font-weight: 600; }
   </style>
 </head>
 <body>
@@ -450,11 +577,14 @@
     <div class="nav-item" data-tab="config" onclick="gotoTab('config')">
       <span class="ni">⚙️</span> 设置
     </div>
+    <div class="nav-item" data-tab="pricing" onclick="gotoTab('pricing')">
+      <span class="ni">💎</span> 订阅计划
+    </div>
   </nav>
   <div class="sb-foot">
     <div class="status-chip">
       <div class="dot-live" id="status-dot"></div>
-      <span id="status-txt">TikHub API</span>
+      <span id="status-txt">Catcher API</span>
     </div>
   </div>
 </aside>
@@ -464,8 +594,10 @@
   <div class="topbar">
     <div class="topbar-left">
       <span class="topbar-title" id="page-title">工作台</span>
-      <span class="topbar-lead" id="topbar-lead" style="display:none">线索 A+B：<b id="topbar-lead-count">0</b> 条</span>
     </div>
+    <button class="button" onclick="gotoTab('pricing')" style="padding:.6em 1.4rem;font-size:12px;justify-content:center;text-align:center">
+      订阅会员
+    </button>
   </div>
 
   <div class="content">
@@ -493,7 +625,6 @@
             placeholder="例：card declined tiktok shop / payment failed / 虚拟卡怎么买"
             onkeydown="if(event.key==='Enter')startScraping()">
           <button class="btn btn-primary" id="btn-go" onclick="startScraping()">🔍 搜索</button>
-          <button class="btn btn-ghost" onclick="loadDemo()">演示</button>
           <button class="btn btn-ghost" onclick="clearAll()">清空</button>
         </div>
       </div>
@@ -552,15 +683,27 @@
     <div id="tab-config" class="tab" style="display:none">
 
       <div class="card" style="margin-bottom:14px">
-        <div class="card-header"><span class="card-title">🔑 API 接入</span></div>
+        <div class="card-header">
+          <span class="card-title">🔑 API 接入</span>
+          <button onclick="saveConfig()" style="
+            display:inline-flex;align-items:center;gap:7px;
+            padding:8px 20px;border-radius:10px;border:none;cursor:pointer;
+            background:linear-gradient(135deg,#4f8ef7,#9333ea);
+            color:#fff;font-size:13px;font-weight:700;
+            box-shadow:0 4px 14px rgba(79,142,247,.35);
+            transition:opacity .15s,box-shadow .15s;
+            letter-spacing:.2px;
+          " onmouseover="this.style.opacity='.88';this.style.boxShadow='0 6px 20px rgba(79,142,247,.5)'" onmouseout="this.style.opacity='1';this.style.boxShadow='0 4px 14px rgba(79,142,247,.35)'">
+            💾 保存配置
+            <span id="cfg-save-hint" style="font-size:11px;font-weight:500;opacity:.85"></span>
+          </button>
+        </div>
         <div class="card-body">
           <div class="form-group" style="margin-bottom:14px">
-            <div class="form-label">TikHub Token <span style="color:var(--danger)">*</span></div>
+            <div class="form-label">Catcher Token <span style="color:var(--danger)">*</span></div>
             <div style="display:flex;gap:8px">
               <input id="cfg-token" class="form-input" type="password" style="flex:1"
-                placeholder="Bearer Token — 在 user.tikhub.io/dashboard 获取" autocomplete="off">
-              <a class="btn btn-ghost btn-sm" href="https://user.tikhub.io/dashboard"
-                target="_blank" style="text-decoration:none">获取 →</a>
+                placeholder="Bearer Token" autocomplete="off">
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">
@@ -568,16 +711,11 @@
               <div class="form-label">AI 引擎</div>
               <select id="cfg-provider" class="form-select" onchange="onProviderChange()">
                 <option value="keyword">关键词规则（免费）</option>
-                <option value="gemini">Google Gemini 2.5 Flash</option>
-                <option value="openai">OpenAI GPT-4o mini</option>
+                <option value="gemini">AI精准筛选评论（消耗Token）</option>
               </select>
             </div>
             <div class="form-group" id="ai-key-wrap">
-              <div class="form-label" style="display:flex;justify-content:space-between">
-                AI API Key
-                <a id="ai-key-link" href="#" target="_blank"
-                  style="font-size:11px;color:var(--accent)">获取 Key →</a>
-              </div>
+              <div class="form-label">AI API Key</div>
               <input id="cfg-aikey" class="form-input" type="password"
                 placeholder="Gemini: AIza...  /  OpenAI: sk-..." autocomplete="off">
             </div>
@@ -630,38 +768,163 @@ function corsHeaders() {
         </div>
       </div>
 
-      <div class="card" style="margin-bottom:14px">
-        <div class="card-header">
-          <span class="card-title">🎯 业务关键词</span>
-          <span style="font-size:12px;color:var(--t2)">命中则自动标 A 级</span>
-        </div>
-        <div class="card-body">
-          <div class="form-group" style="margin-bottom:12px">
-            <div class="form-label">业务描述 <span style="font-weight:400;color:var(--t3)">（用于 AI 生成关键词）</span></div>
-            <div style="display:flex;gap:8px">
-              <input id="cfg-biz" class="form-input" style="flex:1"
-                placeholder="例：我销售虚拟信用卡，面向跨境电商卖家 / SaaS工具，目标是中小企业">
-              <button class="btn btn-ghost btn-sm" id="btn-genkw" onclick="generateKeywords()">🤖 AI 生成</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <div class="form-label" style="display:flex;justify-content:space-between">
-              关键词库 <span id="kw-count" style="font-weight:400;color:var(--t3)"></span>
-            </div>
-            <textarea id="cfg-kw" class="form-input" rows="4"
-              style="resize:vertical;font-family:inherit;line-height:1.8"
-              placeholder="逗号分隔；或填写业务描述后点「AI 生成」自动填充"
-              oninput="updateKwCount()"></textarea>
-          </div>
-        </div>
-      </div>
-
-      <div style="display:flex;align-items:center;gap:12px">
-        <button class="btn btn-primary" onclick="saveConfig()">💾 保存配置</button>
-        <span id="cfg-save-hint" style="font-size:12px;color:var(--success)"></span>
-      </div>
-
     </div><!-- /tab-config -->
+
+    <!-- ═══ TAB: pricing (订阅计划) ═══ -->
+    <div id="tab-pricing" class="tab" style="display:none">
+
+      <div class="pricing-hero">
+        <h1>🚀 选择适合你的计划</h1>
+        <p>解锁更多 AI 评论线索，精准捕获高意向潜在客户</p>
+      </div>
+
+      <!-- 周期切换 -->
+      <div class="plan-toggle">
+        <button class="plan-toggle-btn on" id="pt-month" onclick="setPricingPeriod('month')">月付</button>
+        <button class="plan-toggle-btn" id="pt-quarter" onclick="setPricingPeriod('quarter')">
+          季付
+          <span class="plan-toggle-badge">省 15%</span>
+        </button>
+        <button class="plan-toggle-btn" id="pt-year" onclick="setPricingPeriod('year')">
+          年付
+          <span class="plan-toggle-badge">省 30%</span>
+        </button>
+      </div>
+
+      <!-- 价格卡片 -->
+      <div class="pricing-grid">
+
+        <!-- 普通版 -->
+        <div class="plan-card">
+          <div class="plan-hd">
+            <div class="plan-name">普通版</div>
+            <div class="plan-desc">适合个人创业者，快速验证市场</div>
+            <div class="plan-price-wrap">
+              <div class="plan-price-placeholder" id="price-basic">
+                💰 价格待定 — 敬请期待
+              </div>
+            </div>
+          </div>
+          <div class="plan-body">
+            <ul class="plan-features">
+              <li><span class="fi">✅</span>每月最多抓取 <strong>3,000</strong> 条评论</li>
+              <li><span class="fi">✅</span>关键词规则筛选（免费引擎）</li>
+              <li><span class="fi">✅</span>CSV / JSON 导出</li>
+              <li><span class="fi">✅</span>基础用户画像</li>
+              <li class="disabled"><span class="fi">❌</span>AI 智能评分（需 Pro）</li>
+              <li class="disabled"><span class="fi">❌</span>批量多视频抓取（需 Pro）</li>
+              <li class="disabled"><span class="fi">❌</span>API 接口访问（需 Plus）</li>
+            </ul>
+            <button class="plan-cta plan-cta-ghost">免费试用 7 天</button>
+          </div>
+        </div>
+
+        <!-- Pro 版（推荐）-->
+        <div class="plan-card featured">
+          <div class="plan-popular-badge">⚡ 最受欢迎</div>
+          <div class="plan-hd" style="padding-top:36px">
+            <div class="plan-name" style="color:#f09f33">Pro 版</div>
+            <div class="plan-desc">适合稳定运营的独立卖家 / 团队</div>
+            <div class="plan-price-wrap">
+              <div class="plan-price-placeholder" id="price-pro">
+                💰 价格待定 — 敬请期待
+              </div>
+            </div>
+          </div>
+          <div class="plan-body">
+            <ul class="plan-features">
+              <li><span class="fi">✅</span>每月最多抓取 <strong>30,000</strong> 条评论</li>
+              <li><span class="fi">✅</span><strong>AI 智能评分评论</strong></li>
+              <li><span class="fi">✅</span>批量多视频并发抓取</li>
+              <li><span class="fi">✅</span>高意图线索自动 A 级标注</li>
+              <li><span class="fi">✅</span>深度用户画像 + 社媒主页</li>
+              <li><span class="fi">✅</span>CSV / JSON 导出</li>
+              <li class="disabled"><span class="fi">❌</span>API 接口访问（需 Plus）</li>
+            </ul>
+            <button class="plan-cta plan-cta-primary">立即升级 Pro</button>
+          </div>
+        </div>
+
+        <!-- Plus 版 -->
+        <div class="plan-card">
+          <div class="plan-hd">
+            <div class="plan-name">Plus 版</div>
+            <div class="plan-desc">适合机构 / 代理商，无限量高并发</div>
+            <div class="plan-price-wrap">
+              <div class="plan-price-placeholder" id="price-plus">
+                💰 价格待定 — 敬请期待
+              </div>
+            </div>
+          </div>
+          <div class="plan-body">
+            <ul class="plan-features">
+              <li><span class="fi">✅</span>每月最多抓取 <strong>100,000</strong> 条评论</li>
+              <li><span class="fi">✅</span>包含所有 Pro 功能</li>
+              <li><span class="fi">✅</span><strong>REST API 接口</strong>直接调用</li>
+              <li><span class="fi">✅</span>Webhook 实时推送线索</li>
+              <li><span class="fi">✅</span>专属客户成功经理</li>
+              <li><span class="fi">✅</span>白标定制（可选）</li>
+              <li><span class="fi">✅</span>优先技术支持 SLA</li>
+            </ul>
+            <button class="plan-cta plan-cta-ghost">联系我们</button>
+          </div>
+        </div>
+
+      </div><!-- /pricing-grid -->
+
+      <!-- 功能对比表 -->
+      <div class="pricing-compare">
+        <div class="compare-title">功能对比</div>
+        <div class="compare-table">
+          <div class="compare-row thead">
+            <div>功能</div><div>普通版</div><div>Pro 版</div><div>Plus 版</div>
+          </div>
+          <div class="compare-row">
+            <div>月评论抓取量</div>
+            <div class="compare-val">3,000 条</div>
+            <div class="compare-val">30,000 条</div>
+            <div class="compare-val">100,000 条</div>
+          </div>
+          <div class="compare-row">
+            <div>AI 智能评分引擎</div>
+            <div><span class="compare-x">—</span></div>
+            <div><span class="compare-chk">✓</span></div>
+            <div><span class="compare-chk">✓</span></div>
+          </div>
+          <div class="compare-row">
+            <div>批量多视频抓取</div>
+            <div><span class="compare-x">—</span></div>
+            <div><span class="compare-chk">✓</span></div>
+            <div><span class="compare-chk">✓</span></div>
+          </div>
+          <div class="compare-row">
+            <div>深度用户画像</div>
+            <div>基础</div>
+            <div><span class="compare-chk">✓ 完整</span></div>
+            <div><span class="compare-chk">✓ 完整</span></div>
+          </div>
+          <div class="compare-row">
+            <div>CSV / JSON 导出</div>
+            <div><span class="compare-chk">✓</span></div>
+            <div><span class="compare-chk">✓</span></div>
+            <div><span class="compare-chk">✓</span></div>
+          </div>
+          <div class="compare-row">
+            <div>REST API 接口</div>
+            <div><span class="compare-x">—</span></div>
+            <div><span class="compare-x">—</span></div>
+            <div><span class="compare-chk">✓</span></div>
+          </div>
+          <div class="compare-row">
+            <div>Webhook 实时推送</div>
+            <div><span class="compare-x">—</span></div>
+            <div><span class="compare-x">—</span></div>
+            <div><span class="compare-chk">✓</span></div>
+          </div>
+        </div>
+      </div><!-- /pricing-compare -->
+
+    </div><!-- /tab-pricing -->
 
   </div><!-- /content -->
 </main>
@@ -715,7 +978,7 @@ const S = {
   }
 };
 
-const TITLES = { search:'工作台', config:'设置' };
+const TITLES = { search:'工作台', config:'设置', pricing:'订阅计划' };
 const GRADE_LABEL = { A:'强需求', B:'潜在需求', C:'弱兴趣', D:'无效' };
 
 // ─────────────────────────────────────────
@@ -731,21 +994,31 @@ function gotoTab(t) {
 }
 
 // ─────────────────────────────────────────
+// PRICING PERIOD
+// ─────────────────────────────────────────
+function setPricingPeriod(p) {
+  ['month','quarter','year'].forEach(k => {
+    document.getElementById('pt-' + k).classList.toggle('on', k === p);
+  });
+  // Pricing labels keyed by period — replace with real prices when ready
+  const labels = {
+    month:   { basic:'💰 价格待定 — 月付', pro:'💰 价格待定 — 月付', plus:'💰 价格待定 — 月付' },
+    quarter: { basic:'💰 价格待定 — 季付（省 15%）', pro:'💰 价格待定 — 季付（省 15%）', plus:'💰 价格待定 — 季付（省 15%）' },
+    year:    { basic:'💰 价格待定 — 年付（省 30%）', pro:'💰 价格待定 — 年付（省 30%）', plus:'💰 价格待定 — 年付（省 30%）' },
+  };
+  const l = labels[p];
+  document.getElementById('price-basic').textContent   = l.basic;
+  document.getElementById('price-pro').textContent     = l.pro;
+  document.getElementById('price-plus').textContent    = l.plus;
+}
+
+// ─────────────────────────────────────────
 // CONFIG
 // ─────────────────────────────────────────
 function onProviderChange() {
   const p = document.getElementById('cfg-provider').value;
   const show = p !== 'keyword';
   document.getElementById('ai-key-wrap').style.display = show ? 'block' : 'none';
-
-  const linkEl = document.getElementById('ai-key-link');
-  if (p === 'gemini') {
-    linkEl.href = 'https://aistudio.google.com/app/apikey';
-    linkEl.textContent = '获取 Gemini Key →';
-  } else if (p === 'openai') {
-    linkEl.href = 'https://platform.openai.com/api-keys';
-    linkEl.textContent = '获取 OpenAI Key →';
-  }
 }
 
 function saveConfig() {
@@ -887,7 +1160,7 @@ async function generateKeywords() {
 function updateStatusDot() {
   const ok = !!S.config.token;
   document.getElementById('status-dot').style.background = ok ? 'var(--ga)' : 'var(--gd)';
-  document.getElementById('status-txt').textContent = ok ? 'Token 已配置' : 'TikHub API';
+  document.getElementById('status-txt').textContent = ok ? 'Token 已配置' : 'Catcher API';
 }
 
 // ─────────────────────────────────────────
@@ -906,12 +1179,12 @@ function setMode(m) {
 }
 
 // ─────────────────────────────────────────
-// TIKHUB API
+// CATCHER API
 // ─────────────────────────────────────────
 const BASE = 'https://api.tikhub.io';
 
 async function tkGet(path, params = {}) {
-  if (!S.config.token) throw new Error('请先在「API 配置」中填写 TikHub Token');
+  if (!S.config.token) throw new Error('请先在「API 配置」中填写 Catcher Token');
   const proxy = (S.config.proxyUrl || '').replace(/\/$/, '');
   const base  = proxy || BASE;
   const url = new URL(base + path);
@@ -931,7 +1204,7 @@ async function tkGet(path, params = {}) {
   }
   if (!resp.ok) {
     const txt = await resp.text().catch(() => resp.statusText);
-    throw new Error(`TikHub API ${resp.status}: ${txt.slice(0, 180)}`);
+    throw new Error(`Catcher API ${resp.status}: ${txt.slice(0, 180)}`);
   }
   return resp.json();
 }
@@ -1363,7 +1636,7 @@ async function scoreAll(comments) {
 async function startScraping() {
   const q = document.getElementById('q-input').value.trim();
   if (!q) { toast('请输入关键词或视频链接', 'w'); return; }
-  if (!S.config.token) { toast('请先配置 TikHub Token', 'e'); gotoTab('config'); return; }
+  if (!S.config.token) { toast('请先配置 Catcher Token', 'e'); gotoTab('config'); return; }
 
   if (S.mode === 'url') {
     await scrapeByUrl(q);
@@ -1379,7 +1652,7 @@ async function searchAndShowPicker(keyword) {
   setProgress(0, '搜索相关视频...');
   document.getElementById('video-picker').style.display = 'none';
   try {
-    setProgress(20, '调用 TikHub 搜索...');
+    setProgress(20, '调用 Catcher 搜索...');
     const videos = await apiSearchVideosWithMeta(keyword, 12);
     if (!videos.length) throw new Error('未搜索到视频，请换一个关键词');
     setProgress(55, `已找到 ${videos.length} 个视频，AI 分析相关性...`);
@@ -1843,7 +2116,7 @@ try {
 loadConfigUI();
 updateStatusDot();
 gotoTab('search');
-setTimeout(() => toast('欢迎使用 Comment Catcher！输入关键词开始抓取，或点「演示」快速预览', 'i'), 600);
+setTimeout(() => toast('欢迎使用 Comment Catcher！输入关键词搜索相关热点视频，抓取评论区意向客户！', 'i'), 600);
 </script>
 </body>
 </html>
