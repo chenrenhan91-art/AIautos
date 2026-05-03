@@ -100,6 +100,21 @@
     }
     .ptab.on { background: var(--accent); border-color: var(--accent); color: #fff; }
     .ptab.dim { opacity: .35; cursor: default; }
+    /* ─── Platform Tabs ─── */
+    .platform-tabs { display:flex; gap:6px; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+    .ptform-tab {
+      display:flex; align-items:center; gap:7px;
+      padding:7px 18px; border-radius:22px; cursor:pointer;
+      font-size:13px; font-weight:600;
+      border:1.5px solid var(--border); color:var(--t2);
+      transition:all .15s; background:transparent; line-height:1;
+    }
+    .ptform-tab:hover { border-color:var(--border-2); color:var(--t1); }
+    .ptform-tab.on.tt  { background:linear-gradient(135deg,#010101,#fe2c55); border-color:transparent; color:#fff; }
+    .ptform-tab.on.ig  { background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045); border-color:transparent; color:#fff; }
+    .ptform-tab.on.rd  { background:linear-gradient(135deg,#ff4500,#ff6634); border-color:transparent; color:#fff; }
+    .ptform-tab.on.li  { background:#0a66c2; border-color:transparent; color:#fff; }
+    .ptform-tab.on.xt  { background:#000; border-color:transparent; color:#fff; }
     .content { flex: 1; overflow-y: auto; padding: 20px 24px 28px; }
 
     /* ─── Cards ─── */
@@ -613,9 +628,31 @@
     <div id="tab-search" class="tab">
 
       <div class="search-bar-wrap">
+        <div class="platform-tabs" style="flex-wrap:wrap">
+          <div class="ptform-tab on tt" id="pt-tt" onclick="setPlatform('tiktok')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9a8.28 8.28 0 004.84 1.56V7.12a4.85 4.85 0 01-1.07-.43z"/></svg>
+            TikTok
+          </div>
+          <div class="ptform-tab ig" id="pt-ig" onclick="setPlatform('instagram')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            Instagram
+          </div>
+          <div class="ptform-tab rd" id="pt-rd" onclick="setPlatform('reddit')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>
+            Reddit
+          </div>
+          <div class="ptform-tab li" id="pt-li" onclick="setPlatform('linkedin')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            LinkedIn
+          </div>
+          <div class="ptform-tab xt" id="pt-xt" onclick="setPlatform('x')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            X
+          </div>
+        </div>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <div class="mode-toggle">
-            <div class="mode-btn on" id="m-kw" onclick="setMode('keyword')">关键词</div>
+          <div class="mode-toggle" id="mode-toggle-wrap">
+            <div class="mode-btn on" id="m-keyword" onclick="setMode('keyword')">关键词</div>
             <div class="mode-btn" id="m-url" onclick="setMode('url')">视频链接</div>
           </div>
           <span id="q-label" style="font-size:12px;color:var(--t3)">搜索相关视频，AI 自动筛选评论线索</span>
@@ -963,12 +1000,14 @@ function corsHeaders() {
 const S = {
   tab: 'dashboard',
   mode: 'keyword',
+  platform: 'tiktok',
   filter: 'all',
   comments: [],
   pickedVideos: [],
   selectedAwemeIds: new Set(),
   // ── continue-scraping state ──
   lastAwemeIds: [],      // aweme IDs used in last scrape
+  lastPlatform: 'tiktok', // platform used in last scrape
   lastCursors: {},       // { awemeId: cursor } — where to resume
   seenIds: new Set(),    // comment IDs already fetched (dedup)
   config: {
@@ -1071,7 +1110,7 @@ Keywords: ${kws.map(k => `"${k}"`).join(', ')}`;
     let translations = [];
     if (S.config.provider === 'gemini') {
       const r = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${S.config.aiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key=${S.config.aiKey}`,
         { method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ contents:[{ parts:[{ text: prompt }] }],
             generationConfig:{ maxOutputTokens:2000, temperature:0.1 } }) }
@@ -1129,7 +1168,7 @@ async function generateKeywords() {
     let keywords = '';
     if (S.config.provider === 'gemini') {
       const r = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${S.config.aiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key=${S.config.aiKey}`,
         { method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }],
             generationConfig: { temperature: 0.3, maxOutputTokens: 300 } }) }
@@ -1171,15 +1210,77 @@ function updateStatusDot() {
 // ─────────────────────────────────────────
 // SEARCH MODE
 // ─────────────────────────────────────────
+const PLATFORM_MODES = {
+  tiktok:    [['keyword','关键词'], ['url','视频链接']],
+  instagram: [['keyword','关键词'], ['hashtag','Hashtag'], ['url','帖子链接']],
+  reddit:    [['keyword','关键词'], ['subreddit','Subreddit'], ['url','帖子链接']],
+  linkedin:  [['keyword','关键词'], ['url','帖子链接']],
+  x:         [['keyword','关键词'], ['url','推文链接']]
+};
+const PLATFORM_PLACEHOLDERS = {
+  tiktok:    { keyword:'例：card declined tiktok shop  /  payment failed  /  虚拟卡怎么买', url:'例：https://www.tiktok.com/@user/video/7304809083817774382' },
+  instagram: { keyword:'例：payment failed / virtual card instagram', hashtag:'例：virtualgiftcard（不含 # 号）', url:'例：https://www.instagram.com/p/CxxXXX/' },
+  reddit:    { keyword:'例：virtual card payment failed / TikTok shop declined', subreddit:'例：personalfinance（不含 r/ 前缀）', url:'例：https://www.reddit.com/r/xxxx/comments/xxxx/' },
+  linkedin:  { keyword:'例：payment failed / virtual card / e-commerce', url:'例：https://www.linkedin.com/posts/xxx-activityid/' },
+  x:         { keyword:'例：card declined / payment failed / virtual card', url:'例：https://x.com/user/status/1234567890' }
+};
+const PLATFORM_LABELS = {
+  tiktok:    { keyword:'搜索相关视频，AI 自动筛选评论线索', url:'粘贴 TikTok 视频链接直接抓取评论' },
+  instagram: { keyword:'搜索相关帖子 / Reels，抓取评论区意向用户', hashtag:'搜索 Hashtag 标签下热门帖子', url:'粘贴 Instagram 帖子或 Reel 链接直接抓取' },
+  reddit:    { keyword:'搜索相关 Reddit 帖子，抓取意向用户评论', subreddit:'指定 Subreddit 社区，抓取热帖评论', url:'粘贴 Reddit 帖子链接直接抓取评论' },
+  linkedin:  { keyword:'搜索 LinkedIn 相关帖子，抓取评论区意向用户', url:'粘贴 LinkedIn 帖子链接直接抓取评论' },
+  x:         { keyword:'搜索 X (Twitter) 相关推文，抓取评论意向用户', url:'粘贴 X 推文链接直接抓取回复评论' }
+};
+
+function setPlatform(p) {
+  S.platform = p;
+  S.mode = 'keyword';
+  const keyMap = { tiktok:'tt', instagram:'ig', reddit:'rd', linkedin:'li', x:'xt' };
+  ['tt','ig','rd','li','xt'].forEach(k => {
+    const el = document.getElementById('pt-' + k);
+    if (!el) return;
+    el.className = 'ptform-tab ' + k + (keyMap[p] === k ? ' on' : '');
+  });
+  renderModeToggle();
+  updateModeLabel();
+  updateBtnGoLabel();
+  document.getElementById('video-picker').style.display = 'none';
+  const vpTitle = document.getElementById('vp-title');
+  if (vpTitle) vpTitle.textContent = {
+    tiktok:'📹 AI 推荐视频', instagram:'📸 AI 推荐帖子 / Reels',
+    reddit:'📋 AI 推荐帖子', linkedin:'💼 AI 推荐帖子', x:'🐦 AI 推荐推文'
+  }[p] || 'AI 推荐内容';
+}
+
+function renderModeToggle() {
+  const modes = PLATFORM_MODES[S.platform] || PLATFORM_MODES.tiktok;
+  const wrap = document.getElementById('mode-toggle-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = modes.map(([key, label]) =>
+    `<div class="mode-btn ${key === S.mode ? 'on' : ''}" id="m-${key}" onclick="setMode('${key}')">${label}</div>`
+  ).join('');
+}
+
+function updateModeLabel() {
+  const labels = PLATFORM_LABELS[S.platform] || PLATFORM_LABELS.tiktok;
+  document.getElementById('q-label').textContent = labels[S.mode] || '';
+  const phs = PLATFORM_PLACEHOLDERS[S.platform] || PLATFORM_PLACEHOLDERS.tiktok;
+  document.getElementById('q-input').placeholder = phs[S.mode] || '';
+}
+
+function updateBtnGoLabel() {
+  const btn = document.getElementById('btn-go');
+  if (!btn) return;
+  btn.innerHTML = S.mode === 'url' ? '🚀 抓取' : '🔍 搜索';
+}
+
 function setMode(m) {
   S.mode = m;
-  document.getElementById('m-kw').classList.toggle('on', m === 'keyword');
-  document.getElementById('m-url').classList.toggle('on', m === 'url');
-  document.getElementById('q-label').textContent = m === 'keyword' ? '搜索相关视频，AI 自动筛选评论线索' : '粘贴 TikTok 视频链接直接抓取评论';
-  document.getElementById('q-input').placeholder = m === 'keyword'
-    ? '例：card declined tiktok shop  /  payment failed  /  虚拟卡怎么买'
-    : '例：https://www.tiktok.com/@user/video/7304809083817774382';
-  document.getElementById('btn-go').textContent = m === 'keyword' ? '🔍 搜索' : '🚀 抓取';
+  document.querySelectorAll('#mode-toggle-wrap .mode-btn').forEach(btn => {
+    btn.classList.toggle('on', btn.id === 'm-' + m);
+  });
+  updateModeLabel();
+  updateBtnGoLabel();
   if (m === 'url') document.getElementById('video-picker').style.display = 'none';
 }
 
@@ -1212,6 +1313,379 @@ async function tkGet(path, params = {}) {
     throw new Error(`Catcher API ${resp.status}: ${txt.slice(0, 180)}`);
   }
   return resp.json();
+}
+
+// ─────────────────────────────────────────
+// INSTAGRAM API  (tikhub.io)
+// ─────────────────────────────────────────
+async function igSearchPosts(keyword, count = 12) {
+  const d = await tkGet('/api/v1/instagram/web/search_by_keyword', { keyword, count });
+  const items = d?.data?.items || d?.data?.data || (Array.isArray(d?.data) ? d.data : []);
+  return items.map(item => {
+    const m = item.media || item;
+    const user = m.user || m.owner || {};
+    const sc = m.code || m.shortcode || '';
+    return {
+      awemeId: sc,
+      title: m.caption?.text || m.accessibility_caption || '（无标题）',
+      coverUrl: m.image_versions2?.candidates?.[0]?.url || m.thumbnail_url || m.display_url || '',
+      playCount: m.play_count || 0,
+      likeCount: m.like_count || m.edge_media_preview_like?.count || 0,
+      commentCount: m.comment_count || m.edge_media_to_comment?.count || 0,
+      shareCount: 0,
+      author: user.username || user.full_name || '?',
+      uniqueId: user.username || '',
+      videoUrl: sc ? `https://www.instagram.com/p/${sc}/` : '',
+      engagementScore: (m.like_count||0) + (m.comment_count||0)*3,
+      platform: 'instagram'
+    };
+  }).filter(v => v.awemeId);
+}
+
+async function igHashtagPosts(hashtag) {
+  const tag = hashtag.replace(/^#/, '').trim();
+  const d = await tkGet('/api/v1/instagram/web/fetch_hashtag_media', { hashtag: tag });
+  const items = d?.data?.items || d?.data?.data ||
+    d?.data?.edges?.map(e => e.node) || (Array.isArray(d?.data) ? d.data : []);
+  return {
+    posts: items.map(item => {
+      const m = item.media || item;
+      const user = m.user || m.owner || {};
+      const sc = m.code || m.shortcode || '';
+      return {
+        awemeId: sc,
+        title: m.caption?.text || m.accessibility_caption || '（无标题）',
+        coverUrl: m.image_versions2?.candidates?.[0]?.url || m.thumbnail_url || m.display_url || '',
+        likeCount: m.like_count || m.edge_liked_by?.count || 0,
+        commentCount: m.comment_count || m.edge_media_to_comment?.count || 0,
+        shareCount: 0,
+        author: user.username || user.full_name || '?',
+        uniqueId: user.username || '',
+        videoUrl: sc ? `https://www.instagram.com/p/${sc}/` : '',
+        engagementScore: (m.like_count||0) + (m.comment_count||0)*3,
+        platform: 'instagram'
+      };
+    }).filter(v => v.awemeId)
+  };
+}
+
+function igExtractShortcode(url) {
+  const m = url.match(/\/(p|reel|tv|reels)\/([A-Za-z0-9_-]+)/);
+  return m ? m[2] : null;
+}
+
+async function igGetShortcode(url) {
+  const sc = igExtractShortcode(url);
+  if (sc) return sc;
+  const d = await tkGet('/api/v1/instagram/web/fetch_post_info_v2', { url });
+  return d?.data?.shortcode || d?.data?.code || null;
+}
+
+async function igFetchComments(shortcode, endCursor = '') {
+  const d = await tkGet('/api/v1/instagram/web/fetch_post_comments', {
+    shortcode, end_cursor: endCursor, count: 20
+  });
+  const items = d?.data?.comments || d?.data?.data ||
+    d?.data?.edge_media_to_comment?.edges?.map(e => e.node) || (Array.isArray(d?.data) ? d.data : []);
+  return {
+    list: items.map(node => ({
+      cid: node.id || node.pk || '',
+      text: node.text || node.content || '',
+      user: {
+        uid:       node.user?.pk || node.user?.id || '',
+        nickname:  node.user?.username || node.owner?.username || '?',
+        uniqueId:  node.user?.username || node.owner?.username || '',
+        avatarThumb: node.user?.profile_pic_url || '',
+        secUid:    '',
+        signature: node.user?.biography || ''
+      },
+      digg_count: node.like_count || node.edge_liked_by?.count || 0,
+      create_time: node.created_at || node.taken_at || 0
+    })),
+    hasMore: d?.data?.page_info?.has_next_page ?? d?.data?.has_next_page ?? false,
+    nextCursor: d?.data?.page_info?.end_cursor || d?.data?.end_cursor || d?.data?.next_cursor || ''
+  };
+}
+
+async function igFetchUser(username) {
+  const d = await tkGet('/api/v1/instagram/web/fetch_user_profile', { username });
+  const u = d?.data?.user || d?.data || null;
+  if (!u) return null;
+  return {
+    nickname:       u.username || u.full_name || '',
+    uniqueId:       u.username || '',
+    followerCount:  u.follower_count || u.edge_followed_by?.count || 0,
+    followingCount: u.following_count || u.edge_follow?.count || 0,
+    heartCount:     u.media_count || 0,
+    signature:      u.biography || '',
+    avatarMedium:   u.profile_pic_url_hd || u.profile_pic_url || '',
+    _ig: true
+  };
+}
+
+// ─────────────────────────────────────────
+// REDDIT API  (tikhub.io)
+// ─────────────────────────────────────────
+async function rdSearchPosts(keyword, count = 12) {
+  const d = await tkGet('/api/v1/reddit/web/search', { keyword, count, sort: 'hot' });
+  const items = d?.data?.posts || d?.data?.data ||
+    d?.data?.children?.map(c => c) || (Array.isArray(d?.data) ? d.data : []);
+  return items.map(post => {
+    const p = post.data || post;
+    const permalink = p.permalink ? 'https://www.reddit.com' + p.permalink : '';
+    return {
+      awemeId: permalink || p.url || p.id || '',
+      title: p.title || '（无标题）',
+      coverUrl: p.thumbnail && p.thumbnail.startsWith('http') ? p.thumbnail : '',
+      playCount: 0,
+      likeCount: p.score || p.ups || 0,
+      commentCount: p.num_comments || 0,
+      shareCount: 0,
+      author: 'r/' + (p.subreddit || '?') + ' · u/' + (p.author || '?'),
+      uniqueId: p.author || '',
+      videoUrl: permalink || p.url || '',
+      engagementScore: (p.score||0) + (p.num_comments||0)*3,
+      platform: 'reddit',
+      subreddit: p.subreddit || ''
+    };
+  }).filter(v => v.awemeId);
+}
+
+async function rdSubredditHot(subreddit) {
+  const sub = subreddit.replace(/^r\//, '').trim();
+  const d = await tkGet('/api/v1/reddit/web/subreddit_hot', { subreddit: sub });
+  const items = d?.data?.posts || d?.data?.data ||
+    d?.data?.children?.map(c => c) || (Array.isArray(d?.data) ? d.data : []);
+  return {
+    posts: items.map(post => {
+      const p = post.data || post;
+      const permalink = p.permalink ? 'https://www.reddit.com' + p.permalink : '';
+      return {
+        awemeId: permalink || p.url || p.id || '',
+        title: p.title || '（无标题）',
+        coverUrl: p.thumbnail && p.thumbnail.startsWith('http') ? p.thumbnail : '',
+        likeCount: p.score || p.ups || 0,
+        commentCount: p.num_comments || 0,
+        shareCount: 0,
+        author: 'r/' + (p.subreddit || sub) + ' · u/' + (p.author || '?'),
+        uniqueId: p.author || '',
+        videoUrl: permalink || p.url || '',
+        engagementScore: (p.score||0) + (p.num_comments||0)*3,
+        platform: 'reddit',
+        subreddit: p.subreddit || sub
+      };
+    }).filter(v => v.awemeId)
+  };
+}
+
+async function rdFetchComments(postUrl) {
+  let url = postUrl;
+  if (!url.startsWith('http')) url = 'https://www.reddit.com' + url;
+  const d = await tkGet('/api/v1/reddit/web/fetch_post_comments', { url, limit: 50 });
+  const items = d?.data?.comments || d?.data?.data ||
+    d?.data?.children?.map(c => c) || (Array.isArray(d?.data) ? d.data : []);
+  return {
+    list: items.map(c => {
+      const cm = c.data || c;
+      return {
+        cid: cm.id || cm.name || '',
+        text: cm.body || cm.content || '',
+        user: {
+          uid:       cm.author || '',
+          nickname:  cm.author || '?',
+          uniqueId:  cm.author || '',
+          avatarThumb: cm.author_icon_img || '',
+          secUid:    '',
+          signature: ''
+        },
+        digg_count: cm.score || cm.ups || 0,
+        create_time: cm.created_utc || cm.created || 0
+      };
+    }).filter(c => c.text && c.text !== '[deleted]' && c.text !== '[removed]'),
+    hasMore: false,
+    nextCursor: ''
+  };
+}
+
+async function rdFetchUser(username) {
+  const d = await tkGet('/api/v1/reddit/web/fetch_user_profile', { username });
+  const u = d?.data?.user || d?.data || null;
+  if (!u) return null;
+  return {
+    nickname:       u.name || u.username || username || '',
+    uniqueId:       u.name || u.username || username || '',
+    followerCount:  0,
+    followingCount: 0,
+    heartCount:     u.total_karma || u.link_karma || 0,
+    signature:      u.subreddit?.public_description || '',
+    avatarMedium:   u.icon_img || u.snoovatar_img || '',
+    _reddit: true
+  };
+}
+
+// ─────────────────────────────────────────
+// LINKEDIN API  (tikhub.io)
+// ─────────────────────────────────────────
+async function liSearchPosts(keyword, count = 12) {
+  const d = await tkGet('/api/v1/linkedin/web/search_posts', { keyword, count });
+  const items = d?.data?.elements || d?.data?.data ||
+    d?.data?.items || (Array.isArray(d?.data) ? d.data : []);
+  return items.map(post => {
+    const p = post.data || post;
+    const actor = p.actor || p.author || {};
+    const pid = p.entityUrn || p.shareUrn || p.id || '';
+    const activityId = pid.replace(/^urn:li:activity:/, '').replace(/^urn:li:ugcPost:/, '');
+    return {
+      awemeId: activityId || pid,
+      title: p.commentary?.text || p.specificContent?.com_linkedin_ugc_MemberShareUpdate?.commentary || p.description?.text || '（无标题）',
+      coverUrl: p.content?.contentEntities?.[0]?.thumbnails?.[0]?.resolvedUrl || '',
+      playCount: 0,
+      likeCount: p.socialDetail?.totalSocialActivityCounts?.numLikes || p.likes || 0,
+      commentCount: p.socialDetail?.totalSocialActivityCounts?.numComments || p.comments || 0,
+      shareCount: p.socialDetail?.totalSocialActivityCounts?.numShares || 0,
+      author: actor.name || actor.localizedName || '?',
+      uniqueId: actor.vanityName || actor.publicIdentifier || actor.id || '',
+      videoUrl: activityId ? `https://www.linkedin.com/posts/activity-${activityId}/` : '',
+      engagementScore: (p.socialDetail?.totalSocialActivityCounts?.numLikes||0) + (p.socialDetail?.totalSocialActivityCounts?.numComments||0)*3,
+      platform: 'linkedin'
+    };
+  }).filter(v => v.awemeId);
+}
+
+function liExtractPostId(url) {
+  const m = url.match(/activity[:\-](\d+)/i)
+    || url.match(/ugcPost[:\-](\d+)/i)
+    || url.match(/\/(\d{15,})\/?$/);
+  return m ? m[1] : null;
+}
+
+async function liFetchComments(postId, cursor = '') {
+  const d = await tkGet('/api/v1/linkedin/web/fetch_post_comments', {
+    activity_id: postId, pagination_token: cursor, count: 20
+  });
+  const items = d?.data?.elements || d?.data?.comments ||
+    d?.data?.data || (Array.isArray(d?.data) ? d.data : []);
+  return {
+    list: items.map(c => {
+      const cm = c.data || c;
+      const commenter = cm.commenter || cm.actor || {};
+      return {
+        cid: cm.entityUrn || cm.id || '',
+        text: cm.message?.text || cm.commentary?.text || cm.text || '',
+        user: {
+          uid:       commenter.id || '',
+          nickname:  commenter.name || commenter.localizedName || '?',
+          uniqueId:  commenter.vanityName || commenter.publicIdentifier || '',
+          avatarThumb: commenter.picture?.rootUrl || '',
+          secUid:    '',
+          signature: commenter.headline || commenter.summary || ''
+        },
+        digg_count: cm.socialDetail?.totalSocialActivityCounts?.numLikes || 0,
+        create_time: cm.createdAt ? Math.floor(cm.createdAt / 1000) : 0
+      };
+    }).filter(c => c.text),
+    hasMore: !!(d?.data?.metadata?.nextPageToken || d?.data?.paginationToken),
+    nextCursor: d?.data?.metadata?.nextPageToken || d?.data?.paginationToken || ''
+  };
+}
+
+async function liFetchUser(publicId) {
+  const d = await tkGet('/api/v1/linkedin/web/fetch_user_profile', { public_id: publicId });
+  const u = d?.data?.profile || d?.data?.data || d?.data || null;
+  if (!u) return null;
+  return {
+    nickname:       u.firstName?.localized?.en_US || u.localizedName || u.firstName || publicId || '',
+    uniqueId:       u.vanityName || u.publicIdentifier || publicId || '',
+    followerCount:  u.followingInfo?.followerCount || 0,
+    followingCount: 0,
+    heartCount:     u.connections?.total || 0,
+    signature:      u.headline?.localized?.en_US || u.summary || '',
+    avatarMedium:   u.profilePicture?.displayImageReference?.vectorImage?.rootUrl || '',
+    _li: true
+  };
+}
+
+// ─────────────────────────────────────────
+// X (TWITTER) API  (tikhub.io)
+// ─────────────────────────────────────────
+async function xSearchTweets(keyword, count = 12) {
+  const d = await tkGet('/api/v1/twitter/web/search_timeline', { keyword, count, search_type: 'Latest' });
+  const items = d?.data?.timeline?.instructions?.flatMap(i =>
+    i.entries?.map(e => e.content?.itemContent?.tweet_results?.result).filter(Boolean) || []
+  ) || d?.data?.tweets || d?.data?.data || (Array.isArray(d?.data) ? d.data : []);
+  return items.map(item => {
+    const tw = item.tweet || item;
+    const user = tw.core?.user_results?.result?.legacy || tw.user?.legacy || tw.user || {};
+    const legacy = tw.legacy || tw;
+    return {
+      awemeId: legacy.id_str || legacy.id || tw.rest_id || '',
+      title: legacy.full_text || legacy.text || '（无内容）',
+      coverUrl: legacy.entities?.media?.[0]?.media_url_https || '',
+      playCount: legacy.public_metrics?.impression_count || legacy.view_count || 0,
+      likeCount: legacy.favorite_count || legacy.like_count || 0,
+      commentCount: legacy.reply_count || 0,
+      shareCount: legacy.retweet_count || 0,
+      author: user.name || user.screen_name || '?',
+      uniqueId: user.screen_name || '',
+      videoUrl: user.screen_name && (legacy.id_str || tw.rest_id) ? `https://x.com/${user.screen_name}/status/${legacy.id_str || tw.rest_id}` : '',
+      engagementScore: (legacy.favorite_count||0) + (legacy.reply_count||0)*3 + (legacy.retweet_count||0)*2,
+      platform: 'x'
+    };
+  }).filter(v => v.awemeId);
+}
+
+function xExtractTweetId(url) {
+  const m = url.match(/\/status\/(\d+)/);
+  return m ? m[1] : null;
+}
+
+async function xFetchReplies(tweetId, cursor = '') {
+  const d = await tkGet('/api/v1/twitter/web/fetch_tweet_replies', {
+    tweet_id: tweetId, cursor, count: 20
+  });
+  const items = d?.data?.replies || d?.data?.data ||
+    d?.data?.timeline?.instructions?.flatMap(i =>
+      i.entries?.map(e => e.content?.itemContent?.tweet_results?.result?.legacy).filter(Boolean) || []
+    ) || (Array.isArray(d?.data) ? d.data : []);
+  return {
+    list: items.map(c => {
+      const tw = c.tweet || c;
+      const user = tw.core?.user_results?.result?.legacy || tw.user?.legacy || tw.user || {};
+      const legacy = tw.legacy || tw;
+      return {
+        cid: legacy.id_str || legacy.id || '',
+        text: legacy.full_text || legacy.text || '',
+        user: {
+          uid:       user.id_str || user.id || '',
+          nickname:  user.name || user.screen_name || '?',
+          uniqueId:  user.screen_name || '',
+          avatarThumb: user.profile_image_url_https || user.profile_image_url || '',
+          secUid:    '',
+          signature: user.description || ''
+        },
+        digg_count: legacy.favorite_count || 0,
+        create_time: legacy.created_at ? Math.floor(new Date(legacy.created_at).getTime()/1000) : 0
+      };
+    }).filter(c => c.text),
+    hasMore: !!(d?.data?.next_cursor || d?.data?.cursor),
+    nextCursor: d?.data?.next_cursor || d?.data?.cursor || ''
+  };
+}
+
+async function xFetchUser(screenName) {
+  const d = await tkGet('/api/v1/twitter/web/fetch_user_profile', { screen_name: screenName });
+  const u = d?.data?.user?.result?.legacy || d?.data?.legacy || d?.data?.user || d?.data || null;
+  if (!u) return null;
+  return {
+    nickname:       u.name || screenName || '',
+    uniqueId:       u.screen_name || screenName || '',
+    followerCount:  u.followers_count || 0,
+    followingCount: u.friends_count || 0,
+    heartCount:     u.statuses_count || 0,
+    signature:      u.description || '',
+    avatarMedium:   (u.profile_image_url_https || '').replace('_normal', '_400x400'),
+    _x: true
+  };
 }
 
 function fmtNum(n) {
@@ -1269,7 +1743,7 @@ Videos:
 ${videos.map((v,i) => `${i+1}. ID:${v.awemeId} likes:${fmtNum(v.likeCount)} comments:${fmtNum(v.commentCount)} title:"${v.title.slice(0,80)}"`).join('\n')}`;
   try {
     const r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${S.config.aiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key=${S.config.aiKey}`,
       { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0.1, maxOutputTokens:600} }) }
     );
@@ -1299,26 +1773,28 @@ function showVideoPicker(videos, ranked) {
     const thumbStyle = v.coverUrl
       ? `background-image:url(${ha(v.coverUrl)})`
       : 'background:var(--bg-3)';
+    const likeIcon = (v.platform === 'reddit' || v.platform === 'x') ? '⬆️' : '❤️';
     return `<div class="vcard selected" data-id="${ha(v.awemeId)}" onclick="toggleVideoCard(this)">
       <div class="vcard-thumb ${v.coverUrl ? '' : 'vcard-no-thumb'}" style="${thumbStyle}">
         <div class="vcard-rank">#${i+1}</div>
         <div class="vcard-sel-badge">✓ 已选</div>
       </div>
       <div class="vcard-body">
-        <div class="vcard-author">@${h(v.author)}</div>
+        <div class="vcard-author">${h(v.author)}</div>
         <div class="vcard-title" title="${ha(v.title)}">${h(v.title)}</div>
         <div class="vcard-stats">
-          <span class="vcard-stat">❤️ ${fmtNum(v.likeCount)}</span>
+          <span class="vcard-stat">${likeIcon} ${fmtNum(v.likeCount)}</span>
           <span class="vcard-stat">💬 ${fmtNum(v.commentCount)}</span>
-          <span class="vcard-stat">↗ ${fmtNum(v.shareCount)}</span>
+          ${v.shareCount ? `<span class="vcard-stat">↗ ${fmtNum(v.shareCount)}</span>` : ''}
         </div>
-        <div class="vcard-reason">${h(reasonMap[v.awemeId] || '相关视频')}</div>
+        <div class="vcard-reason">${h(reasonMap[v.awemeId] || '相关内容')}</div>
       </div>
     </div>`;
   }).join('');
 
   const n = ordered.length;
-  document.getElementById('vp-title').innerHTML = `📹 AI 推荐视频 <span style="font-size:11px;color:var(--t2);font-weight:400">（共 ${n} 个，点击卡片切换选中）</span>`;
+  const titleMap = { tiktok:'📹 AI 推荐视频', instagram:'📸 AI 推荐帖子 / Reels', reddit:'📋 AI 推荐帖子', linkedin:'💼 AI 推荐帖子', x:'🐦 AI 推荐推文' };
+  document.getElementById('vp-title').innerHTML = `${titleMap[S.platform] || '📋 AI 推荐内容'} <span style="font-size:11px;color:var(--t2);font-weight:400">（共 ${n} 个，点击卡片切换选中）</span>`;
   document.getElementById('video-picker').style.display = 'block';
   updateSelCount();
 }
@@ -1376,6 +1852,68 @@ async function apiFetchUser(uniqueId) {
 // ─────────────────────────────────────────
 // KEYWORD SCORING
 // ─────────────────────────────────────────
+// ─────────────────────────────────────────
+// SPAM GATE — fast D-filter before scoring
+// ─────────────────────────────────────────
+const SPAM_KW = [
+  // self-promotion / follow-spam
+  'follow me','check my profile','check my page','follow back',
+  'follow for follow','f4f','l4l','sub4sub','free followers',
+  'follow my ig','follow my tiktok','follow my account',
+  // link bait / promo
+  'click my link','check bio','visit my page',
+  'dm me for promo','giveaway bot','dm to promote',
+  // ZH spam
+  '关注我','加我微信','私信我领取','领取免费','刷粉'
+];
+
+// Platform-specific A-level signals (purchase/access intent)
+const PLATFORM_A_KW = {
+  tiktok: [],
+  instagram: [
+    'link please','drop the link','where to get this','how to order',
+    'where is this from','source?','shop link','how do i buy',
+    'where can i find this','can you share the link','how to get this'
+  ],
+  reddit: [
+    'where can i get this','any coupons','promo code','discount code',
+    'still looking for','tried everything','does this actually work',
+    'any good alternatives','how do i get this to work','where to order'
+  ],
+  linkedin: [
+    'how do i get access','dm me your pricing','interested in a demo',
+    'can we schedule a call','send me the details','how to purchase this',
+    'looking for a vendor','need this for my team','how do i buy'
+  ],
+  x: [
+    'drop the link','link please','where to buy this','how do i get this',
+    'dms open','where can i find','how to get this','anyone selling'
+  ]
+};
+
+// Platform-specific B-level signals (professional/community interest)
+const PLATFORM_B_KW = {
+  tiktok: [],
+  instagram: [
+    'collab','partnership','gifted','pr package','haul',
+    'unboxing','review','tutorial','is this worth','any discount'
+  ],
+  reddit: [
+    'anyone else','has anyone','is it worth','tips','advice',
+    'experience with','opinions','thoughts on this','what do you think',
+    'is this legit','any reviews'
+  ],
+  linkedin: [
+    'connect','networking','collaborate','partnership','b2b',
+    'enterprise','case study','let\'s connect','message me','reach out',
+    'open to opportunities','industry insights'
+  ],
+  x: [
+    'is this legit','has anyone tried','what do you think','opinion',
+    'anyone else','agree','interesting take','anyone know'
+  ]
+};
+
 // ── Built-in multilingual signal keywords ──────────────────────────────────────
 // A-grade: explicit demand / problem / solution-seeking
 const A_KW = [
@@ -1522,32 +2060,81 @@ const C_KW = [
   'ganda','astig','gusto ko','kawili-wili','hindi masama','magaling'
 ];
 
-function kwScore(text) {
+// Additive weighted scoring — all signals accumulate, continuous score drives grade
+// Thresholds: A ≥ 50 | B ≥ 20 | C ≥ 8 | D < 8
+function kwScore(text, platform = 'tiktok', likes = 0) {
   if (!text) return { grade: 'D', score: 5, reason: '空评论' };
   const t = text.toLowerCase();
   const bare = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim();
-  if (bare.length < 3) return { grade: 'D', score: 5, reason: '纯表情/极短' };
+  if (bare.length < 3) return { grade: 'D', score: 0, reason: '纯表情/极短' };
 
-  // Custom keywords (highest priority) — also check auto-translated variants
+  // 1. Spam gate — immediate D, no further processing
+  if (SPAM_KW.some(k => t.includes(k))) return { grade: 'D', score: 2, reason: '垃圾/引流' };
+
+  let raw = 0;
+  const reasons = [];
+
+  // 2. Custom keywords (user-defined, +55 each, max 3 counted)
   const allCust = [...S.config.keywords, ...S.config.keywordsI18n];
   const hitCust = allCust.filter(k => k && t.includes(k.toLowerCase()));
-  if (hitCust.length) return { grade: 'A', score: Math.min(75 + hitCust.length * 6, 98), reason: `关键词: ${hitCust.slice(0,2).join(', ')}` };
+  if (hitCust.length) {
+    raw += Math.min(hitCust.length, 3) * 55;
+    reasons.push(`自定义: ${hitCust.slice(0, 2).join(', ')}`);
+  }
 
+  // 3. Platform-specific A signals (+52 each, max 3)
+  const hitPA = (PLATFORM_A_KW[platform] || []).filter(k => t.includes(k));
+  if (hitPA.length) {
+    raw += Math.min(hitPA.length, 3) * 52;
+    reasons.push(`平台A: ${hitPA[0]}`);
+  }
+
+  // 4. Global A keywords (+52 each, max 3)
   const hitA = A_KW.filter(k => t.includes(k));
-  if (hitA.length) return { grade: 'A', score: Math.min(68 + hitA.length * 5, 95), reason: `A词: ${hitA.slice(0,2).join(', ')}` };
+  if (hitA.length) {
+    raw += Math.min(hitA.length, 3) * 52;
+    reasons.push(`A: ${hitA.slice(0, 2).join(', ')}`);
+  }
 
+  // 5. Platform-specific B signals (+22 each, max 5)
+  const hitPB = (PLATFORM_B_KW[platform] || []).filter(k => t.includes(k));
+  if (hitPB.length) {
+    raw += Math.min(hitPB.length, 5) * 22;
+    if (!reasons.length) reasons.push(`平台B: ${hitPB[0]}`);
+  }
+
+  // 6. Global B keywords (+22 each, max 5)
   const hitB = B_KW.filter(k => t.includes(k));
-  if (hitB.length) return { grade: 'B', score: Math.min(42 + hitB.length * 5, 70), reason: `B词: ${hitB.slice(0,2).join(', ')}` };
+  if (hitB.length) {
+    raw += Math.min(hitB.length, 5) * 22;
+    if (!reasons.length) reasons.push(`B: ${hitB.slice(0, 2).join(', ')}`);
+  }
 
-  // 疑问句带长度门槛（排除单个表情+问号）
-  if ((t.includes('?') || t.includes('？')) && bare.length >= 8)
-    return { grade: 'B', score: 38, reason: '疑问句' };
+  // 7. Question sentence — bonus only when topic-relevant OR text long enough to be substantive
+  const isQ = t.includes('?') || t.includes('？');
+  const hasSignal = hitCust.length || hitPA.length || hitA.length || hitPB.length || hitB.length;
+  if (isQ) {
+    if (hasSignal && bare.length >= 10) {
+      raw += 15;  // compound: question + topic signal = higher confidence
+    } else if (!hasSignal && bare.length >= 15) {
+      raw += 22;  // standalone question, stricter length gate (was ≥8, now ≥15)
+      if (!reasons.length) reasons.push('疑问句');
+    }
+  }
 
+  // 8. C keywords — weak positive, only counts with substance (+9 each, max 3)
   const hitC = C_KW.filter(k => t.includes(k));
-  // C 级：命中 C 词且内容有实质长度（排除纯表情包回复）
-  if (hitC.length && bare.length >= 6) return { grade: 'C', score: 24, reason: `C词: ${hitC[0]}` };
+  if (hitC.length && bare.length >= 6) {
+    raw += Math.min(hitC.length, 3) * 9;
+    if (!reasons.length) reasons.push(`C: ${hitC[0]}`);
+  }
 
-  return { grade: 'D', score: 10, reason: '无需求信号' };
+  // 9. Likes bonus (high-engagement comments get slight boost, max +8)
+  if (likes > 0) raw += Math.min(Math.floor(likes / 500), 8);
+
+  const score = Math.min(Math.round(raw), 100);
+  const grade = score >= 50 ? 'A' : score >= 20 ? 'B' : score >= 8 ? 'C' : 'D';
+  return { grade, score: score || 5, reason: reasons[0] || (score < 8 ? '无需求信号' : '') };
 }
 
 // ─────────────────────────────────────────
@@ -1569,6 +2156,35 @@ IMPORTANT:
 - Return ONLY a raw JSON array, NO markdown fences, NO extra text. Keep "reason" under 5 words.
 [{"id":1,"grade":"A","score":82,"reason":"needs payment fix"}]`;
 
+// Dynamic per-platform AI prompt
+function buildAiPrompt(platform) {
+  const ctx = {
+    tiktok:    { role:'TikTok comment',    aEx:'"card declined","where to buy","payment failed"',        bEx:'"how much?","tutorial?","where to get"',    cEx:'"love this!","amazing","so cool"',        dEx:'pure emoji, "lol", spam, off-topic' },
+    instagram: { role:'Instagram comment', aEx:'"link please","where to get this","how to order"',    bEx:'"how much?","collab?","is this available"', cEx:'"gorgeous","fire","love it"',             dEx:'follow spam, pure emoji, off-topic' },
+    reddit:    { role:'Reddit comment',    aEx:'"where can I buy","payment failed","any alternatives"', bEx:'"worth it?","price range?","anyone tried"',  cEx:'"interesting","not bad tbh","upvoted"',   dEx:'memes, jokes, pure reactions, off-topic' },
+    linkedin:  { role:'LinkedIn comment',  aEx:'"how do I get access?","DM me pricing","demo request"', bEx:'"enterprise plan?","B2B use case?","case study?"', cEx:'"great post","insightful","well said"', dEx:'empty praise, generic congrats, spam' },
+    x:         { role:'X (Twitter) reply', aEx:'"drop the link","where to buy?","how to get this"',    bEx:'"legit?","how much?","anyone tried this"',  cEx:'"cool","interesting take","not bad"',    dEx:'ratio bait, pure emoji, "lol", bots' }
+  };
+  const c = ctx[platform] || ctx.tiktok;
+  return [
+    'You are a strict ' + c.role + ' sales-lead classifier. Identify comments showing purchase intent, need, or genuine engagement with the product/service.',
+    '',
+    'Platform context: ' + platform.toUpperCase(),
+    '',
+    'Grading rules:',
+    'A = Strong demand: explicit problem/need, where to buy, payment/access issues, direct request. Examples: ' + c.aEx,
+    'B = Potential demand: price inquiry, tutorial request, product comparison, recommendation ask. Examples: ' + c.bEx,
+    'C = Weak interest: genuine positive reaction with substance (not just emoji), relevant experience sharing. Examples: ' + c.cEx,
+    'D = No value: ' + c.dEx,
+    '',
+    'IMPORTANT:',
+    '- Be strict: only C or above for GENUINE engagement beyond empty reactions',
+    '- Pure emoji or short filler = D; when in doubt between C and D, choose D',
+    '- Return ONLY a raw JSON array, NO markdown fences, NO extra text. Keep "reason" under 5 words.',
+    '[{"id":1,"grade":"A","score":82,"reason":"needs payment fix"}]'
+  ].join('\n');
+}
+
 function parseJsonArray(txt) {
   // Strip ```json ... ``` code fences if present
   const stripped = txt.replace(/^```[a-z]*\n?/, '').replace(/\n?```$/, '').trim();
@@ -1576,7 +2192,7 @@ function parseJsonArray(txt) {
   return m ? JSON.parse(m[0]) : [];
 }
 
-async function aiScoreBatch(batch, provider) {
+async function aiScoreBatch(batch, provider, platform = 'tiktok') {
   const items = batch.map((c, i) => `${i+1}. "${c.text.replace(/"/g, "'").slice(0, 120)}"`).join('\n');
   if (provider === 'openai') {
     const r = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -1584,7 +2200,7 @@ async function aiScoreBatch(batch, provider) {
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.config.aiKey },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: AI_PROMPT + '\n\nComments:\n' + items }],
+        messages: [{ role: 'user', content: buildAiPrompt(platform) + '\n\nComments:\n' + items }],
         temperature: 0.1, max_tokens: 1200
       })
     });
@@ -1593,12 +2209,12 @@ async function aiScoreBatch(batch, provider) {
     return parseJsonArray(d.choices?.[0]?.message?.content || '[]');
   } else {
     const r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${S.config.aiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key=${S.config.aiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: AI_PROMPT + '\n\nComments:\n' + items }] }],
+          contents: [{ parts: [{ text: buildAiPrompt(platform) + '\n\nComments:\n' + items }] }],
           generationConfig: { temperature: 0.1, maxOutputTokens: 3000 }
         })
       }
@@ -1611,22 +2227,26 @@ async function aiScoreBatch(batch, provider) {
 }
 
 async function scoreAll(comments) {
+  const platform = S.platform || 'tiktok';
   if (S.config.provider === 'keyword') {
-    return comments.map((c, i) => ({ idx: i, ...kwScore(c.text) }));
+    return comments.map((c, i) => ({ idx: i, ...kwScore(c.text, platform, c.likes || 0) }));
   }
   const results = [];
   const bs = S.config.batch;
   for (let i = 0; i < comments.length; i += bs) {
     const batch = comments.slice(i, i + bs);
     try {
-      const scores = await aiScoreBatch(batch, S.config.provider);
+      const scores = await aiScoreBatch(batch, S.config.provider, platform);
       batch.forEach((c, j) => {
         const s = scores.find(x => x.id === j + 1);
-        results.push({ idx: i + j, grade: s?.grade || 'D', score: s?.score || 10, reason: s?.reason || '' });
+        const aiScore = s?.score || 10;
+        // Apply likes bonus on top of AI score (display nudge only, grade kept from AI)
+        const score = Math.min(aiScore + Math.min(Math.floor((c.likes || 0) / 500), 8), 100);
+        results.push({ idx: i + j, grade: s?.grade || 'D', score, reason: s?.reason || '' });
       });
     } catch (e) {
       console.warn('AI batch error, falling back to keyword:', e.message);
-      batch.forEach((c, j) => results.push({ idx: i + j, ...kwScore(c.text) }));
+      batch.forEach((c, j) => results.push({ idx: i + j, ...kwScore(c.text, platform, c.likes || 0) }));
     }
     setProgress(65 + Math.round((i / comments.length) * 30), `AI 评分中 ${i + batch.length}/${comments.length}...`);
   }
@@ -1654,51 +2274,92 @@ async function searchAndShowPicker(keyword) {
   const btn = document.getElementById('btn-go');
   btn.disabled = true;
   btn.innerHTML = '<span class="spin"></span> AI 搜索中...';
-  setProgress(0, '搜索相关视频...');
+  const pLabel = { tiktok:'视频', instagram:'帖子', reddit:'帖子', linkedin:'帖子', x:'推文' }[S.platform] || '内容';
+  setProgress(0, `搜索相关${pLabel}...`);
   document.getElementById('video-picker').style.display = 'none';
   try {
     setProgress(20, '调用 Catcher 搜索...');
-    const videos = await apiSearchVideosWithMeta(keyword, 12);
-    if (!videos.length) throw new Error('未搜索到视频，请换一个关键词');
-    setProgress(55, `已找到 ${videos.length} 个视频，AI 分析相关性...`);
-    const ranked = await aiRankVideos(videos, keyword);
+    let posts;
+    if (S.platform === 'instagram') {
+      if (S.mode === 'hashtag') {
+        const r = await igHashtagPosts(keyword);
+        posts = r.posts;
+      } else {
+        posts = await igSearchPosts(keyword, 12);
+      }
+    } else if (S.platform === 'reddit') {
+      if (S.mode === 'subreddit') {
+        const r = await rdSubredditHot(keyword);
+        posts = r.posts;
+      } else {
+        posts = await rdSearchPosts(keyword, 12);
+      }
+    } else if (S.platform === 'linkedin') {
+      posts = await liSearchPosts(keyword, 12);
+    } else if (S.platform === 'x') {
+      posts = await xSearchTweets(keyword, 12);
+    } else {
+      posts = await apiSearchVideosWithMeta(keyword, 12);
+    }
+    if (!posts.length) throw new Error(`未搜索到${pLabel}，请换一个关键词`);
+    setProgress(55, `已找到 ${posts.length} 个${pLabel}，AI 分析相关性...`);
+    const ranked = await aiRankVideos(posts, keyword);
     if (!ranked.length) {
-      // Safety: aiRankVideos always returns engagementFallback which should be non-empty,
-      // but if somehow empty, skip picker and show all videos sorted by engagement
-      toast('AI 筛选异常，已按热度直接显示视频', 'w');
+      toast('AI 筛选异常，已按热度直接显示内容', 'w');
       return;
     }
     setProgress(100, '完成！');
     setTimeout(hideProgress, 800);
-    showVideoPicker(videos, ranked);
-    toast(`已推荐 ${ranked.length} 个高相关度视频，点击卡片选择后抓取`, 'i');
+    showVideoPicker(posts, ranked);
+    toast(`已推荐 ${ranked.length} 个高相关度${pLabel}，点击卡片选择后抓取`, 'i');
   } catch (err) {
     console.error(err);
     toast('搜索失败：' + err.message, 'e');
     hideProgress();
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '🔍 搜索';
+    btn.innerHTML = S.mode === 'url' ? '🚀 抓取' : '🔍 搜索';
   }
 }
 
 // URL mode: direct scrape
-async function scrapeByUrl(videoUrl) {
+async function scrapeByUrl(postUrl) {
   const btn = document.getElementById('btn-go');
   btn.disabled = true;
   btn.innerHTML = '<span class="spin"></span> 抓取中...';
-  setProgress(0, '解析视频链接...');
+  setProgress(0, '解析链接...');
   try {
-    setProgress(10, '解析视频 ID...');
-    const id = await apiGetAwemeId(videoUrl);
-    if (!id) throw new Error('无法从链接提取视频 ID，请确认链接有效');
-    await scrapeComments([String(id)]);
+    if (S.platform === 'instagram') {
+      setProgress(10, '提取 Instagram 帖子 ID...');
+      const sc = await igGetShortcode(postUrl);
+      if (!sc) throw new Error('无法从链接提取 Instagram 帖子 ID，请确认链接有效');
+      await scrapeComments([sc], { platform: 'instagram' });
+    } else if (S.platform === 'reddit') {
+      setProgress(10, '解析 Reddit 帖子链接...');
+      if (!postUrl.includes('reddit.com')) throw new Error('请输入有效的 Reddit 帖子链接');
+      await scrapeComments([postUrl], { platform: 'reddit' });
+    } else if (S.platform === 'linkedin') {
+      setProgress(10, '解析 LinkedIn 帖子链接...');
+      const lid = liExtractPostId(postUrl);
+      if (!lid) throw new Error('无法解析 LinkedIn 帖子链接，请确认格式正确');
+      await scrapeComments([lid], { platform: 'linkedin' });
+    } else if (S.platform === 'x') {
+      setProgress(10, '解析 X 推文链接...');
+      const tid = xExtractTweetId(postUrl);
+      if (!tid) throw new Error('无法解析 X 推文链接，请确认格式正确（含 /status/）');
+      await scrapeComments([tid], { platform: 'x' });
+    } else {
+      setProgress(10, '解析视频 ID...');
+      const id = await apiGetAwemeId(postUrl);
+      if (!id) throw new Error('无法从链接提取视频 ID，请确认链接有效');
+      await scrapeComments([String(id)], { platform: 'tiktok' });
+    }
   } catch (err) {
     console.error(err);
     toast('抓取失败：' + err.message, 'e');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '🚀 开始抓取';
+    btn.innerHTML = '🚀 抓取';
     setTimeout(hideProgress, 2200);
   }
 }
@@ -1706,31 +2367,48 @@ async function scrapeByUrl(videoUrl) {
 // Called by the picker button
 async function scrapeSelectedVideos() {
   if (!S.selectedAwemeIds || S.selectedAwemeIds.size === 0) {
-    toast('请先选择至少一个视频', 'w'); return;
+    toast('请先选择至少一个内容', 'w'); return;
   }
   const btn = document.getElementById('btn-scrape');
   btn.disabled = true;
   btn.innerHTML = '<span class="spin"></span> 抓取中...';
   try {
-    await scrapeComments([...S.selectedAwemeIds]);
+    await scrapeComments([...S.selectedAwemeIds], { platform: S.platform });
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '🚀 抓取选中视频评论';
+    btn.innerHTML = '🚀 抓取选中评论';
   }
 }
 
-// Core scrape: given aweme IDs → fetch comments → score → merge
+// Core scrape: given post IDs → fetch comments → score → merge
 // opts.resume = true  → continue from S.lastCursors, skip S.seenIds
+// opts.platform       → override platform (default: S.platform)
 async function scrapeComments(awemeIds, opts = {}) {
-  const resume = opts.resume === true;
-  const TARGET = 100;   // target valid (non-empty) comments
-  const PER_CALL = 20;  // comments per API request
+  const resume   = opts.resume === true;
+  const platform = opts.platform || S.platform;
+  const TARGET = 100;
+  const PER_CALL = 20;
   const raw = [];
 
-  // Initialise cursors: resume from last position or start fresh
+  // Choose fetch function per platform
+  let fetchFn;
+  if (platform === 'instagram') {
+    fetchFn = (id, cursor) => igFetchComments(id, cursor);
+  } else if (platform === 'reddit') {
+    fetchFn = (id) => rdFetchComments(id);
+  } else if (platform === 'linkedin') {
+    fetchFn = (id, cursor) => liFetchComments(id, cursor);
+  } else if (platform === 'x') {
+    fetchFn = (id, cursor) => xFetchReplies(id, cursor);
+  } else {
+    fetchFn = (id, cursor) => apiFetchComments(id, cursor, PER_CALL);
+  }
+
+  // Default cursor: 0 for TikTok, '' for others
+  const defCursor = platform === 'tiktok' ? 0 : '';
   const cursors = {};
   for (const id of awemeIds) {
-    cursors[id] = resume ? (S.lastCursors[id] ?? 0) : 0;
+    cursors[id] = resume ? (S.lastCursors[id] ?? defCursor) : defCursor;
   }
   if (!resume) {
     S.seenIds = new Set();
@@ -1741,18 +2419,19 @@ async function scrapeComments(awemeIds, opts = {}) {
   try {
     outer:
     for (let vi = 0; vi < awemeIds.length; vi++) {
-      let cursor = cursors[awemeIds[vi]] ?? 0;
+      let cursor = cursors[awemeIds[vi]] ?? defCursor;
       let hasMore = true;
       while (hasMore) {
-        const res = await apiFetchComments(awemeIds[vi], cursor, PER_CALL);
+        const res = await fetchFn(awemeIds[vi], cursor);
         for (const c of res.list) {
           const text = (c.text || c.content || '').trim();
-          if (!text) continue;   // skip empty comments
+          if (!text) continue;
           const cid = c.cid || c.comment_id || `${awemeIds[vi]}_${raw.length}`;
-          if (S.seenIds.has(cid)) continue;  // skip already-fetched comments
+          if (S.seenIds.has(cid)) continue;
           raw.push({
             id: cid,
             text,
+            platform,
             user: {
               uid:       c.user?.uid || c.user?.id || '',
               nickname:  c.user?.nickname || '未知用户',
@@ -1760,7 +2439,7 @@ async function scrapeComments(awemeIds, opts = {}) {
               avatarUrl: typeof c.user?.avatarThumb === 'string' ? c.user.avatarThumb
                 : c.user?.avatarThumb?.url_list?.[0]
                 || (typeof c.user?.avatarMedium === 'string' ? c.user.avatarMedium : c.user?.avatarMedium?.url_list?.[0])
-                || c.user?.avatar_thumb?.url_list?.[0] || '',
+                || c.user?.avatar_thumb?.url_list?.[0] || c.user?.avatarUrl || '',
               secUid:    c.user?.secUid || c.user?.sec_uid || '',
               signature: c.user?.signature || ''
             },
@@ -1770,7 +2449,6 @@ async function scrapeComments(awemeIds, opts = {}) {
             grade: null, score: null, reason: null
           });
           if (raw.length >= TARGET) {
-            // Save resume cursor for this video
             S.lastCursors[awemeIds[vi]] = res.nextCursor;
             break outer;
           }
@@ -1779,7 +2457,7 @@ async function scrapeComments(awemeIds, opts = {}) {
         S.lastCursors[awemeIds[vi]] = cursor;
         hasMore = res.hasMore && res.list.length > 0;
         const pct = 15 + Math.round((raw.length / TARGET) * 45);
-        setProgress(Math.min(pct, 60), `视频 ${vi+1}/${awemeIds.length}：已获取 ${raw.length}/${TARGET} 条...`);
+        setProgress(Math.min(pct, 60), `内容 ${vi+1}/${awemeIds.length}：已获取 ${raw.length}/${TARGET} 条...`);
         if (!res.list.length) break;
       }
     }
@@ -1798,6 +2476,7 @@ async function scrapeComments(awemeIds, opts = {}) {
 
     // Record seen IDs and last used aweme IDs for continue-scraping
     raw.forEach(c => S.seenIds.add(c.id));
+    S.lastPlatform = platform;
     S.lastAwemeIds = awemeIds;
 
     S.comments = [...S.comments, ...kept];
@@ -1839,7 +2518,7 @@ async function continueScrapingMore() {
   btn.disabled = true;
   btn.innerHTML = '<span class="spin"></span> 抓取中...';
   try {
-    await scrapeComments(S.lastAwemeIds, { resume: true });
+    await scrapeComments(S.lastAwemeIds, { resume: true, platform: S.lastPlatform });
   } finally {
     btn.disabled = false;
     btn.innerHTML = '⚡ 继续抓取 100 条';
@@ -1976,7 +2655,7 @@ function row(c, n) {
       ${socialHtml}
       <div class="row-acts" onclick="event.stopPropagation()">
         <button class="act-btn" onclick="copyText(${idx})">复制</button>
-        ${handle ? `<button class="act-btn" onclick="openTikTok(${idx})">主页</button>` : ''}
+        ${handle ? `<button class="act-btn" onclick="openProfile(${idx})">主页</button>` : ''}
         <button class="act-btn" onclick="openUserModal(${idx})">资料</button>
       </div>
     </div>
@@ -1991,6 +2670,20 @@ function copyText(idx) {
   if (!c) return;
   navigator.clipboard.writeText(c.text).then(() => toast('已复制到剪贴板', 's'));
 }
+
+function openProfile(idx) {
+  const c = S.comments[idx];
+  if (!c?.user?.uniqueId) return;
+  const handle = c.user.uniqueId;
+  const plat = c.platform || 'tiktok';
+  const url = plat === 'instagram' ? `https://www.instagram.com/${handle}/`
+    : plat === 'reddit'   ? `https://www.reddit.com/user/${handle}/`
+    : plat === 'linkedin' ? `https://www.linkedin.com/in/${handle}/`
+    : plat === 'x'        ? `https://x.com/${handle}`
+    : `https://www.tiktok.com/@${handle}`;
+  window.open(url, '_blank');
+}
+
 function openTikTok(idx) {
   const c = S.comments[idx];
   if (c?.user?.uniqueId) window.open('https://www.tiktok.com/@' + c.user.uniqueId, '_blank');
@@ -2011,8 +2704,15 @@ async function openUserModal(idx) {
   document.getElementById('modal-link-btn').style.display = 'none';
 
   let profile = null;
+  const plat = c.platform || 'tiktok';
   if (c.user.uniqueId && S.config.token) {
-    try { profile = await apiFetchUser(c.user.uniqueId); } catch(e) { console.warn(e); }
+    try {
+      if (plat === 'instagram')     profile = await igFetchUser(c.user.uniqueId);
+      else if (plat === 'reddit')   profile = await rdFetchUser(c.user.uniqueId);
+      else if (plat === 'linkedin') profile = await liFetchUser(c.user.uniqueId);
+      else if (plat === 'x')        profile = await xFetchUser(c.user.uniqueId);
+      else                          profile = await apiFetchUser(c.user.uniqueId);
+    } catch(e) { console.warn(e); }
   }
 
   const userComments = S.comments.filter(x =>
@@ -2021,11 +2721,45 @@ async function openUserModal(idx) {
   const nick = profile?.nickname || c.user.nickname || '未知用户';
   const handle = profile?.uniqueId || profile?.unique_id || c.user.uniqueId || '';
   const bio = profile?.signature || '—';
-  // avatarMedium is a direct URL string in the new API response
   const avatarSrc = profile?.avatarMedium || profile?.avatarLarger
     || profile?.avatar_medium?.url_list?.[0] || c.user.avatarUrl;
   const initial = nick.charAt(0).toUpperCase();
   const fmt = n => (n == null || n === '') ? '0' : n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'K' : String(n);
+
+  let statsHtml = '';
+  if (profile) {
+    if (profile._reddit) {
+      statsHtml = `<div class="profile-stats">
+        <div class="pstat"><div class="pstat-v">${fmt(profile.heartCount)}</div><div class="pstat-l">业力值</div></div>
+        <div class="pstat"><div class="pstat-v">—</div><div class="pstat-l">关注者</div></div>
+        <div class="pstat"><div class="pstat-v">—</div><div class="pstat-l">帖子数</div></div>
+      </div>`;
+    } else if (profile._li) {
+      statsHtml = `<div class="profile-stats">
+        <div class="pstat"><div class="pstat-v">${fmt(profile.followerCount)}</div><div class="pstat-l">关注者</div></div>
+        <div class="pstat"><div class="pstat-v">${fmt(profile.followingCount)}</div><div class="pstat-l">关注</div></div>
+        <div class="pstat"><div class="pstat-v">${fmt(profile.heartCount)}</div><div class="pstat-l">联系人</div></div>
+      </div>`;
+    } else if (profile._x) {
+      statsHtml = `<div class="profile-stats">
+        <div class="pstat"><div class="pstat-v">${fmt(profile.followerCount)}</div><div class="pstat-l">关注者</div></div>
+        <div class="pstat"><div class="pstat-v">${fmt(profile.followingCount)}</div><div class="pstat-l">正在关注</div></div>
+        <div class="pstat"><div class="pstat-v">${fmt(profile.heartCount)}</div><div class="pstat-l">推文数</div></div>
+      </div>`;
+    } else if (profile._ig) {
+      statsHtml = `<div class="profile-stats">
+        <div class="pstat"><div class="pstat-v">${fmt(profile.followerCount)}</div><div class="pstat-l">粉丝</div></div>
+        <div class="pstat"><div class="pstat-v">${fmt(profile.followingCount)}</div><div class="pstat-l">关注</div></div>
+        <div class="pstat"><div class="pstat-v">${fmt(profile.heartCount)}</div><div class="pstat-l">帖子数</div></div>
+      </div>`;
+    } else {
+      statsHtml = `<div class="profile-stats">
+        <div class="pstat"><div class="pstat-v">${fmt(profile.followerCount ?? profile.follower_count)}</div><div class="pstat-l">粉丝</div></div>
+        <div class="pstat"><div class="pstat-v">${fmt(profile.followingCount ?? profile.following_count)}</div><div class="pstat-l">关注</div></div>
+        <div class="pstat"><div class="pstat-v">${fmt(profile.heartCount ?? profile.heart ?? profile.total_favorited)}</div><div class="pstat-l">获赞</div></div>
+      </div>`;
+    }
+  }
 
   bd.innerHTML = `
     <div class="profile-hd">
@@ -2037,14 +2771,8 @@ async function openUserModal(idx) {
         <div class="profile-handle">${handle ? '@' + h(handle) : '未知账号'}</div>
       </div>
     </div>
-    ${profile ? `
-    <div class="profile-stats">
-      <div class="pstat"><div class="pstat-v">${fmt(profile.followerCount ?? profile.follower_count)}</div><div class="pstat-l">粉丝</div></div>
-      <div class="pstat"><div class="pstat-v">${fmt(profile.followingCount ?? profile.following_count)}</div><div class="pstat-l">关注</div></div>
-      <div class="pstat"><div class="pstat-v">${fmt(profile.heartCount ?? profile.heart ?? profile.total_favorited)}</div><div class="pstat-l">获赞</div></div>
-    </div>
-    <div class="profile-bio">${h(bio)}</div>
-    ` : `<div style="font-size:12px;color:var(--warn);background:var(--bg-1);padding:9px 12px;border-radius:8px;margin-bottom:14px">
+    ${profile ? `${statsHtml}<div class="profile-bio">${h(bio)}</div>`
+      : `<div style="font-size:12px;color:var(--warn);background:var(--bg-1);padding:9px 12px;border-radius:8px;margin-bottom:14px">
       ⚠️ 无法获取完整资料（需有效 Token 且账号公开）</div>`}
     <div style="font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">该用户评论记录 (${userComments.length})</div>
     <div class="pclist">
@@ -2059,7 +2787,17 @@ async function openUserModal(idx) {
   if (handle) {
     const lb = document.getElementById('modal-link-btn');
     lb.style.display = 'inline-flex';
-    lb.onclick = () => window.open('https://www.tiktok.com/@' + handle, '_blank');
+    const profileUrl = plat === 'instagram' ? `https://www.instagram.com/${handle}/`
+      : plat === 'reddit'   ? `https://www.reddit.com/user/${handle}/`
+      : plat === 'linkedin' ? `https://www.linkedin.com/in/${handle}/`
+      : plat === 'x'        ? `https://x.com/${handle}`
+      : `https://www.tiktok.com/@${handle}`;
+    lb.textContent = plat === 'instagram' ? '📷 IG 主页'
+      : plat === 'reddit'   ? '👾 Reddit 主页'
+      : plat === 'linkedin' ? '💼 LinkedIn 主页'
+      : plat === 'x'        ? '𝕏 X 主页'
+      : '🎵 TikTok 主页';
+    lb.onclick = () => window.open(profileUrl, '_blank');
   }
 }
 
@@ -2073,30 +2811,43 @@ function doExport(fmt) {
   if (!list.length) { toast('没有可导出的数据', 'w'); return; }
 
   if (fmt === 'csv') {
-    const cols = ['序号','评论内容','用户昵称','账号','等级','分数','评分理由','点赞数','时间','视频ID','主页链接'];
-    const rows = list.map((c, i) => [
-      i+1,
-      `"${(c.text||'').replace(/"/g,'""')}"`,
-      `"${(c.user.nickname||'').replace(/"/g,'""')}"`,
-      c.user.uniqueId||'',
-      c.grade||'',
-      c.score||'',
-      `"${(c.reason||'').replace(/"/g,'""')}"`,
-      c.likes||0, c.time||'', c.awemeId||'',
-      c.user.uniqueId ? `https://www.tiktok.com/@${c.user.uniqueId}` : ''
-    ]);
+    const cols = ['序号','平台','评论内容','用户昵称','账号','等级','分数','评分理由','点赞数','时间','内容ID','主页链接'];
+    const rows = list.map((c, i) => {
+      const plat = c.platform || 'tiktok';
+      const profileUrl = plat === 'instagram' ? `https://www.instagram.com/${c.user.uniqueId||''}/`
+        : plat === 'reddit'   ? `https://www.reddit.com/user/${c.user.uniqueId||''}/`
+        : plat === 'linkedin' ? `https://www.linkedin.com/in/${c.user.uniqueId||''}/`
+        : plat === 'x'        ? `https://x.com/${c.user.uniqueId||''}`
+        : (c.user.uniqueId ? `https://www.tiktok.com/@${c.user.uniqueId}` : '');
+      return [
+        i+1, plat,
+        `"${(c.text||'').replace(/"/g,'""')}"`,
+        `"${(c.user.nickname||'').replace(/"/g,'""')}"`,
+        c.user.uniqueId||'',
+        c.grade||'', c.score||'',
+        `"${(c.reason||'').replace(/"/g,'""')}"`,
+        c.likes||0, c.time||'', c.awemeId||'', profileUrl
+      ];
+    });
     dl('\uFEFF' + [cols.join(','), ...rows.map(r => r.join(','))].join('\n'),
       `commentlead_${Date.now()}.csv`, 'text/csv;charset=utf-8');
   } else {
-    const data = list.map(c => ({
-      comment_id: c.id, text: c.text,
-      user: { nickname: c.user.nickname, unique_id: c.user.uniqueId, uid: c.user.uid,
-              avatar: c.user.avatarUrl,
-              profile_url: c.user.uniqueId ? `https://www.tiktok.com/@${c.user.uniqueId}` : null },
-      grade: c.grade, grade_label: GRADE_LABEL[c.grade]||'',
-      score: c.score, reason: c.reason,
-      likes: c.likes, time: c.time, aweme_id: c.awemeId
-    }));
+    const data = list.map(c => {
+      const plat = c.platform || 'tiktok';
+      const profileUrl = plat === 'instagram' ? `https://www.instagram.com/${c.user.uniqueId||''}/`
+        : plat === 'reddit'   ? `https://www.reddit.com/user/${c.user.uniqueId||''}/`
+        : plat === 'linkedin' ? `https://www.linkedin.com/in/${c.user.uniqueId||''}/`
+        : plat === 'x'        ? `https://x.com/${c.user.uniqueId||''}`
+        : (c.user.uniqueId ? `https://www.tiktok.com/@${c.user.uniqueId}` : null);
+      return {
+        comment_id: c.id, platform: plat, text: c.text,
+        user: { nickname: c.user.nickname, unique_id: c.user.uniqueId, uid: c.user.uid,
+                avatar: c.user.avatarUrl, profile_url: profileUrl },
+        grade: c.grade, grade_label: GRADE_LABEL[c.grade]||'',
+        score: c.score, reason: c.reason,
+        likes: c.likes, time: c.time, content_id: c.awemeId
+      };
+    });
     dl(JSON.stringify(data, null, 2), `commentlead_${Date.now()}.json`, 'application/json');
   }
   toast(`已导出 ${list.length} 条数据`, 's');
@@ -2170,6 +2921,7 @@ try {
 
 loadConfigUI();
 updateStatusDot();
+setPlatform('tiktok');
 gotoTab('search');
 setTimeout(() => toast('欢迎使用 Comment Catcher！输入关键词搜索相关热点视频，抓取评论区意向客户！', 'i'), 600);
 </script>
