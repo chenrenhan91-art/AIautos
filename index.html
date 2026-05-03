@@ -572,7 +572,220 @@
     .compare-chk { color: var(--ga); font-size: 14px; }
     .compare-x { color: var(--t3); font-size: 14px; }
     .compare-val { color: var(--t1); font-weight: 600; }
+
+    /* ─── Industry Insight Dashboard ─── */
+    .insight-hero {
+      display: flex; align-items: center; gap: 14px;
+      padding: 22px 26px;
+      background: linear-gradient(135deg, rgba(79,142,247,.12) 0%, rgba(147,51,234,.08) 100%);
+      border: 1px solid var(--border); border-radius: 16px;
+      margin-bottom: 22px; position: relative; overflow: hidden;
+    }
+    .insight-hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 80% 50%, rgba(79,142,247,.07), transparent);
+      pointer-events: none;
+    }
+    .insight-hero-icon {
+      width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--accent), #9333ea);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; box-shadow: 0 6px 20px rgba(79,142,247,.3);
+    }
+    .insight-hero-text h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .insight-hero-text p { font-size: 13px; color: var(--t2); line-height: 1.5; }
+    .insight-input-row {
+      display: flex; gap: 10px; align-items: stretch;
+      padding: 18px 20px; background: var(--bg-2);
+      border: 1px solid var(--border); border-radius: 14px; margin-bottom: 22px;
+    }
+    .insight-input {
+      flex: 1; background: var(--bg-3); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 12px 16px; font-size: 14px;
+      color: var(--t1); outline: none; transition: border-color .15s;
+      font-family: inherit;
+    }
+    .insight-input:focus { border-color: var(--accent); }
+    .insight-input::placeholder { color: var(--t3); }
+    .insight-btn {
+      padding: 0 28px; border-radius: 10px; border: none; cursor: pointer;
+      background: linear-gradient(135deg, var(--accent), #9333ea);
+      color: #fff; font-size: 14px; font-weight: 700; font-family: inherit;
+      white-space: nowrap; box-shadow: 0 4px 16px rgba(79,142,247,.35);
+      transition: opacity .15s, transform .1s;
+    }
+    .insight-btn:hover { opacity: .9; transform: translateY(-1px); }
+    .insight-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .insight-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+    .insight-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+    @media (max-width: 900px) {
+      .insight-grid-3 { grid-template-columns: 1fr 1fr; }
+      .insight-grid-2 { grid-template-columns: 1fr; }
+    }
+    .icard {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+    }
+    .icard-head {
+      padding: 14px 18px 12px; display: flex; align-items: center;
+      justify-content: space-between; border-bottom: 1px solid var(--border);
+    }
+    .icard-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 700; color: var(--t1);
+    }
+    .icard-title-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+    }
+    .icard-badge {
+      font-size: 10.5px; font-weight: 600; padding: 2px 9px;
+      border-radius: 12px; background: var(--accent-glow);
+      color: var(--accent); border: 1px solid rgba(79,142,247,.25);
+    }
+    .icard-body { padding: 18px; }
+    /* KPI row */
+    .kpi-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+    .kpi-cell {
+      background: var(--bg-3); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 12px; text-align: center;
+    }
+    .kpi-val { font-size: 22px; font-weight: 800; line-height: 1; margin-bottom: 5px; }
+    .kpi-lbl { font-size: 11px; color: var(--t2); font-weight: 500; }
+    .kpi-chg {
+      display: inline-block; font-size: 10.5px; font-weight: 700;
+      margin-top: 4px; padding: 1px 7px; border-radius: 8px;
+    }
+    .kpi-chg.up { background: rgba(34,197,94,.12); color: var(--ga); }
+    .kpi-chg.dn { background: rgba(244,63,94,.12); color: var(--danger); }
+    .kpi-chg.nt { background: rgba(107,114,128,.12); color: var(--t3); }
+    /* Trend sparkline */
+    .spark-wrap { margin-top: 4px; }
+    .spark-labels { display: flex; justify-content: space-between; margin-top: 4px; }
+    .spark-lbl { font-size: 10px; color: var(--t3); }
+    /* Bar chart */
+    .bar-list { display: flex; flex-direction: column; gap: 9px; }
+    .bar-row { display: flex; align-items: center; gap: 10px; font-size: 12.5px; }
+    .bar-label { width: 100px; color: var(--t2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+    .bar-track { flex: 1; height: 8px; background: var(--bg-3); border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
+    .bar-val { width: 32px; text-align: right; font-size: 12px; font-weight: 600; color: var(--t1); flex-shrink: 0; }
+    /* Tag cloud */
+    .tag-cloud { display: flex; flex-wrap: wrap; gap: 7px; }
+    .tag-chip {
+      padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+      cursor: default; border: 1.5px solid; transition: transform .1s;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .tag-chip:hover { transform: translateY(-1px); }
+    .tag-chip.ta { background: rgba(79,142,247,.10); border-color: rgba(79,142,247,.3); color: #7eb6ff; }
+    .tag-chip.tb { background: rgba(34,197,94,.10); border-color: rgba(34,197,94,.3); color: #4ade80; }
+    .tag-chip.tc { background: rgba(147,51,234,.10); border-color: rgba(147,51,234,.3); color: #c084fc; }
+    .tag-chip.td { background: rgba(245,158,11,.10); border-color: rgba(245,158,11,.3); color: #fbbf24; }
+    .tag-chip .heat { font-size: 10px; opacity: .7; }
+    /* News list */
+    .news-list { display: flex; flex-direction: column; gap: 12px; }
+    .news-item {
+      padding: 13px 15px; background: var(--bg-3);
+      border: 1px solid var(--border); border-radius: 10px;
+      transition: border-color .15s;
+    }
+    .news-item:hover { border-color: var(--border-2); }
+    .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .news-src {
+      font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 6px;
+      background: var(--accent-glow); color: var(--accent);
+    }
+    .news-time { font-size: 11px; color: var(--t3); }
+    .news-sentiment {
+      margin-left: auto; font-size: 10.5px; font-weight: 700;
+      padding: 2px 8px; border-radius: 6px;
+    }
+    .news-sentiment.pos { background: rgba(34,197,94,.12); color: var(--ga); }
+    .news-sentiment.neg { background: rgba(244,63,94,.12); color: var(--danger); }
+    .news-sentiment.neu { background: rgba(107,114,128,.12); color: var(--t3); }
+    .news-title { font-size: 13px; font-weight: 600; color: var(--t1); line-height: 1.45; margin-bottom: 4px; }
+    .news-summary { font-size: 12px; color: var(--t2); line-height: 1.55; }
+    /* Consumer persona */
+    .persona-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .persona-item {
+      background: var(--bg-3); border: 1px solid var(--border);
+      border-radius: 10px; padding: 13px;
+    }
+    .persona-label { font-size: 10.5px; color: var(--t3); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+    .persona-value { font-size: 13px; font-weight: 600; color: var(--t1); line-height: 1.5; }
+    /* Pain points */
+    .pain-list { display: flex; flex-direction: column; gap: 8px; }
+    .pain-item { display: flex; align-items: flex-start; gap: 10px; }
+    .pain-rank {
+      width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800;
+      background: rgba(244,63,94,.12); color: var(--danger);
+    }
+    .pain-rank.top { background: rgba(79,142,247,.15); color: var(--accent); }
+    .pain-text { font-size: 13px; color: var(--t2); line-height: 1.5; }
+    /* Opportunity tags */
+    .opp-list { display: flex; flex-direction: column; gap: 8px; }
+    .opp-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 13px; background: var(--bg-3);
+      border: 1px solid var(--border); border-radius: 10px;
+    }
+    .opp-icon { font-size: 16px; flex-shrink: 0; line-height: 1.3; }
+    .opp-body { flex: 1; }
+    .opp-title { font-size: 13px; font-weight: 600; color: var(--t1); margin-bottom: 2px; }
+    .opp-desc { font-size: 12px; color: var(--t2); line-height: 1.5; }
+    /* Competitor radar */
+    .comp-list { display: flex; flex-direction: column; gap: 8px; }
+    .comp-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 13px; background: var(--bg-3);
+      border: 1px solid var(--border); border-radius: 10px;
+    }
+    .comp-name { font-size: 13px; font-weight: 600; color: var(--t1); width: 90px; flex-shrink: 0; }
+    .comp-bars { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .comp-bar-row { display: flex; align-items: center; gap: 6px; font-size: 10.5px; }
+    .comp-bar-label { width: 36px; color: var(--t3); }
+    .comp-bar-track { flex: 1; height: 5px; background: var(--bg-2); border-radius: 3px; overflow: hidden; }
+    .comp-bar-fill { height: 100%; border-radius: 3px; }
+    .comp-score { font-size: 14px; font-weight: 800; flex-shrink: 0; min-width: 34px; text-align: right; }
+    /* Insight empty / loading state */
+    .insight-empty {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 64px 32px; text-align: center;
+      color: var(--t3);
+    }
+    .insight-empty-icon { font-size: 44px; margin-bottom: 14px; opacity: .5; }
+    .insight-empty h3 { font-size: 16px; color: var(--t2); font-weight: 600; margin-bottom: 8px; }
+    .insight-empty p { font-size: 13px; line-height: 1.6; max-width: 340px; }
+    .insight-loading {
+      display: flex; align-items: center; gap: 12px;
+      padding: 22px; color: var(--t2); font-size: 13px;
+    }
+    .i-spin {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid var(--border-2);
+      border-top-color: var(--accent);
+      animation: ispin .7s linear infinite; flex-shrink: 0;
+    }
+    @keyframes ispin { to { transform: rotate(360deg); } }
+    .insight-err {
+      padding: 14px 18px; background: rgba(244,63,94,.08);
+      border: 1px solid rgba(244,63,94,.2); border-radius: 10px;
+      color: var(--danger); font-size: 13px;
+    }
+    /* content-hint strip */
+    .insight-note {
+      font-size: 11.5px; color: var(--t3); text-align: center;
+      padding: 8px 0 0; letter-spacing: .2px;
+    }
+    .insight-note b { color: var(--t2); }
+    /* Fullscreen result area */
+    #insight-result { min-height: 200px; }
   </style>
+</head>
 </head>
 <body>
 
@@ -588,6 +801,9 @@
     <div class="nav-item active" data-tab="search" onclick="gotoTab('search')">
       <span class="ni">🔍</span> 工作台
       <span class="nav-badge" id="nb">0</span>
+    </div>
+    <div class="nav-item" data-tab="insight" onclick="gotoTab('insight')">
+      <span class="ni">📊</span> 行业洞察
     </div>
     <div class="nav-item" data-tab="config" onclick="gotoTab('config')">
       <span class="ni">⚙️</span> 设置
@@ -716,6 +932,47 @@
       </div>
 
     </div><!-- /tab-search -->
+
+    <!-- ═══ TAB: insight (行业品类洞察) ═══ -->
+    <div id="tab-insight" class="tab" style="display:none">
+
+      <!-- Hero -->
+      <div class="insight-hero">
+        <div class="insight-hero-icon">📊</div>
+        <div class="insight-hero-text">
+          <h2>行业品类洞察</h2>
+          <p>输入任意行业或品类，AI 实时生成增长趋势、热点动态、关键词图谱与市场机会分析</p>
+        </div>
+        <div style="margin-left:auto;text-align:right;flex-shrink:0">
+          <div id="insight-industry-badge" style="font-size:20px;font-weight:800;color:var(--accent);display:none"></div>
+          <div id="insight-update-time" style="font-size:11px;color:var(--t3);margin-top:4px;display:none"></div>
+        </div>
+      </div>
+
+      <!-- Input row -->
+      <div class="insight-input-row">
+        <input id="insight-q" class="insight-input" type="text"
+          placeholder="例：跨境电商虚拟卡 / 宠物零食 / SaaS 工具 / 美妆护肤 / AI 配件..."
+          onkeydown="if(event.key==='Enter')runInsight()">
+        <button class="insight-btn" id="insight-btn" onclick="runInsight()">
+          🔍&nbsp; 生成洞察
+        </button>
+      </div>
+      <p class="insight-note" style="margin-top:-14px;margin-bottom:18px">
+        <b>需要配置 AI API Key</b>（Gemini 或 OpenAI）· 每次分析消耗约 2000 tokens
+      </p>
+
+      <!-- Result area -->
+      <div id="insight-result">
+        <!-- Default empty state -->
+        <div id="insight-empty" class="insight-empty">
+          <div class="insight-empty-icon">🔭</div>
+          <h3>还没有分析结果</h3>
+          <p>输入你感兴趣的行业或品类关键词，点击「生成洞察」，AI 将为你输出完整的市场洞察仪表盘</p>
+        </div>
+      </div>
+
+    </div><!-- /tab-insight -->
 
     <!-- ═══ TAB: config (设置) ═══ -->
     <div id="tab-config" class="tab" style="display:none">
@@ -1022,7 +1279,7 @@ const S = {
   }
 };
 
-const TITLES = { search:'工作台', config:'设置', pricing:'订阅计划' };
+const TITLES = { search:'工作台', insight:'行业品类洞察', config:'设置', pricing:'订阅计划' };
 const GRADE_LABEL = { A:'强需求', B:'潜在需求', C:'弱兴趣', D:'无效' };
 
 // ─────────────────────────────────────────
@@ -1038,8 +1295,382 @@ function gotoTab(t) {
 }
 
 // ─────────────────────────────────────────
-// PRICING PERIOD
+// NAVIGATION
 // ─────────────────────────────────────────
+function gotoTab(t) {
+  if (t === 'dashboard' || t === 'results') t = 'search';
+  S.tab = t;
+  document.querySelectorAll('.tab').forEach(el => el.style.display = 'none');
+  document.getElementById('tab-' + t).style.display = 'block';
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.tab === t));
+  document.getElementById('page-title').textContent = TITLES[t] || t;
+}
+
+// ─────────────────────────────────────────
+// INDUSTRY INSIGHT
+// ─────────────────────────────────────────
+const INSIGHT_PROMPT = (industry) => `You are a senior market research analyst. The user wants a deep-dive insight report on the industry/category: "${industry}".
+
+Output ONLY a single valid JSON object with EXACTLY these keys (no extra text, no markdown fences):
+
+{
+  "industry": "显示用行业名",
+  "overview": {
+    "marketSize": "市场规模（带单位，如 $420B）",
+    "yoyGrowth": "+12.4%",
+    "yoyDir": "up",
+    "cagr": "18.2%",
+    "maturity": "成长期",
+    "opportunity": "高",
+    "opportunityColor": "green"
+  },
+  "trendSparkline": [42,48,53,61,58,67,72,79,85,91],
+  "trendLabels": ["Q1","Q2","Q3","Q4","Q1","Q2","Q3","Q4","Q1","Q2"],
+  "platformHeat": [
+    {"platform":"TikTok","score":88,"color":"#fe2c55"},
+    {"platform":"Instagram","score":76,"color":"#e1306c"},
+    {"platform":"Reddit","score":64,"color":"#ff4500"},
+    {"platform":"LinkedIn","score":45,"color":"#0a66c2"},
+    {"platform":"X (Twitter)","score":58,"color":"#888"}
+  ],
+  "hotNews": [
+    {
+      "title": "新闻标题（中文，15-25字）",
+      "summary": "一句话摘要（中文，30-50字）",
+      "source": "来源平台名",
+      "time": "2 days ago",
+      "sentiment": "pos"
+    }
+  ],
+  "tags": [
+    {"text":"标签文字","heat":"🔥","tier":"a"},
+    {"text":"标签2","heat":"⬆","tier":"b"}
+  ],
+  "keywords": [
+    {"word":"关键词","volume":"高","tier":"a"},
+    {"word":"关键词2","volume":"中","tier":"b"}
+  ],
+  "painPoints": [
+    {"rank":1,"text":"消费者痛点描述（中文，20-35字）","top":true},
+    {"rank":2,"text":"痛点2","top":true},
+    {"rank":3,"text":"痛点3","top":false},
+    {"rank":4,"text":"痛点4","top":false},
+    {"rank":5,"text":"痛点5","top":false}
+  ],
+  "persona": {
+    "age": "25-38岁",
+    "gender": "女性为主（68%）",
+    "income": "中高收入",
+    "motivation": "品质升级 / 解决痛点",
+    "channel": "社媒种草为主",
+    "device": "移动端 82%"
+  },
+  "opportunities": [
+    {"icon":"🚀","title":"机会标题","desc":"机会描述（20-35字）"},
+    {"icon":"💡","title":"机会2","desc":"描述2"},
+    {"icon":"🎯","title":"机会3","desc":"描述3"}
+  ],
+  "competitors": [
+    {"name":"竞争者名","reach":85,"engage":72,"sentiment":90,"score":82,"color":"#4f8ef7"},
+    {"name":"竞争者2","reach":70,"engage":80,"sentiment":65,"score":72,"color":"#22c55e"},
+    {"name":"竞争者3","reach":60,"engage":55,"sentiment":78,"score":64,"color":"#f59e0b"}
+  ]
+}
+
+Rules:
+- hotNews: exactly 5 items, sentiment is "pos"/"neg"/"neu"
+- tags: exactly 12 items, tier is "a"/"b"/"c"/"d" (distribute evenly)
+- keywords: exactly 10 items
+- painPoints: exactly 5 items
+- opportunities: exactly 3 items
+- competitors: exactly 3 items (real or representative brands/players)
+- ALL text values must be in Chinese unless it is a brand name or English metric
+- Return ONLY the JSON object, nothing else`;
+
+async function runInsight() {
+  const q = document.getElementById('insight-q').value.trim();
+  if (!q) { toast('请输入行业或品类关键词', 'w'); return; }
+
+  const key = S.config.aiKey;
+  const provider = S.config.provider;
+  if (!key || provider === 'keyword') {
+    toast('行业洞察需要配置 AI API Key（Gemini 或 OpenAI）', 'e');
+    gotoTab('config');
+    return;
+  }
+
+  const btn = document.getElementById('insight-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="i-spin" style="display:inline-block;vertical-align:middle;margin-right:8px"></span>分析中...';
+
+  const resultEl = document.getElementById('insight-result');
+  resultEl.innerHTML = `<div class="insight-loading"><div class="i-spin"></div>AI 正在深度分析「${q}」行业，约需 10-20 秒...</div>`;
+
+  try {
+    let raw;
+    const prompt = INSIGHT_PROMPT(q);
+    if (provider === 'openai') {
+      const r = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.4, max_tokens: 3500
+        })
+      });
+      if (!r.ok) throw new Error('OpenAI ' + r.status);
+      const d = await r.json();
+      raw = d.choices?.[0]?.message?.content || '';
+    } else {
+      const r = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key=${key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.4, maxOutputTokens: 4000 }
+          })
+        }
+      );
+      if (!r.ok) throw new Error('Gemini ' + r.status);
+      const d = await r.json();
+      raw = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    }
+
+    // Parse JSON — strip fences if any
+    const stripped = raw.replace(/^```[a-z]*\n?/, '').replace(/\n?```$/, '').trim();
+    const m = stripped.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error('AI 未返回有效 JSON');
+    const data = JSON.parse(m[0]);
+    renderInsightDashboard(data, q);
+  } catch (e) {
+    resultEl.innerHTML = `<div class="insight-err">⚠️ 分析失败：${e.message}。请检查 API Key 是否有效，或稍后重试。</div>`;
+    console.error('Insight error:', e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔍&nbsp; 生成洞察';
+  }
+}
+
+function renderInsightDashboard(d, query) {
+  // Show industry badge
+  const badge = document.getElementById('insight-industry-badge');
+  const timeEl = document.getElementById('insight-update-time');
+  badge.textContent = d.industry || query;
+  badge.style.display = 'block';
+  timeEl.textContent = '分析时间：' + new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  timeEl.style.display = 'block';
+
+  const ov = d.overview || {};
+  const oppColor = { green: 'var(--ga)', yellow: 'var(--gb)', red: 'var(--danger)' }[ov.opportunityColor] || 'var(--ga)';
+
+  // ── KPI row ──
+  const kpiHtml = `
+    <div class="kpi-row">
+      <div class="kpi-cell">
+        <div class="kpi-val" style="color:var(--accent)">${ov.marketSize||'—'}</div>
+        <div class="kpi-lbl">市场规模</div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-val" style="color:${ov.yoyDir==='up'?'var(--ga)':'var(--danger)'}">${ov.yoyGrowth||'—'}</div>
+        <div class="kpi-lbl">年增长率</div>
+        <div class="kpi-chg ${ov.yoyDir==='up'?'up':'dn'}">${ov.yoyDir==='up'?'▲ 上升趋势':'▼ 下降趋势'}</div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-val" style="color:var(--gc)">${ov.cagr||'—'}</div>
+        <div class="kpi-lbl">复合增长率</div>
+        <div class="kpi-chg nt">${ov.maturity||'成长期'}</div>
+      </div>
+    </div>`;
+
+  // ── Spark SVG ──
+  const spark = (arr, w=320, h=72) => {
+    if (!arr||!arr.length) return '';
+    const max = Math.max(...arr), min = Math.min(...arr);
+    const range = max - min || 1;
+    const step = w / (arr.length - 1);
+    const pts = arr.map((v,i) => `${i*step},${h - ((v-min)/range)*(h-10)+5}`).join(' ');
+    const area = `${pts} ${(arr.length-1)*step},${h+5} 0,${h+5}`;
+    return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="width:100%;height:auto">
+      <defs>
+        <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--accent)" stop-opacity=".35"/>
+          <stop offset="100%" stop-color="var(--accent)" stop-opacity=".02"/>
+        </linearGradient>
+      </defs>
+      <polygon points="${area}" fill="url(#sg)"/>
+      <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>
+      ${arr.map((v,i)=>i===arr.length-1?`<circle cx="${i*step}" cy="${h-((v-min)/range)*(h-10)+5}" r="3.5" fill="var(--accent)"/>`:'').join('')}
+    </svg>`;
+  };
+  const labels = d.trendLabels || [];
+  const sparkHtml = `
+    <div class="spark-wrap">${spark(d.trendSparkline)}</div>
+    ${labels.length ? `<div class="spark-labels">${labels.map(l=>`<span class="spark-lbl">${l}</span>`).join('')}</div>` : ''}`;
+
+  // ── Platform heat bars ──
+  const phMax = Math.max(...(d.platformHeat||[]).map(p=>p.score), 1);
+  const platformHtml = `<div class="bar-list">${(d.platformHeat||[]).map(p => `
+    <div class="bar-row">
+      <div class="bar-label">${p.platform}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(p.score/phMax*100)}%;background:${p.color}"></div></div>
+      <div class="bar-val">${p.score}</div>
+    </div>`).join('')}</div>`;
+
+  // ── News ──
+  const sentMap = { pos:['pos','正面'], neg:['neg','负面'], neu:['neu','中性'] };
+  const newsHtml = `<div class="news-list">${(d.hotNews||[]).map(n => {
+    const [cls, lbl] = sentMap[n.sentiment] || ['neu','中性'];
+    return `<div class="news-item">
+      <div class="news-meta">
+        <span class="news-src">${n.source||'Media'}</span>
+        <span class="news-time">${n.time||''}</span>
+        <span class="news-sentiment ${cls}">${lbl}</span>
+      </div>
+      <div class="news-title">${n.title||''}</div>
+      <div class="news-summary">${n.summary||''}</div>
+    </div>`;
+  }).join('')}</div>`;
+
+  // ── Tags ──
+  const tagHtml = `<div class="tag-cloud">${(d.tags||[]).map(t =>
+    `<div class="tag-chip t${t.tier||'a'}">${t.heat||''} ${t.text}</div>`
+  ).join('')}</div>`;
+
+  // ── Keywords bar ──
+  const volScore = { 高:100, 中:65, 低:35 };
+  const kwHtml = `<div class="bar-list">${(d.keywords||[]).map(k => `
+    <div class="bar-row">
+      <div class="bar-label">${k.word}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${volScore[k.volume]||50}%;background:var(--gc)"></div></div>
+      <div class="bar-val" style="color:var(--gc);font-size:11px">${k.volume||''}</div>
+    </div>`).join('')}</div>`;
+
+  // ── Pain points ──
+  const painHtml = `<div class="pain-list">${(d.painPoints||[]).map(p => `
+    <div class="pain-item">
+      <div class="pain-rank${p.top?' top':''}">#${p.rank}</div>
+      <div class="pain-text">${p.text}</div>
+    </div>`).join('')}</div>`;
+
+  // ── Persona ──
+  const persona = d.persona || {};
+  const personaHtml = `<div class="persona-grid">
+    ${[['年龄段',persona.age],['性别分布',persona.gender],['收入层次',persona.income],['购买动机',persona.motivation],['获客渠道',persona.channel],['设备偏好',persona.device]]
+      .map(([l,v])=>`<div class="persona-item"><div class="persona-label">${l}</div><div class="persona-value">${v||'—'}</div></div>`).join('')}
+  </div>`;
+
+  // ── Opportunities ──
+  const oppHtml = `<div class="opp-list">${(d.opportunities||[]).map(o => `
+    <div class="opp-item">
+      <div class="opp-icon">${o.icon||'💡'}</div>
+      <div class="opp-body"><div class="opp-title">${o.title}</div><div class="opp-desc">${o.desc}</div></div>
+    </div>`).join('')}</div>`;
+
+  // ── Competitors ──
+  const compHtml = `<div class="comp-list">${(d.competitors||[]).map(c => `
+    <div class="comp-item">
+      <div class="comp-name">${c.name}</div>
+      <div class="comp-bars">
+        ${[['触达',c.reach,c.color],['互动',c.engage,'var(--gc)'],['口碑',c.sentiment,'var(--ga)']].map(([l,v,col])=>`
+        <div class="comp-bar-row">
+          <div class="comp-bar-label">${l}</div>
+          <div class="comp-bar-track"><div class="comp-bar-fill" style="width:${v||0}%;background:${col}"></div></div>
+        </div>`).join('')}
+      </div>
+      <div class="comp-score" style="color:${c.color||'var(--accent)'}">${c.score}</div>
+    </div>`).join('')}</div>`;
+
+  // ── Assemble ──
+  document.getElementById('insight-result').innerHTML = `
+    <!-- Row 1: KPI overview + sparkline -->
+    <div class="insight-grid-2" style="grid-template-columns:1fr 1.5fr">
+      <div class="icard">
+        <div class="icard-head">
+          <div class="icard-title"><div class="icard-title-icon" style="background:rgba(79,142,247,.12)">📈</div>市场概览</div>
+          <div class="icard-badge" style="color:${oppColor};border-color:${oppColor}20;background:${oppColor}12">机会 ${ov.opportunity||'高'}</div>
+        </div>
+        <div class="icard-body">${kpiHtml}</div>
+      </div>
+      <div class="icard">
+        <div class="icard-head">
+          <div class="icard-title"><div class="icard-title-icon" style="background:rgba(79,142,247,.12)">📉</div>增长趋势</div>
+          <div class="icard-badge">近期走势</div>
+        </div>
+        <div class="icard-body">${sparkHtml}</div>
+      </div>
+    </div>
+
+    <!-- Row 2: Platform heat + Tags + Keywords -->
+    <div class="insight-grid-3">
+      <div class="icard">
+        <div class="icard-head">
+          <div class="icard-title"><div class="icard-title-icon" style="background:rgba(254,44,85,.10)">🔥</div>平台热度</div>
+        </div>
+        <div class="icard-body">${platformHtml}</div>
+      </div>
+      <div class="icard">
+        <div class="icard-head">
+          <div class="icard-title"><div class="icard-title-icon" style="background:rgba(79,142,247,.12)">🏷</div>热门 Tags</div>
+          <div class="icard-badge">12 个</div>
+        </div>
+        <div class="icard-body">${tagHtml}</div>
+      </div>
+      <div class="icard">
+        <div class="icard-head">
+          <div class="icard-title"><div class="icard-title-icon" style="background:rgba(167,139,250,.12)">🔑</div>核心关键词</div>
+          <div class="icard-badge">搜索量</div>
+        </div>
+        <div class="icard-body">${kwHtml}</div>
+      </div>
+    </div>
+
+    <!-- Row 3: News -->
+    <div class="icard" style="margin-bottom:18px">
+      <div class="icard-head">
+        <div class="icard-title"><div class="icard-title-icon" style="background:rgba(245,158,11,.12)">📰</div>行业热点动态</div>
+        <div class="icard-badge">近期 5 条</div>
+      </div>
+      <div class="icard-body" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">${newsHtml}</div>
+    </div>
+
+    <!-- Row 4: Pain points + Persona + Opportunities -->
+    <div class="insight-grid-3">
+      <div class="icard">
+        <div class="icard-head">
+          <div class="icard-title"><div class="icard-title-icon" style="background:rgba(244,63,94,.10)">😤</div>消费者痛点</div>
+          <div class="icard-badge" style="color:var(--danger);border-color:rgba(244,63,94,.2);background:rgba(244,63,94,.08)">Top 5</div>
+        </div>
+        <div class="icard-body">${painHtml}</div>
+      </div>
+      <div class="icard">
+        <div class="icard-head">
+          <div class="icard-title"><div class="icard-title-icon" style="background:rgba(34,197,94,.10)">👤</div>目标用户画像</div>
+        </div>
+        <div class="icard-body">${personaHtml}</div>
+      </div>
+      <div class="icard">
+        <div class="icard-head">
+          <div class="icard-title"><div class="icard-title-icon" style="background:rgba(79,142,247,.12)">🎯</div>市场机会点</div>
+        </div>
+        <div class="icard-body">${oppHtml}</div>
+      </div>
+    </div>
+
+    <!-- Row 5: Competitor analysis -->
+    <div class="icard" style="margin-bottom:8px">
+      <div class="icard-head">
+        <div class="icard-title"><div class="icard-title-icon" style="background:rgba(245,158,11,.12)">⚔️</div>竞品社媒声量对比</div>
+        <div class="icard-badge">触达 · 互动 · 口碑</div>
+      </div>
+      <div class="icard-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">${compHtml}</div>
+    </div>
+  `;
+}
+
+
 function setPricingPeriod(p) {
   ['month','quarter','year'].forEach(k => {
     document.getElementById('pt-' + k).classList.toggle('on', k === p);
