@@ -1958,6 +1958,31 @@ function setMode(m) {
 // ─────────────────────────────────────────
 const BASE = 'https://api.tikhub.io';
 
+/**
+ * Recursively find the first non-empty array inside a response payload.
+ * Checks well-known keys first, then falls back to any array found at depth ≤ 4.
+ */
+function findItemsArray(obj, depth = 0) {
+  if (!obj || typeof obj !== 'object' || depth > 4) return null;
+  if (Array.isArray(obj) && obj.length > 0) return obj;
+  const PRIORITY = ['items', 'posts', 'data', 'elements', 'list', 'results',
+    'feeds', 'reels', 'tweets', 'timeline_list', 'content', 'children',
+    'medias', 'clips', 'comments', 'entries'];
+  for (const k of PRIORITY) {
+    const v = obj[k];
+    if (Array.isArray(v) && v.length > 0) return v;
+  }
+  for (const k of Object.keys(obj)) {
+    const v = obj[k];
+    if (Array.isArray(v) && v.length > 0) return v;
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      const found = findItemsArray(v, depth + 1);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 async function tkGet(path, params = {}) {
   if (!S.config.token) throw new Error('请先在「API 配置」中填写 Catcher Token');
   const proxy = (S.config.proxyUrl || '').replace(/\/$/, '');
@@ -1991,7 +2016,9 @@ async function igSearchPosts(keyword, count = 12) {
   // search_reels returns media posts matching the keyword
   const d = await tkGet('/api/v1/instagram/v2/search_reels', { keyword });
   const items = d?.data?.items || d?.data?.reels || d?.data?.medias ||
-    d?.data?.clips || (Array.isArray(d?.data) ? d.data : []);
+    d?.data?.clips || (Array.isArray(d?.data) ? d.data : []) ||
+    findItemsArray(d?.data) || [];
+  if (!items.length) console.warn('[igSearch] empty result, raw d.data:', JSON.stringify(d?.data)?.slice(0, 500));
   return items.slice(0, count).map(item => {
     const m = item.media || item;
     const user = m.user || m.owner || {};
@@ -2106,7 +2133,9 @@ async function rdSearchPosts(keyword, count = 12) {
   });
   // formatted response: data.posts[] or data.data[] or data.children[]
   const items = d?.data?.posts || d?.data?.data ||
-    d?.data?.children?.map(c => c) || (Array.isArray(d?.data) ? d.data : []);
+    d?.data?.children?.map(c => c) || (Array.isArray(d?.data) ? d.data : []) ||
+    findItemsArray(d?.data) || [];
+  if (!items.length) console.warn('[rdSearch] empty result, raw d.data:', JSON.stringify(d?.data)?.slice(0, 500));
   return items.slice(0, count).map(post => {
     const p = post.data || post;
     const permalink = p.permalink
@@ -2229,7 +2258,9 @@ async function liSearchPosts(keyword, count = 12) {
     hashtag, count
   });
   const items = d?.data?.elements || d?.data?.posts || d?.data?.data ||
-    d?.data?.items || (Array.isArray(d?.data) ? d.data : []);
+    d?.data?.items || (Array.isArray(d?.data) ? d.data : []) ||
+    findItemsArray(d?.data) || [];
+  if (!items.length) console.warn('[liSearch] empty result, raw d.data:', JSON.stringify(d?.data)?.slice(0, 500));
   return items.slice(0, count).map(post => {
     const p = post.data || post;
     const actor = p.actor || p.author || p.miniProfile || {};
@@ -2326,8 +2357,10 @@ async function xSearchTweets(keyword, count = 12) {
     e.content?.itemContent?.tweet_results?.result ||
     e.content?.content?.tweetResult?.result
   ).filter(Boolean);
-  const fallback = d?.data?.tweets || d?.data?.data || (Array.isArray(d?.data) ? d.data : []);
+  const fallback = d?.data?.tweets || d?.data?.data || (Array.isArray(d?.data) ? d.data : []) ||
+    findItemsArray(d?.data) || [];
   const all = items.length ? items : fallback;
+  if (!all.length) console.warn('[xSearch] empty result, raw d.data:', JSON.stringify(d?.data)?.slice(0, 500));
   return all.slice(0, count).map(item => {
     const tw = item.tweet || item;
     const user = tw.core?.user_results?.result?.legacy || tw.user?.legacy || tw.user || {};
