@@ -1425,6 +1425,35 @@ Rules:
 - ALL text values must be in Chinese unless it is a brand name or English metric
 - Return ONLY the JSON object, nothing else`;
 
+const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+
+async function callGeminiText(prompt, opts = {}) {
+  const key = opts.key || S.config.aiKey;
+  const generationConfig = {
+    temperature: opts.temperature ?? 0.1,
+    maxOutputTokens: opts.maxOutputTokens ?? 1000
+  };
+  let lastErr = null;
+  for (const model of GEMINI_MODELS) {
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig })
+      }
+    );
+    if (r.ok) {
+      const d = await r.json();
+      return d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    }
+    const body = await r.text().catch(() => '');
+    lastErr = new Error(`Gemini ${r.status} (${model}): ${body.slice(0, 160)}`);
+    if (![400, 404].includes(r.status)) break;
+  }
+  throw lastErr || new Error('Gemini 请求失败');
+}
+
 async function runInsight() {
   const q = document.getElementById('insight-q').value.trim();
   if (!q) { toast('请输入行业或品类关键词', 'w'); return; }
@@ -1461,20 +1490,7 @@ async function runInsight() {
       const d = await r.json();
       raw = d.choices?.[0]?.message?.content || '';
     } else {
-      const r = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key=${key}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.4, maxOutputTokens: 4000 }
-          })
-        }
-      );
-      if (!r.ok) throw new Error('Gemini ' + r.status);
-      const d = await r.json();
-      raw = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      raw = await callGeminiText(prompt, { key, temperature: 0.4, maxOutputTokens: 4000 });
     }
 
     // Parse JSON — strip fences if any
@@ -1778,18 +1794,9 @@ Keywords: ${kws.map(k => `"${k}"`).join(', ')}`;
   try {
     let translations = [];
     if (S.config.provider === 'gemini') {
-      const r = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key=${S.config.aiKey}`,
-        { method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ contents:[{ parts:[{ text: prompt }] }],
-            generationConfig:{ maxOutputTokens:2000, temperature:0.1 } }) }
-      );
-      if (r.ok) {
-        const d = await r.json();
-        const txt = d.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
-        const m = txt.replace(/^```[a-z]*\n?/,'').replace(/\n?```$/,'').trim().match(/\[[\s\S]*\]/);
-        if (m) translations = JSON.parse(m[0]);
-      }
+      const txt = await callGeminiText(prompt, { maxOutputTokens: 2000, temperature: 0.1 });
+      const m = txt.replace(/^```[a-z]*\n?/,'').replace(/\n?```$/,'').trim().match(/\[[\s\S]*\]/);
+      if (m) translations = JSON.parse(m[0]);
     } else if (S.config.provider === 'openai') {
       const r = await fetch('https://api.openai.com/v1/chat/completions', {
         method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer '+S.config.aiKey},
@@ -1836,15 +1843,7 @@ async function generateKeywords() {
 
     let keywords = '';
     if (S.config.provider === 'gemini') {
-      const r = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key=${S.config.aiKey}`,
-        { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.3, maxOutputTokens: 300 } }) }
-      );
-      if (!r.ok) throw new Error('Gemini ' + r.status);
-      const d = await r.json();
-      keywords = d.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+      keywords = (await callGeminiText(prompt, { temperature: 0.3, maxOutputTokens: 300 })).trim();
     } else {
       const r = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST', headers: { 'Content-Type': 'application/json',
@@ -2024,16 +2023,35 @@ function collectArrays(obj, depth = 0, out = [], seen = new Set()) {
   }
   if (typeof obj !== 'object') return out;
   seen.add(obj);
+  const values = Object.values(obj);
+  if (values.length >= 2 && values.some(v => v && typeof v === 'object' && !Array.isArray(v))) {
+    const objectRows = values.filter(v => v && typeof v === 'object' && !Array.isArray(v));
+    if (objectRows.length >= 2) out.push(objectRows);
+  }
   const priority = ['items', 'posts', 'data', 'elements', 'list', 'results', 'feeds',
     'reels', 'tweets', 'children', 'comments', 'entries', 'instructions'];
   const keys = [...priority.filter(k => k in obj), ...Object.keys(obj).filter(k => !priority.includes(k))];
   keys.forEach(k => collectArrays(obj[k], depth + 1, out, seen));
   return out;
 }
+function contentQuality(v) {
+  if (!v) return 0;
+  let q = 1;
+  if (v.title && v.title !== '（无标题）' && v.title.length > 3) q += 8;
+  if (v.author && !/[?？]$/.test(v.author) && !v.author.includes('/?')) q += 4;
+  if (v.videoUrl) q += 3;
+  if (v.uniqueId) q += 2;
+  if (v.coverUrl) q += 1;
+  if ((v.likeCount || 0) + (v.commentCount || 0) + (v.shareCount || 0) > 0) q += 2;
+  return q;
+}
 function mapContentItems(raw, directArrays, normalizer, limit, label) {
   const candidates = [...directArrays.filter(a => Array.isArray(a) && a.length), ...collectArrays(raw)];
   const best = candidates
-    .map(a => ({ a, score: a.slice(0, 15).reduce((n, it) => n + (normalizer(it) ? 1 : 0), 0) }))
+    .map(a => {
+      const rows = a.slice(0, 20).map(normalizer).filter(Boolean);
+      return { a, rows, score: rows.reduce((n, row) => n + contentQuality(row), 0) };
+    })
     .filter(x => x.score > 0)
     .sort((x, y) => y.score - x.score)[0]?.a || [];
   const seen = new Set();
@@ -2071,26 +2089,33 @@ function normalizeIgPost(item) {
 }
 
 function normalizeRedditPost(item) {
-  const p = item?.data || item?.post || item;
+  const p = item?.data?.post || item?.post || item?.postInfo || item?.post_info ||
+    item?.node || item?.thing || item?.data || item;
   if (!p || typeof p !== 'object') return null;
-  const id = firstText(p.id, p.post_id, p.name).replace(/^t3_/, '');
+  const id = firstText(p.id, p.post_id, p.postId, p.name, p.thingId).replace(/^t3_/, '');
   const permalink = p.permalink
     ? (String(p.permalink).startsWith('http') ? p.permalink : 'https://www.reddit.com' + p.permalink)
     : '';
-  const awemeId = permalink || id || firstUrl(p.url, p.shortlink);
+  const postUrl = firstUrl(p.url, p.shortlink, p.outboundLink, p.media?.oembed?.provider_url);
+  const awemeId = permalink || id || postUrl;
   if (!awemeId) return null;
-  const likeCount = num(p.score, p.ups, p.upvote_count);
-  const commentCount = num(p.num_comments, p.numComments, p.comment_count);
+  const subreddit = firstText(p.subreddit, p.subredditName, p.subreddit_name, p.communityName,
+    p.subredditPrefixedName, p.subreddit_name_prefixed, p.community?.name, p.subredditInfo?.name).replace(/^r\//, '');
+  const author = firstText(p.author, p.authorName, p.author_name, p.userName, p.user?.name,
+    p.authorInfo?.name, p.authorInfo?.username);
+  const likeCount = num(p.score, p.ups, p.upvote_count, p.upvoteCount, p.voteCount);
+  const commentCount = num(p.num_comments, p.numComments, p.comment_count, p.commentCount, p.commentsCount);
+  const title = firstText(p.title, p.link_title, p.postTitle, p.displayText, p.body, p.selftext, p.text, p.richtextContent?.document);
   return {
     awemeId,
-    title: firstText(p.title, p.link_title, p.body, p.selftext)?.slice(0, 180) || '（无标题）',
-    coverUrl: firstUrl(p.thumbnail, p.preview?.images?.[0]?.source?.url, p.media?.oembed?.thumbnail_url),
+    title: title.slice(0, 180) || '（无标题）',
+    coverUrl: firstUrl(p.thumbnail, p.preview?.images?.[0]?.source?.url, p.media?.oembed?.thumbnail_url, p.image, p.images?.[0]),
     playCount: 0, likeCount, commentCount, shareCount: 0,
-    author: 'r/' + (p.subreddit || '?') + ' · u/' + (p.author || '?'),
-    uniqueId: p.author || '',
-    videoUrl: permalink || firstUrl(p.url, p.shortlink),
+    author: 'r/' + (subreddit || '?') + ' · u/' + (author || '?'),
+    uniqueId: author || '',
+    videoUrl: permalink || postUrl,
     engagementScore: likeCount + commentCount * 3,
-    platform: 'reddit', subreddit: p.subreddit || ''
+    platform: 'reddit', subreddit
   };
 }
 
@@ -2122,8 +2147,20 @@ function normalizeLinkedInPost(item) {
   };
 }
 
+function normalizeLinkedInUserRef(item) {
+  const u = item?.data || item?.profile || item?.miniProfile || item?.entity || item;
+  if (!u || typeof u !== 'object') return '';
+  const urnName = firstText(u.entityUrn, u.urn).match(/urn:li:fs_miniProfile:([^,]+)/)?.[1] || '';
+  const navName = firstText(u.navigationUrl, u.url).match(/\/in\/([^/?]+)/)?.[1] || '';
+  const username = firstText(u.username, u.publicIdentifier, u.vanityName, u.profileId, navName, urnName);
+  return username && !username.startsWith('urn:') ? username.replace(/^\/in\//, '').trim() : '';
+}
+
 function normalizeXTweet(item) {
-  const result = item?.tweet_results?.result || item?.tweetResult?.result || item?.content?.itemContent?.tweet_results?.result || item;
+  const result = item?.tweet_results?.result || item?.tweetResult?.result ||
+    item?.content?.itemContent?.tweet_results?.result || item?.content?.itemContent?.tweetResult?.result ||
+    item?.content?.content?.tweetResult?.result || item?.item?.itemContent?.tweet_results?.result ||
+    item?.result || item;
   const tw = result?.tweet || result;
   if (!tw || typeof tw !== 'object') return null;
   const legacy = tw.legacy || tw;
@@ -2404,6 +2441,15 @@ async function liSearchPosts(keyword, count = 12) {
     posts = posts.concat(mapContentItems(d?.data, [arr(d?.data?.elements), arr(d?.data?.posts), arr(d?.data?.data), arr(d?.data?.items), arr(d?.data)], normalizeLinkedInPost, count, 'liSearch'));
     if (posts.length >= count) break;
   }
+  if (posts.length < 3) {
+    const d = await tkGet('/api/v1/linkedin/web_v2/search_users', { keywords: keyword, count: 5 });
+    const users = [...new Set(collectArrays(d?.data).flatMap(a => a.map(normalizeLinkedInUserRef)).filter(Boolean))].slice(0, 4);
+    for (const username of users) {
+      const ud = await tkGet('/api/v1/linkedin/web_v2/get_user_posts', { username, count: 4 });
+      posts = posts.concat(mapContentItems(ud?.data, [arr(ud?.data?.elements), arr(ud?.data?.posts), arr(ud?.data?.data), arr(ud?.data?.items), arr(ud?.data)], normalizeLinkedInPost, 4, 'liUserPosts'));
+      if (posts.length >= count) break;
+    }
+  }
   const seen = new Set();
   return posts.filter(p => !seen.has(p.awemeId) && seen.add(p.awemeId)).slice(0, count);
 }
@@ -2452,11 +2498,15 @@ async function liFetchUser(publicId) {
 // ─────────────────────────────────────────
 async function xSearchTweets(keyword, count = 12) {
   // Correct endpoint: fetch_search_timeline (not search_timeline)
-  const d = await tkGet('/api/v1/twitter/web/fetch_search_timeline', {
-    keyword, search_type: 'Latest'
-  });
-  const entries = arr(d?.data?.timeline?.instructions).flatMap(i => arr(i.entries).concat(arr(i.addEntries?.entries)));
-  return mapContentItems(d?.data, [entries, arr(d?.data?.tweets), arr(d?.data?.data), arr(d?.data)], normalizeXTweet, count, 'xSearch');
+  for (const searchType of ['Latest', 'Top']) {
+    const d = await tkGet('/api/v1/twitter/web/fetch_search_timeline', {
+      keyword, search_type: searchType
+    });
+    const entries = arr(d?.data?.timeline?.instructions).flatMap(i => arr(i.entries).concat(arr(i.addEntries?.entries)));
+    const rows = mapContentItems(d?.data, [entries, arr(d?.data?.tweets), arr(d?.data?.data), arr(d?.data)], normalizeXTweet, count, 'xSearch');
+    if (rows.length) return rows;
+  }
+  return [];
 }
 
 function xExtractTweetId(url) {
@@ -2595,14 +2645,7 @@ ${videos.map((v,i) => `${i+1}. ID:${v.awemeId} likes:${fmtNum(v.likeCount)} comm
       const d = await r.json();
       txt = d.choices?.[0]?.message?.content || '';
     } else {
-      const r = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key=${S.config.aiKey}`,
-        { method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0.1, maxOutputTokens:700} }) }
-      );
-      if (!r.ok) throw new Error('Gemini ' + r.status);
-      const d = await r.json();
-      txt = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      txt = await callGeminiText(prompt, { temperature: 0.1, maxOutputTokens: 700 });
     }
     return normalizeRankedResult(txt ? parseJsonArray(txt) : [], videos, keyword);
   } catch (e) {
@@ -3062,20 +3105,10 @@ async function aiScoreBatch(batch, provider, platform = 'tiktok') {
     const d = await r.json();
     return parseJsonArray(d.choices?.[0]?.message?.content || '[]');
   } else {
-    const r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key=${S.config.aiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: buildAiPrompt(platform) + '\n\nComments:\n' + items }] }],
-          generationConfig: { temperature: 0.1, maxOutputTokens: 3000 }
-        })
-      }
-    );
-    if (!r.ok) throw new Error('Gemini ' + r.status);
-    const d = await r.json();
-    const txt = d.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+    const txt = await callGeminiText(buildAiPrompt(platform) + '\n\nComments:\n' + items, {
+      temperature: 0.1,
+      maxOutputTokens: 3000
+    }) || '[]';
     return parseJsonArray(txt);
   }
 }
@@ -3155,7 +3188,12 @@ async function searchAndShowPicker(keyword) {
     } else {
       posts = await apiSearchVideosWithMeta(keyword, 12);
     }
-    if (!posts.length) throw new Error(`未搜索到${pLabel}，请换一个关键词`);
+    if (!posts.length) {
+      if (S.platform === 'linkedin') {
+        throw new Error('未搜索到 LinkedIn 帖子。TikHub 当前没有 LinkedIn 关键词帖子搜索接口，已尝试 hashtag 和相关用户帖子；请换成更常见的英文 hashtag/行业词，或粘贴 LinkedIn 帖子链接直接抓取');
+      }
+      throw new Error(`未搜索到${pLabel}，请换一个关键词`);
+    }
     setProgress(55, `已找到 ${posts.length} 个${pLabel}，AI 分析相关性...`);
     let ranked = await aiRankVideos(posts, keyword, S.platform);
     if (!ranked.length) {
