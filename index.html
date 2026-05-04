@@ -1977,22 +1977,22 @@ function mapCommentItems(raw, directArrays, normalizer, label) {
 function normalizeIgComment(node) {
   const c = node?.node || node?.data || node;
   if (!c || typeof c !== 'object') return null;
-  const user = c.user || c.owner || c.commenter || {};
-  const text = firstText(c.text, c.comment_text, c.content, c.caption, c.message, c.body);
+  const user = c.user || c.owner || c.commenter || c.user_info || {};
+  const text = firstText(c.text, c.comment_text, c.content, c.caption, c.message, c.body, c.desc);
+  if (!text?.trim()) return null;
   const cid = firstText(c.id, c.pk, c.comment_id, c.commentId);
-  if (!text) return null;
   return {
     cid,
-    text,
+    text: text.trim(),
     user: {
-      uid: firstText(user.pk, user.id, user.user_id),
-      nickname: firstText(user.username, user.full_name, user.name) || '?',
+      uid: firstText(user.pk, user.id, user.user_id, user.userId),
+      nickname: firstText(user.username, user.full_name, user.name, user.nickname) || '?',
       uniqueId: firstText(user.username, user.screen_name),
-      avatarThumb: firstUrl(user.profile_pic_url, user.profile_pic_url_hd, user.avatar),
+      avatarThumb: firstUrl(user.profile_pic_url, user.profile_pic_url_hd, user.avatar, user.image),
       secUid: '', signature: firstText(user.biography)
     },
-    digg_count: num(c.like_count, c.likes, c.edge_liked_by?.count),
-    create_time: num(c.created_at, c.taken_at, c.timestamp)
+    digg_count: num(c.comment_like_count, c.like_count, c.likes, c.edge_liked_by?.count),
+    create_time: num(c.created_at_utc, c.created_at, c.taken_at, c.timestamp)
   };
 }
 
@@ -2065,33 +2065,73 @@ async function igFetchComments(shortcode, endCursor = '') {
   const params = { code_or_url: shortcode };
   if (endCursor) params.pagination_token = endCursor;
   const d = await tkGet('/api/v1/instagram/v2/fetch_post_comments', params);
-  const raw = d?.data;
-  // Direct paths first, then fallback to walk-all-objects
-  const directArrays = [
-    arr(raw?.comments),
-    arr(raw?.data),
-    arr(raw?.edge_media_to_comment?.edges).map(e => e.node || e),
-    arr(raw?.items)
-  ].filter(a => Array.isArray(a) && a.length);
-  let list = mapCommentItems(raw, directArrays, normalizeIgComment, 'igComments');
-  if (!list.length) {
-    // Fallback: scan all objects in the response
-    const seen = new Set();
-    list = walkObjects(raw)
-      .map(normalizeIgComment)
-      .filter(Boolean)
-      .filter(c => {
-        const key = c.cid || c.text;
-        if (seen.has(key)) return false;
-        seen.add(key); return true;
-      });
+  const raw = d?.data ?? d;
+
+  // --- Step 1: Try all known direct paths (covers most TikHub response shapes) ---
+  function pickList(obj) {
+    if (!obj || typeof obj !== 'object') return null;
+    // Shape: { comments: [...] }
+    if (Array.isArray(obj.comments) && obj.comments.length) return obj.comments;
+    // Shape: { data: { comments: [...] } }
+    if (obj.data && Array.isArray(obj.data.comments) && obj.data.comments.length) return obj.data.comments;
+    // Shape: { edge_media_to_comment: { edges: [...] } } (GraphQL)
+    if (obj.edge_media_to_comment?.edges?.length)
+      return obj.edge_media_to_comment.edges.map(e => e?.node ?? e);
+    // Shape: { data: { edge_media_to_comment: { edges: [...] } } }
+    if (obj.data?.edge_media_to_comment?.edges?.length)
+      return obj.data.edge_media_to_comment.edges.map(e => e?.node ?? e);
+    // Shape: { items: [...] }
+    if (Array.isArray(obj.items) && obj.items.length) return obj.items;
+    // Shape: { data: [...] }  (only when data is actually an array)
+    if (Array.isArray(obj.data) && obj.data.length) return obj.data;
+    return null;
   }
-  const pageInfo = raw?.page_info || raw?.pagination || {};
-  return {
-    list,
-    hasMore: pageInfo.has_next_page ?? raw?.has_next_page ?? false,
-    nextCursor: pageInfo.end_cursor || raw?.end_cursor || raw?.next_max_id || ''
-  };
+
+  // --- Step 2: Recursive fallback – find first array whose items look like comments ---
+  function findCommentList(obj, depth, seen) {
+    if (depth > 6 || !obj || typeof obj !== 'object' || Array.isArray(obj)) return null;
+    if (seen.has(obj)) return null;
+    seen.add(obj);
+    const prio = ['comments', 'items', 'data', 'edges', 'results', 'list'];
+    const keys = [...prio.filter(k => k in obj), ...Object.keys(obj).filter(k => !prio.includes(k))];
+    for (const k of keys) {
+      const v = obj[k];
+      if (Array.isArray(v) && v.length > 0) {
+        const sample = v[0]?.node ?? v[0];
+        if (sample && typeof sample === 'object' &&
+            (sample.text || sample.comment_text || sample.content || sample.message || sample.body)) {
+          return k === 'edges' ? v.map(e => e?.node ?? e) : v;
+        }
+      } else if (v && typeof v === 'object' && !Array.isArray(v)) {
+        const found = findCommentList(v, depth + 1, seen);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+  const commentItems = pickList(raw) ?? findCommentList(raw, 0, new WeakSet()) ?? [];
+  if (!commentItems.length) {
+    console.warn('[igFetchComments] no comments found. raw keys:', Object.keys(raw || {}).join(','),
+      '  preview:', JSON.stringify(raw)?.slice(0, 600));
+  }
+
+  const seen = new Set();
+  const list = commentItems
+    .map(normalizeIgComment)
+    .filter(Boolean)
+    .filter(c => {
+      const key = c.cid || c.text;
+      if (seen.has(key)) return false;
+      seen.add(key); return true;
+    });
+
+  // --- Step 3: Extract pagination from all known locations ---
+  const pg = raw?.page_info ?? raw?.data?.page_info ?? raw?.pagination ?? {};
+  const hasMore = !!(pg?.has_next_page ?? raw?.has_more_comments ?? raw?.has_next_page ?? false);
+  const nextCursor = pg?.end_cursor ?? raw?.end_cursor ?? raw?.next_max_id ?? raw?.next_min_id ?? '';
+
+  return { list, hasMore, nextCursor: nextCursor || '' };
 }
 
 async function igFetchUser(username) {
