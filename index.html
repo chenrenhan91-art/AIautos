@@ -1387,7 +1387,11 @@ async function callGeminiText(prompt, opts = {}) {
     }
     const body = await r.text().catch(() => '');
     lastErr = new Error(`Gemini ${r.status} (${model}): ${body.slice(0, 160)}`);
-    if (![400, 404].includes(r.status)) break;
+    // Auth failures: no point trying other models
+    if ([401, 403].includes(r.status)) break;
+    // Overloaded / rate-limited: brief pause, then try next model
+    if ([429, 503].includes(r.status)) await new Promise(res => setTimeout(res, 1200));
+    // For all other errors (400, 404, 5xx), try the next model
   }
   throw lastErr || new Error('Gemini 请求失败');
 }
@@ -1431,11 +1435,22 @@ async function runInsight() {
       raw = await callGeminiText(prompt, { key, temperature: 0.4, maxOutputTokens: 4000 });
     }
 
-    // Parse JSON — strip fences if any
+    // Parse JSON — strip fences, then repair and parse
     const stripped = raw.replace(/^```[a-z]*\n?/, '').replace(/\n?```$/, '').trim();
     const m = stripped.match(/\{[\s\S]*\}/);
     if (!m) throw new Error('AI 未返回有效 JSON');
-    const data = JSON.parse(m[0]);
+    let jsonStr = m[0];
+    let data;
+    try {
+      data = JSON.parse(jsonStr);
+    } catch (_) {
+      // Repair: remove control chars and retry
+      try {
+        data = JSON.parse(jsonStr.replace(/[\x00-\x1F\x7F]/g, ' '));
+      } catch (e2) {
+        throw new Error('AI 返回的 JSON 格式有误，请重试');
+      }
+    }
     renderInsightDashboard(data, q);
   } catch (e) {
     resultEl.innerHTML = `<div class="insight-err">⚠️ 分析失败：${e.message}。请检查 API Key 是否有效，或稍后重试。</div>`;
@@ -1962,19 +1977,22 @@ function mapCommentItems(raw, directArrays, normalizer, label) {
 function normalizeIgComment(node) {
   const c = node?.node || node?.data || node;
   if (!c || typeof c !== 'object') return null;
-  const user = c.user || c.owner || {};
+  const user = c.user || c.owner || c.commenter || {};
+  const text = firstText(c.text, c.comment_text, c.content, c.caption, c.message, c.body);
+  const cid = firstText(c.id, c.pk, c.comment_id, c.commentId);
+  if (!text) return null;
   return {
-    cid: firstText(c.id, c.pk, c.comment_id),
-    text: firstText(c.text, c.content, c.caption),
+    cid,
+    text,
     user: {
-      uid: firstText(user.pk, user.id),
-      nickname: firstText(user.username, user.full_name) || '?',
-      uniqueId: firstText(user.username),
-      avatarThumb: firstUrl(user.profile_pic_url, user.profile_pic_url_hd),
+      uid: firstText(user.pk, user.id, user.user_id),
+      nickname: firstText(user.username, user.full_name, user.name) || '?',
+      uniqueId: firstText(user.username, user.screen_name),
+      avatarThumb: firstUrl(user.profile_pic_url, user.profile_pic_url_hd, user.avatar),
       secUid: '', signature: firstText(user.biography)
     },
-    digg_count: num(c.like_count, c.edge_liked_by?.count),
-    create_time: num(c.created_at, c.taken_at)
+    digg_count: num(c.like_count, c.likes, c.edge_liked_by?.count),
+    create_time: num(c.created_at, c.taken_at, c.timestamp)
   };
 }
 
@@ -2044,13 +2062,35 @@ async function igGetShortcode(url) {
 }
 
 async function igFetchComments(shortcode, endCursor = '') {
-  const d = await tkGet('/api/v1/instagram/v2/fetch_post_comments', {
-    code_or_url: shortcode, pagination_token: endCursor || undefined
-  });
+  const params = { code_or_url: shortcode };
+  if (endCursor) params.pagination_token = endCursor;
+  const d = await tkGet('/api/v1/instagram/v2/fetch_post_comments', params);
+  const raw = d?.data;
+  // Direct paths first, then fallback to walk-all-objects
+  const directArrays = [
+    arr(raw?.comments),
+    arr(raw?.data),
+    arr(raw?.edge_media_to_comment?.edges).map(e => e.node || e),
+    arr(raw?.items)
+  ].filter(a => Array.isArray(a) && a.length);
+  let list = mapCommentItems(raw, directArrays, normalizeIgComment, 'igComments');
+  if (!list.length) {
+    // Fallback: scan all objects in the response
+    const seen = new Set();
+    list = walkObjects(raw)
+      .map(normalizeIgComment)
+      .filter(Boolean)
+      .filter(c => {
+        const key = c.cid || c.text;
+        if (seen.has(key)) return false;
+        seen.add(key); return true;
+      });
+  }
+  const pageInfo = raw?.page_info || raw?.pagination || {};
   return {
-    list: mapCommentItems(d?.data, [arr(d?.data?.comments), arr(d?.data?.data), arr(d?.data?.edge_media_to_comment?.edges).map(e => e.node), arr(d?.data)], normalizeIgComment, 'igComments'),
-    hasMore: d?.data?.page_info?.has_next_page ?? d?.data?.has_next_page ?? false,
-    nextCursor: d?.data?.page_info?.end_cursor || d?.data?.end_cursor || d?.data?.next_max_id || ''
+    list,
+    hasMore: pageInfo.has_next_page ?? raw?.has_next_page ?? false,
+    nextCursor: pageInfo.end_cursor || raw?.end_cursor || raw?.next_max_id || ''
   };
 }
 
