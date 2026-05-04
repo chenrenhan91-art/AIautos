@@ -435,6 +435,12 @@
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
     .vcard-no-thumb { display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--t3); }
+    .vcard-text-thumb {
+      width: 100%; height: 100%; padding: 24px 12px 10px;
+      font-size: 11.5px; line-height: 1.45; color: var(--t1);
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+      overflow: hidden; background: linear-gradient(180deg, rgba(79,142,247,.10), rgba(79,142,247,.03));
+    }
 
     /* ─── Misc ─── */
     .qs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
@@ -2035,12 +2041,49 @@ function contentQuality(v) {
   if (!v) return 0;
   let q = 1;
   if (v.title && v.title !== '（无标题）' && v.title.length > 3) q += 8;
+  if (['reddit', 'linkedin', 'x'].includes(v.platform) && v.title && v.title !== '（无标题）') q += Math.min(Math.floor(v.title.length / 24), 6);
   if (v.author && !/[?？]$/.test(v.author) && !v.author.includes('/?')) q += 4;
   if (v.videoUrl) q += 3;
   if (v.uniqueId) q += 2;
   if (v.coverUrl) q += 1;
   if ((v.likeCount || 0) + (v.commentCount || 0) + (v.shareCount || 0) > 0) q += 2;
   return q;
+}
+const TEXT_QUERY_MAP = [
+  [/虚拟信用卡|虚拟卡|虚拟银行卡/g, 'virtual card'],
+  [/跨境电商|跨境/g, 'cross border ecommerce'],
+  [/电商/g, 'ecommerce'],
+  [/支付失败|付款失败|付款不成功/g, 'payment failed'],
+  [/银行卡被拒|卡被拒|拒付/g, 'card declined'],
+  [/收款/g, 'payment collection'],
+  [/支付/g, 'payment'],
+  [/封号|账号被封/g, 'account banned'],
+  [/风控/g, 'risk control'],
+  [/怎么买|哪里买|如何购买/g, 'where to buy'],
+  [/购买|买/g, 'buy'],
+  [/教程/g, 'tutorial'],
+  [/替代/g, 'alternative']
+];
+function hasCjk(s) { return /[\u3400-\u9fff]/.test(s); }
+function translateKnownQuery(q) {
+  let out = q;
+  TEXT_QUERY_MAP.forEach(([re, repl]) => { out = out.replace(re, ' ' + repl + ' '); });
+  return out.replace(/\s+/g, ' ').trim();
+}
+function textSearchQueries(keyword, platform = '') {
+  const chunks = String(keyword || '').split(/[,，/|]+/).map(s => s.trim()).filter(Boolean);
+  const base = [keyword.trim(), ...chunks].filter(Boolean);
+  const translated = base.map(translateKnownQuery).filter(q => q && q !== keyword.trim());
+  const compact = translated.map(q => q.replace(/\s+/g, platform === 'linkedin' ? '' : ' ').trim());
+  return [...new Set([...translated, ...compact, ...base])].filter(q => q.length >= 2).slice(0, 8);
+}
+function searchTerms(keyword) {
+  return textSearchQueries(keyword).flatMap(q => q.toLowerCase().split(/[\s,，/|]+/))
+    .map(s => s.replace(/[^a-z0-9\u4e00-\u9fa5]/g, '')).filter(s => s.length >= 2);
+}
+function dedupeContent(posts, limit) {
+  const seen = new Set();
+  return posts.filter(p => p && p.awemeId && !seen.has(String(p.awemeId)) && seen.add(String(p.awemeId))).slice(0, limit);
 }
 function mapContentItems(raw, directArrays, normalizer, limit, label) {
   const candidates = [...directArrays.filter(a => Array.isArray(a) && a.length), ...collectArrays(raw)];
@@ -2103,6 +2146,7 @@ function normalizeRedditPost(item) {
   const likeCount = num(p.score, p.ups, p.upvote_count, p.upvoteCount, p.voteCount);
   const commentCount = num(p.num_comments, p.numComments, p.comment_count, p.commentCount, p.commentsCount);
   const title = firstText(p.title, p.link_title, p.postTitle, p.displayText, p.body, p.selftext, p.text, p.richtextContent?.document);
+  if (!title && !subreddit && !author) return null;
   return {
     awemeId,
     title: title.slice(0, 180) || '（无标题）',
@@ -2112,7 +2156,7 @@ function normalizeRedditPost(item) {
     uniqueId: author || '',
     videoUrl: permalink || postUrl,
     engagementScore: likeCount + commentCount * 3,
-    platform: 'reddit', subreddit
+    platform: 'reddit', subreddit, contentType: 'text'
   };
 }
 
@@ -2130,7 +2174,10 @@ function normalizeLinkedInPost(item) {
   const commentCount = num(counts.numComments, p.numComments, p.comments, p.commentCount);
   const shareCount = num(counts.numShares, p.numShares, p.shares);
   const text = firstText(p.commentary?.text, p.commentary, p.text?.text, p.text, p.description?.text,
-    p.specificContent?.['com.linkedin.ugc.MemberShareUpdate']?.commentary, p.content?.title);
+    p.specificContent?.['com.linkedin.ugc.MemberShareUpdate']?.commentary,
+    p.specificContent?.com_linkedin_ugc_MemberShareUpdate?.commentary,
+    p.updateContent?.commentary?.text, p.commentaryV2?.text, p.content?.title, p.summary);
+  if (!text && !firstText(actor.firstName?.localized?.en_US, actor.name, actor.localizedName, actor.title)) return null;
   return {
     awemeId,
     title: text || '（无标题）',
@@ -2140,7 +2187,7 @@ function normalizeLinkedInPost(item) {
     uniqueId: firstText(actor.vanityName, actor.publicIdentifier, actor.id),
     videoUrl: firstUrl(p.permalink, p.url) || (activityId ? `https://www.linkedin.com/posts/activity-${activityId}/` : ''),
     engagementScore: likeCount + commentCount * 3 + shareCount * 2,
-    platform: 'linkedin'
+    platform: 'linkedin', contentType: 'text'
   };
 }
 
@@ -2180,7 +2227,7 @@ function normalizeXTweet(item) {
     uniqueId: screenName,
     videoUrl: screenName ? `https://x.com/${screenName}/status/${id}` : '',
     engagementScore: likeCount + commentCount * 3 + shareCount * 2,
-    platform: 'x'
+    platform: 'x', contentType: 'text'
   };
 }
 
@@ -2367,10 +2414,15 @@ async function igFetchUser(username) {
 // ─────────────────────────────────────────
 async function rdSearchPosts(keyword, count = 12) {
   // fetch_dynamic_search: param is 'query', search_type defaults to 'post'
-  const d = await tkGet('/api/v1/reddit/app/fetch_dynamic_search', {
-    query: keyword, search_type: 'post', sort: 'hot', need_format: true
-  });
-  return mapContentItems(d?.data, [arr(d?.data?.posts), arr(d?.data?.data), arr(d?.data?.children), arr(d?.data)], normalizeRedditPost, count, 'rdSearch');
+  let posts = [];
+  for (const query of textSearchQueries(keyword, 'reddit')) {
+    const d = await tkGet('/api/v1/reddit/app/fetch_dynamic_search', {
+      query, search_type: 'post', need_format: true
+    });
+    posts = posts.concat(mapContentItems(d?.data, [arr(d?.data?.posts), arr(d?.data?.data), arr(d?.data?.children), arr(d?.data)], normalizeRedditPost, count, 'rdSearch'));
+    if (posts.length >= count) break;
+  }
+  return dedupeContent(posts, count);
 }
 
 async function rdSubredditHot(subreddit) {
@@ -2400,8 +2452,13 @@ async function rdFetchComments(postUrl) {
   const d = await tkGet('/api/v1/reddit/app/fetch_post_comments', {
     post_id: postId, need_format: true
   });
+  let list = mapCommentItems(d?.data, [arr(d?.data?.comments), arr(d?.data?.data), arr(d?.data?.children), arr(d?.data)], normalizeRedditComment, 'rdComments');
+  if (!list.length) {
+    const raw = await tkGet('/api/v1/reddit/app/fetch_post_comments', { post_id: postId });
+    list = mapCommentItems(raw?.data, [arr(raw?.data?.comments), arr(raw?.data?.data), arr(raw?.data?.children), arr(raw?.data)], normalizeRedditComment, 'rdCommentsRaw');
+  }
   return {
-    list: mapCommentItems(d?.data, [arr(d?.data?.comments), arr(d?.data?.data), arr(d?.data?.children), arr(d?.data)], normalizeRedditComment, 'rdComments'),
+    list,
     hasMore: false,
     nextCursor: ''
   };
@@ -2429,7 +2486,8 @@ async function rdFetchUser(username) {
 async function liSearchPosts(keyword, count = 12) {
   // No direct keyword search endpoint for LinkedIn posts.
   // Try several hashtag approximations so multi-word keywords do not collapse to a single broad word.
-  const tokens = keyword.toLowerCase().split(/[\s,，/]+/).map(s => s.replace(/[^a-z0-9\u4e00-\u9fa5]/g, '')).filter(s => s.length >= 2);
+  const queries = textSearchQueries(keyword, 'linkedin');
+  const tokens = queries.flatMap(q => q.toLowerCase().split(/[\s,，/]+/)).map(s => s.replace(/[^a-z0-9\u4e00-\u9fa5]/g, '')).filter(s => s.length >= 2);
   const full = tokens.join('');
   const hashtags = [...new Set([full, ...tokens].filter(Boolean))].slice(0, 4);
   let posts = [];
@@ -2439,16 +2497,18 @@ async function liSearchPosts(keyword, count = 12) {
     if (posts.length >= count) break;
   }
   if (posts.length < 3) {
-    const d = await tkGet('/api/v1/linkedin/web_v2/search_users', { keywords: keyword, count: 5 });
-    const users = [...new Set(collectArrays(d?.data).flatMap(a => a.map(normalizeLinkedInUserRef)).filter(Boolean))].slice(0, 4);
-    for (const username of users) {
-      const ud = await tkGet('/api/v1/linkedin/web_v2/get_user_posts', { username, count: 4 });
-      posts = posts.concat(mapContentItems(ud?.data, [arr(ud?.data?.elements), arr(ud?.data?.posts), arr(ud?.data?.data), arr(ud?.data?.items), arr(ud?.data)], normalizeLinkedInPost, 4, 'liUserPosts'));
+    for (const query of queries.slice(0, 4)) {
+      const d = await tkGet('/api/v1/linkedin/web_v2/search_users', { keywords: query, count: 5 });
+      const users = [...new Set(collectArrays(d?.data).flatMap(a => a.map(normalizeLinkedInUserRef)).filter(Boolean))].slice(0, 4);
+      for (const username of users) {
+        const ud = await tkGet('/api/v1/linkedin/web_v2/get_user_posts', { username, count: 4 });
+        posts = posts.concat(mapContentItems(ud?.data, [arr(ud?.data?.elements), arr(ud?.data?.posts), arr(ud?.data?.data), arr(ud?.data?.items), arr(ud?.data)], normalizeLinkedInPost, 4, 'liUserPosts'));
+        if (posts.length >= count) break;
+      }
       if (posts.length >= count) break;
     }
   }
-  const seen = new Set();
-  return posts.filter(p => !seen.has(p.awemeId) && seen.add(p.awemeId)).slice(0, count);
+  return dedupeContent(posts, count);
 }
 
 function liExtractPostId(url) {
@@ -2462,15 +2522,29 @@ function liExtractPostId(url) {
 
 async function liFetchComments(postId, cursor = '') {
   // get_post_comments requires full URN: urn:li:activity:XXXX
-  const postUrn = postId.startsWith('urn:') ? postId : `urn:li:activity:${postId}`;
-  const params = { post_urn: postUrn, count: 20 };
-  if (cursor) params.start = cursor;
-  const d = await tkGet('/api/v1/linkedin/web_v2/get_post_comments', params);
-  return {
-    list: mapCommentItems(d?.data, [arr(d?.data?.elements), arr(d?.data?.comments), arr(d?.data?.data), arr(d?.data)], normalizeLinkedInComment, 'liComments'),
-    hasMore: !!(d?.data?.metadata?.nextPageToken || d?.data?.paginationToken),
-    nextCursor: d?.data?.metadata?.nextPageToken || d?.data?.paginationToken || ''
-  };
+  const urns = postId.startsWith('urn:')
+    ? [postId]
+    : [`urn:li:activity:${postId}`, `urn:li:ugcPost:${postId}`, `urn:li:share:${postId}`];
+  let lastErr = null;
+  for (const postUrn of urns) {
+    try {
+      const params = { post_urn: postUrn, count: 20 };
+      if (cursor) params.start = cursor;
+      const d = await tkGet('/api/v1/linkedin/web_v2/get_post_comments', params);
+      const list = mapCommentItems(d?.data, [arr(d?.data?.elements), arr(d?.data?.comments), arr(d?.data?.data), arr(d?.data)], normalizeLinkedInComment, 'liComments');
+      if (list.length || postId.startsWith('urn:')) {
+        return {
+          list,
+          hasMore: !!(d?.data?.metadata?.nextPageToken || d?.data?.paginationToken),
+          nextCursor: d?.data?.metadata?.nextPageToken || d?.data?.paginationToken || ''
+        };
+      }
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  if (lastErr) throw lastErr;
+  return { list: [], hasMore: false, nextCursor: '' };
 }
 
 async function liFetchUser(publicId) {
@@ -2495,15 +2569,18 @@ async function liFetchUser(publicId) {
 // ─────────────────────────────────────────
 async function xSearchTweets(keyword, count = 12) {
   // Correct endpoint: fetch_search_timeline (not search_timeline)
-  for (const searchType of ['Latest', 'Top']) {
-    const d = await tkGet('/api/v1/twitter/web/fetch_search_timeline', {
-      keyword, search_type: searchType
-    });
-    const entries = arr(d?.data?.timeline?.instructions).flatMap(i => arr(i.entries).concat(arr(i.addEntries?.entries)));
-    const rows = mapContentItems(d?.data, [entries, arr(d?.data?.tweets), arr(d?.data?.data), arr(d?.data)], normalizeXTweet, count, 'xSearch');
-    if (rows.length) return rows;
+  let posts = [];
+  for (const query of textSearchQueries(keyword, 'x')) {
+    for (const searchType of ['Latest', 'Top']) {
+      const d = await tkGet('/api/v1/twitter/web/fetch_search_timeline', {
+        keyword: query, search_type: searchType
+      });
+      const entries = arr(d?.data?.timeline?.instructions).flatMap(i => arr(i.entries).concat(arr(i.addEntries?.entries)));
+      posts = posts.concat(mapContentItems(d?.data, [entries, arr(d?.data?.tweets), arr(d?.data?.data), arr(d?.data)], normalizeXTweet, count, 'xSearch'));
+      if (posts.length >= count) return dedupeContent(posts, count);
+    }
   }
-  return [];
+  return dedupeContent(posts, count);
 }
 
 function xExtractTweetId(url) {
@@ -2525,8 +2602,14 @@ async function xFetchReplies(tweetId, cursor = '') {
     e.content?.content?.cursorType === 'Bottom'
   );
   const nextCur = cursorEntry?.content?.value || cursorEntry?.content?.content?.value || d?.data?.next_cursor || '';
+  let list = mapCommentItems(d?.data, [entries, arr(d?.data?.replies), arr(d?.data?.data), arr(d?.data)], normalizeXComment, 'xComments');
+  if (!list.length) {
+    const latest = await tkGet('/api/v1/twitter/web/fetch_latest_post_comments', params);
+    const latestEntries = arr(latest?.data?.timeline?.instructions).flatMap(i => arr(i.entries).concat(arr(i.addEntries?.entries)));
+    list = mapCommentItems(latest?.data, [latestEntries, arr(latest?.data?.replies), arr(latest?.data?.data), arr(latest?.data)], normalizeXComment, 'xLatestComments');
+  }
   return {
-    list: mapCommentItems(d?.data, [entries, arr(d?.data?.replies), arr(d?.data?.data), arr(d?.data)], normalizeXComment, 'xComments'),
+    list,
     hasMore: !!nextCur,
     nextCursor: nextCur
   };
@@ -2584,8 +2667,7 @@ async function apiSearchVideosWithMeta(kw, count = 12) {
 }
 
 function localRankVideos(videos, keyword) {
-  const terms = keyword.toLowerCase().split(/[\s,，/]+/)
-    .map(s => s.replace(/[^a-z0-9\u4e00-\u9fa5]/g, '')).filter(s => s.length >= 2);
+  const terms = searchTerms(keyword);
   const maxEng = Math.max(...videos.map(v => v.engagementScore || 0), 1);
   return [...videos].map(v => {
     const hay = `${v.title || ''} ${v.author || ''} ${v.uniqueId || ''}`.toLowerCase();
@@ -2618,8 +2700,12 @@ async function aiRankVideos(videos, keyword, platform = S.platform || 'tiktok') 
 
   const platformName = { tiktok:'TikTok', instagram:'Instagram', reddit:'Reddit', linkedin:'LinkedIn', x:'X/Twitter' }[platform] || platform;
   const contentLabel = { tiktok:'videos', instagram:'posts/Reels', reddit:'posts', linkedin:'posts', x:'tweets' }[platform] || 'content';
+  const textGuidance = ['reddit', 'linkedin', 'x'].includes(platform)
+    ? 'These are mostly text-based posts/tweets. Judge relevance from title/body text first; thumbnails are optional and should not matter.'
+    : 'These may be video or media posts. Judge relevance from title/caption and engagement.';
   const prompt = `You are analyzing ${platformName} search results for keyword: "${keyword}".
 Pick the best 5 ${contentLabel}. Prioritize topic relevance, commercial/problem-solving intent, and engagement.
+${textGuidance}
 Use EXACT IDs from the list. Return ONLY a raw JSON array, no markdown:
 [{"rank":1,"awemeId":"exact-id-from-list","reason":"short reason"}]
 
@@ -2664,14 +2750,16 @@ function showVideoPicker(videos, ranked) {
   S.selectedAwemeIds = new Set(display.map(v => v.awemeId));
 
   grid.innerHTML = display.map((v, i) => {
+    const isTextPlatform = ['reddit', 'linkedin', 'x'].includes(v.platform);
     const thumbStyle = v.coverUrl
       ? `background-image:url(${ha(v.coverUrl)})`
       : 'background:var(--bg-3)';
-    const likeIcon = (v.platform === 'reddit' || v.platform === 'x') ? '⬆️' : '❤️';
+    const likeIcon = v.platform === 'reddit' ? '⬆️' : (v.platform === 'linkedin' ? '👍' : '❤️');
     return `<div class="vcard selected" data-id="${ha(v.awemeId)}" onclick="toggleVideoCard(this)">
       <div class="vcard-thumb ${v.coverUrl ? '' : 'vcard-no-thumb'}" style="${thumbStyle}">
         <div class="vcard-rank">#${i+1}</div>
         <div class="vcard-sel-badge">✓ 已选</div>
+        ${!v.coverUrl && isTextPlatform ? `<div class="vcard-text-thumb">${h(v.title)}</div>` : ''}
       </div>
       <div class="vcard-body">
         <div class="vcard-author">${h(v.author)}</div>
@@ -3351,7 +3439,8 @@ async function scrapeComments(awemeIds, opts = {}) {
       }
     }
 
-    if (!raw.length) throw new Error('未获取到评论（视频可能已关闭评论区或无公开评论）');
+    const emptyLabel = { tiktok:'视频', instagram:'帖子/Reel', reddit:'帖子', linkedin:'帖子', x:'推文' }[platform] || '内容';
+    if (!raw.length) throw new Error(`未获取到评论（${emptyLabel}可能已关闭评论区、无公开评论，或当前 Catcher 接口无该内容评论权限）`);
 
     setProgress(62, `正在对 ${raw.length} 条评论打分...`);
     const scores = await scoreAll(raw, platform);
