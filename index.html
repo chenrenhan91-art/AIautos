@@ -1063,6 +1063,44 @@ function corsHeaders() {
         </div>
       </div>
 
+      <!-- 自定义关键词 -->
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-header">
+          <span class="card-title">🎯 自定义高意向关键词</span>
+          <span id="kw-count" style="font-size:11px;color:var(--accent);font-weight:600"></span>
+        </div>
+        <div class="card-body">
+          <div class="form-group" style="margin-bottom:14px">
+            <div class="form-label" style="display:flex;align-items:center;gap:6px">
+              业务描述
+              <span style="font-size:11px;font-weight:400;color:var(--t3)">告诉 AI 你的产品/服务，自动生成关键词</span>
+            </div>
+            <div style="display:flex;gap:8px">
+              <input id="cfg-biz" class="form-input" style="flex:1"
+                placeholder="例：跨境电商虚拟信用卡，帮助用户完成 TikTok Shop / Shopify 支付绑卡"
+                autocomplete="off">
+              <button id="btn-genkw" onclick="generateKeywords()" style="
+                padding:0 16px;border-radius:8px;border:1px solid var(--border);
+                background:var(--bg-3);color:var(--accent);font-size:12.5px;font-weight:600;
+                cursor:pointer;white-space:nowrap;transition:background .15s;
+              " onmouseover="this.style.background='var(--bg-2)'" onmouseout="this.style.background='var(--bg-3)'">
+                ✨ AI 生成
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="form-label" style="display:flex;align-items:center;gap:6px">
+              高意向关键词列表
+              <span style="font-size:11px;font-weight:400;color:var(--t3)">逗号分隔，保存后生效</span>
+            </div>
+            <textarea id="cfg-kw" class="form-input" rows="3"
+              style="resize:vertical;font-size:12.5px;line-height:1.6"
+              placeholder="例：payment failed, card declined, how to buy, 怎么买, 虚拟卡"
+              oninput="updateKwCount()"></textarea>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /tab-config -->
 
     <!-- ═══ TAB: pricing (订阅计划) ═══ -->
