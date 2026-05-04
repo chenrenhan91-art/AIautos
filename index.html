@@ -112,9 +112,6 @@
     .ptform-tab:hover { border-color:var(--border-2); color:var(--t1); }
     .ptform-tab.on.tt  { background:linear-gradient(135deg,#010101,#fe2c55); border-color:transparent; color:#fff; }
     .ptform-tab.on.ig  { background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045); border-color:transparent; color:#fff; }
-    .ptform-tab.on.rd  { background:linear-gradient(135deg,#ff4500,#ff6634); border-color:transparent; color:#fff; }
-    .ptform-tab.on.li  { background:#0a66c2; border-color:transparent; color:#fff; }
-    .ptform-tab.on.xt  { background:#000; border-color:transparent; color:#fff; }
     .content { flex: 1; overflow-y: auto; padding: 20px 24px 28px; }
 
     /* ─── Cards ─── */
@@ -253,7 +250,7 @@
     .row-num { color: var(--t3); font-size: 12px; }
     .comment-text {
       color: var(--t1); line-height: 1.55;
-      display: -webkit-box; -webkit-line-clamp: 3;
+      display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3;
       -webkit-box-orient: vertical; overflow: hidden;
     }
     .reason-tag {
@@ -423,7 +420,7 @@
     .vcard-author { font-size: 10.5px; color: var(--t3); margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .vcard-title {
       font-size: 11.5px; color: var(--t1); line-height: 1.45;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
       overflow: hidden; margin-bottom: 6px; min-height: 32px;
     }
     .vcard-stats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
@@ -432,15 +429,9 @@
       font-size: 10.5px; color: var(--accent);
       background: rgba(79,142,247,.10); padding: 3px 7px;
       border-radius: 5px; text-align: center; line-height: 1.4;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
     .vcard-no-thumb { display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--t3); }
-    .vcard-text-thumb {
-      width: 100%; height: 100%; padding: 24px 12px 10px;
-      font-size: 11.5px; line-height: 1.45; color: var(--t1);
-      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
-      overflow: hidden; background: linear-gradient(180deg, rgba(79,142,247,.10), rgba(79,142,247,.03));
-    }
 
     /* ─── Misc ─── */
     .qs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
@@ -858,18 +849,6 @@
           <div class="ptform-tab ig" id="pt-ig" onclick="setPlatform('instagram')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
             Instagram
-          </div>
-          <div class="ptform-tab rd" id="pt-rd" onclick="setPlatform('reddit')">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>
-            Reddit
-          </div>
-          <div class="ptform-tab li" id="pt-li" onclick="setPlatform('linkedin')">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-            LinkedIn
-          </div>
-          <div class="ptform-tab xt" id="pt-xt" onclick="setPlatform('x')">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            X
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -1369,10 +1348,7 @@ Output ONLY a single valid JSON object with EXACTLY these keys (no extra text, n
   "trendLabels": ["Q1","Q2","Q3","Q4","Q1","Q2","Q3","Q4","Q1","Q2"],
   "platformHeat": [
     {"platform":"TikTok","score":88,"color":"#fe2c55"},
-    {"platform":"Instagram","score":76,"color":"#e1306c"},
-    {"platform":"Reddit","score":64,"color":"#ff4500"},
-    {"platform":"LinkedIn","score":45,"color":"#0a66c2"},
-    {"platform":"X (Twitter)","score":58,"color":"#888"}
+    {"platform":"Instagram","score":76,"color":"#e1306c"}
   ],
   "hotNews": [
     {
@@ -1883,31 +1859,22 @@ function updateStatusDot() {
 // ─────────────────────────────────────────
 const PLATFORM_MODES = {
   tiktok:    [['keyword','关键词'], ['url','视频链接']],
-  instagram: [['keyword','关键词'], ['hashtag','Hashtag'], ['url','帖子链接']],
-  reddit:    [['keyword','关键词'], ['subreddit','Subreddit'], ['url','帖子链接']],
-  linkedin:  [['keyword','关键词'], ['url','帖子链接']],
-  x:         [['keyword','关键词'], ['url','推文链接']]
+  instagram: [['keyword','关键词'], ['hashtag','Hashtag'], ['url','帖子链接']]
 };
 const PLATFORM_PLACEHOLDERS = {
   tiktok:    { keyword:'例：card declined tiktok shop  /  payment failed  /  虚拟卡怎么买', url:'例：https://www.tiktok.com/@user/video/7304809083817774382' },
-  instagram: { keyword:'例：payment failed / virtual card instagram', hashtag:'例：virtualgiftcard（不含 # 号）', url:'例：https://www.instagram.com/p/CxxXXX/' },
-  reddit:    { keyword:'例：virtual card payment failed / TikTok shop declined', subreddit:'例：personalfinance（不含 r/ 前缀）', url:'例：https://www.reddit.com/r/xxxx/comments/xxxx/' },
-  linkedin:  { keyword:'例：payment failed / virtual card / e-commerce', url:'例：https://www.linkedin.com/posts/xxx-activityid/' },
-  x:         { keyword:'例：card declined / payment failed / virtual card', url:'例：https://x.com/user/status/1234567890' }
+  instagram: { keyword:'例：payment failed / virtual card instagram', hashtag:'例：virtualgiftcard（不含 # 号）', url:'例：https://www.instagram.com/p/CxxXXX/' }
 };
 const PLATFORM_LABELS = {
   tiktok:    { keyword:'搜索相关视频，AI 自动筛选评论线索', url:'粘贴 TikTok 视频链接直接抓取评论' },
-  instagram: { keyword:'搜索相关帖子 / Reels，抓取评论区意向用户', hashtag:'搜索 Hashtag 标签下热门帖子', url:'粘贴 Instagram 帖子或 Reel 链接直接抓取' },
-  reddit:    { keyword:'搜索相关 Reddit 帖子，抓取意向用户评论', subreddit:'指定 Subreddit 社区，抓取热帖评论', url:'粘贴 Reddit 帖子链接直接抓取评论' },
-  linkedin:  { keyword:'搜索 LinkedIn 相关帖子，抓取评论区意向用户', url:'粘贴 LinkedIn 帖子链接直接抓取评论' },
-  x:         { keyword:'搜索 X (Twitter) 相关推文，抓取评论意向用户', url:'粘贴 X 推文链接直接抓取回复评论' }
+  instagram: { keyword:'搜索相关帖子 / Reels，抓取评论区意向用户', hashtag:'搜索 Hashtag 标签下热门帖子', url:'粘贴 Instagram 帖子或 Reel 链接直接抓取' }
 };
 
 function setPlatform(p) {
   S.platform = p;
   S.mode = 'keyword';
-  const keyMap = { tiktok:'tt', instagram:'ig', reddit:'rd', linkedin:'li', x:'xt' };
-  ['tt','ig','rd','li','xt'].forEach(k => {
+  const keyMap = { tiktok:'tt', instagram:'ig' };
+  ['tt','ig'].forEach(k => {
     const el = document.getElementById('pt-' + k);
     if (!el) return;
     el.className = 'ptform-tab ' + k + (keyMap[p] === k ? ' on' : '');
@@ -1918,8 +1885,7 @@ function setPlatform(p) {
   document.getElementById('video-picker').style.display = 'none';
   const vpTitle = document.getElementById('vp-title');
   if (vpTitle) vpTitle.textContent = {
-    tiktok:'📹 AI 推荐视频', instagram:'📸 AI 推荐帖子 / Reels',
-    reddit:'📋 AI 推荐帖子', linkedin:'💼 AI 推荐帖子', x:'🐦 AI 推荐推文'
+    tiktok:'📹 AI 推荐视频', instagram:'📸 AI 推荐帖子 / Reels'
   }[p] || 'AI 推荐内容';
 }
 
@@ -2006,17 +1972,6 @@ function firstUrl(...vals) {
   }
   return '';
 }
-function findStringByRegex(obj, regex, depth = 0, seen = new Set()) {
-  if (!obj || depth > 7 || seen.has(obj)) return '';
-  if (typeof obj === 'string') return regex.test(obj) ? obj.match(regex)?.[0] || '' : '';
-  if (typeof obj !== 'object') return '';
-  seen.add(obj);
-  for (const v of Object.values(obj)) {
-    const found = findStringByRegex(v, regex, depth + 1, seen);
-    if (found) return found;
-  }
-  return '';
-}
 function collectArrays(obj, depth = 0, out = [], seen = new Set()) {
   if (!obj || depth > 7 || seen.has(obj)) return out;
   if (Array.isArray(obj)) {
@@ -2041,7 +1996,6 @@ function contentQuality(v) {
   if (!v) return 0;
   let q = 1;
   if (v.title && v.title !== '（无标题）' && v.title.length > 3) q += 8;
-  if (['reddit', 'linkedin', 'x'].includes(v.platform) && v.title && v.title !== '（无标题）') q += Math.min(Math.floor(v.title.length / 24), 6);
   if (v.author && !/[?？]$/.test(v.author) && !v.author.includes('/?')) q += 4;
   if (v.videoUrl) q += 3;
   if (v.uniqueId) q += 2;
@@ -2064,64 +2018,21 @@ const TEXT_QUERY_MAP = [
   [/教程/g, 'tutorial'],
   [/替代/g, 'alternative']
 ];
-function hasCjk(s) { return /[\u3400-\u9fff]/.test(s); }
 function translateKnownQuery(q) {
   let out = q;
   TEXT_QUERY_MAP.forEach(([re, repl]) => { out = out.replace(re, ' ' + repl + ' '); });
   return out.replace(/\s+/g, ' ').trim();
 }
-function textSearchQueries(keyword, platform = '') {
+function textSearchQueries(keyword) {
   const chunks = String(keyword || '').split(/[,，/|]+/).map(s => s.trim()).filter(Boolean);
   const base = [keyword.trim(), ...chunks].filter(Boolean);
   const translated = base.map(translateKnownQuery).filter(q => q && q !== keyword.trim());
-  const compact = translated.map(q => q.replace(/\s+/g, platform === 'linkedin' ? '' : ' ').trim());
+  const compact = translated.map(q => q.replace(/\s+/g, ' ').trim());
   return [...new Set([...translated, ...compact, ...base])].filter(q => q.length >= 2).slice(0, 8);
 }
 function searchTerms(keyword) {
   return textSearchQueries(keyword).flatMap(q => q.toLowerCase().split(/[\s,，/|]+/))
     .map(s => s.replace(/[^a-z0-9\u4e00-\u9fa5]/g, '')).filter(s => s.length >= 2);
-}
-function dedupeContent(posts, limit) {
-  const seen = new Set();
-  return posts.filter(p => p && p.awemeId && !seen.has(String(p.awemeId)) && seen.add(String(p.awemeId))).slice(0, limit);
-}
-
-function walkObjects(obj, depth = 0, out = [], seen = new Set()) {
-  if (!obj || depth > 10 || seen.has(obj) || typeof obj !== 'object') return out;
-  seen.add(obj);
-  if (!Array.isArray(obj)) out.push(obj);
-  const vals = Array.isArray(obj) ? obj : Object.values(obj);
-  vals.slice(0, 80).forEach(v => walkObjects(v, depth + 1, out, seen));
-  return out;
-}
-function findByKey(obj, keyMatcher, depth = 0, seen = new Set()) {
-  if (!obj || depth > 6 || seen.has(obj) || typeof obj !== 'object') return undefined;
-  seen.add(obj);
-  for (const [k, v] of Object.entries(obj)) {
-    if (keyMatcher(k) && v != null && (typeof v !== 'object' || typeof v === 'string')) return v;
-  }
-  for (const v of Object.values(obj)) {
-    const found = findByKey(v, keyMatcher, depth + 1, seen);
-    if (found !== undefined && found !== '') return found;
-  }
-  return undefined;
-}
-function textPostScore(post, keyword = '') {
-  if (!post) return 0;
-  const hay = `${post.title || ''} ${post.author || ''} ${post.uniqueId || ''}`.toLowerCase();
-  const hits = searchTerms(keyword).filter(t => hay.includes(t)).length;
-  const textScore = Math.min((post.title || '').length / 12, 12);
-  const authorScore = post.author && !post.author.includes('/?') && post.author !== '?' ? 4 : 0;
-  const engagementScore = Math.min(Math.log10((post.likeCount || 0) + (post.commentCount || 0) + 1) * 3, 9);
-  return hits * 20 + textScore + authorScore + engagementScore;
-}
-function sortTextPosts(posts, keyword, limit) {
-  const seen = new Set();
-  return posts
-    .filter(p => p && p.awemeId && p.title && p.title !== '（无标题）')
-    .filter(p => !seen.has(String(p.awemeId)) && seen.add(String(p.awemeId)))
-    .sort((a, b) => textPostScore(b, keyword) - textPostScore(a, keyword))
-    .slice(0, limit);
 }
 function mapContentItems(raw, directArrays, normalizer, limit, label) {
   const candidates = [...directArrays.filter(a => Array.isArray(a) && a.length), ...collectArrays(raw)];
@@ -2166,109 +2077,6 @@ function normalizeIgPost(item) {
   };
 }
 
-function normalizeRedditPost(item) {
-  const p = item?.data?.post || item?.post || item?.postInfo || item?.post_info ||
-    item?.node || item?.thing || item?.data || item;
-  if (!p || typeof p !== 'object') return null;
-  const id = firstText(p.id, p.post_id, p.postId, p.name, p.thingId).replace(/^t3_/, '');
-  const permalink = p.permalink
-    ? (String(p.permalink).startsWith('http') ? p.permalink : 'https://www.reddit.com' + p.permalink)
-    : '';
-  const postUrl = firstUrl(p.url, p.shortlink, p.outboundLink, p.media?.oembed?.provider_url);
-  const awemeId = permalink || id || postUrl;
-  if (!awemeId) return null;
-  const subreddit = firstText(p.subreddit, p.subredditName, p.subreddit_name, p.communityName,
-    p.subredditPrefixedName, p.subreddit_name_prefixed, p.community?.name, p.subredditInfo?.name).replace(/^r\//, '');
-  const author = firstText(p.author, p.authorName, p.author_name, p.userName, p.user?.name,
-    p.authorInfo?.name, p.authorInfo?.username);
-  const likeCount = num(p.score, p.ups, p.upvote_count, p.upvoteCount, p.voteCount);
-  const commentCount = num(p.num_comments, p.numComments, p.comment_count, p.commentCount, p.commentsCount);
-  const title = firstText(p.title, p.link_title, p.postTitle, p.displayText, p.body, p.selftext, p.text, p.richtextContent?.document);
-  if (!title && !subreddit && !author) return null;
-  return {
-    awemeId,
-    title: title.slice(0, 180) || '（无标题）',
-    coverUrl: firstUrl(p.thumbnail, p.preview?.images?.[0]?.source?.url, p.media?.oembed?.thumbnail_url, p.image, p.images?.[0]),
-    playCount: 0, likeCount, commentCount, shareCount: 0,
-    author: 'r/' + (subreddit || '?') + ' · u/' + (author || '?'),
-    uniqueId: author || '',
-    videoUrl: permalink || postUrl,
-    engagementScore: likeCount + commentCount * 3,
-    platform: 'reddit', subreddit, contentType: 'text'
-  };
-}
-
-function normalizeLinkedInPost(item) {
-  const p = item?.data || item?.update || item?.post || item;
-  if (!p || typeof p !== 'object') return null;
-  const foundUrn = findStringByRegex(p, /urn:li:(?:activity|ugcPost|share):\d+/i);
-  const urn = firstText(p.entityUrn, p.urn, p.shareUrn, p.activityUrn, p.objectUrn, p.updateUrn, p.id, item?.entityUrn, item?.urn) || foundUrn;
-  const activityId = urn.match(/(?:activity|ugcPost|share):(\d+)/)?.[1] || firstText(p.activityId, p.activity_id).match(/\d{12,}/)?.[0] || '';
-  const awemeId = urn.startsWith('urn:li:') ? urn : (activityId || urn);
-  if (!awemeId) return null;
-  const actor = p.actor || p.author || p.miniProfile || p.actorNavigationContext || {};
-  const counts = p.socialDetail?.totalSocialActivityCounts || p.socialActivityCounts || {};
-  const likeCount = num(counts.numLikes, counts.likes, p.numLikes, p.likes, p.reactionCount);
-  const commentCount = num(counts.numComments, p.numComments, p.comments, p.commentCount);
-  const shareCount = num(counts.numShares, p.numShares, p.shares);
-  const text = firstText(p.commentary?.text, p.commentary, p.text?.text, p.text, p.description?.text,
-    p.specificContent?.['com.linkedin.ugc.MemberShareUpdate']?.commentary,
-    p.specificContent?.com_linkedin_ugc_MemberShareUpdate?.commentary,
-    p.updateContent?.commentary?.text, p.commentaryV2?.text, p.content?.title, p.summary);
-  if (!text && !firstText(actor.firstName?.localized?.en_US, actor.name, actor.localizedName, actor.title)) return null;
-  return {
-    awemeId,
-    title: text || '（无标题）',
-    coverUrl: firstUrl(p.content?.contentEntities?.[0]?.thumbnails?.[0], p.image, p.thumbnail),
-    playCount: 0, likeCount, commentCount, shareCount,
-    author: firstText(actor.firstName?.localized?.en_US, actor.name, actor.localizedName, actor.title) || '?',
-    uniqueId: firstText(actor.vanityName, actor.publicIdentifier, actor.id),
-    videoUrl: firstUrl(p.permalink, p.url) || (activityId ? `https://www.linkedin.com/posts/activity-${activityId}/` : ''),
-    engagementScore: likeCount + commentCount * 3 + shareCount * 2,
-    platform: 'linkedin', contentType: 'text'
-  };
-}
-
-function normalizeLinkedInUserRef(item) {
-  const u = item?.data || item?.profile || item?.miniProfile || item?.entity || item;
-  if (!u || typeof u !== 'object') return '';
-  const urnName = firstText(u.entityUrn, u.urn).match(/urn:li:fs_miniProfile:([^,]+)/)?.[1] || '';
-  const navName = firstText(u.navigationUrl, u.url).match(/\/in\/([^/?]+)/)?.[1] || '';
-  const username = firstText(u.username, u.publicIdentifier, u.vanityName, u.profileId, navName, urnName);
-  return username && !username.startsWith('urn:') ? username.replace(/^\/in\//, '').trim() : '';
-}
-
-function normalizeXTweet(item) {
-  const result = item?.tweet_results?.result || item?.tweetResult?.result ||
-    item?.content?.itemContent?.tweet_results?.result || item?.content?.itemContent?.tweetResult?.result ||
-    item?.content?.content?.tweetResult?.result || item?.item?.itemContent?.tweet_results?.result ||
-    item?.result || item;
-  const tw = result?.tweet || result;
-  if (!tw || typeof tw !== 'object') return null;
-  const legacy = tw.legacy || tw;
-  const userResult = tw.core?.user_results?.result || tw.user_results?.result || tw.user;
-  const user = userResult?.legacy || tw.user?.legacy || tw.user || {};
-  const id = firstText(legacy.id_str, legacy.id, tw.rest_id);
-  const title = firstText(legacy.full_text, legacy.text, tw.full_text, tw.text);
-  if (!id || !title) return null;
-  const likeCount = num(legacy.favorite_count, legacy.like_count, legacy.public_metrics?.like_count);
-  const commentCount = num(legacy.reply_count, legacy.public_metrics?.reply_count);
-  const shareCount = num(legacy.retweet_count, legacy.public_metrics?.retweet_count);
-  const screenName = firstText(user.screen_name, user.username);
-  return {
-    awemeId: id,
-    title,
-    coverUrl: firstUrl(legacy.entities?.media?.[0]?.media_url_https, legacy.extended_entities?.media?.[0]?.media_url_https),
-    playCount: num(legacy.views?.count, legacy.view_count, legacy.public_metrics?.impression_count),
-    likeCount, commentCount, shareCount,
-    author: firstText(user.name, screenName) || '?',
-    uniqueId: screenName,
-    videoUrl: screenName ? `https://x.com/${screenName}/status/${id}` : '',
-    engagementScore: likeCount + commentCount * 3 + shareCount * 2,
-    platform: 'x', contentType: 'text'
-  };
-}
-
 function mapCommentItems(raw, directArrays, normalizer, label) {
   const candidates = [...directArrays.filter(a => Array.isArray(a) && a.length), ...collectArrays(raw)];
   const best = candidates
@@ -2304,114 +2112,6 @@ function normalizeIgComment(node) {
     digg_count: num(c.like_count, c.edge_liked_by?.count),
     create_time: num(c.created_at, c.taken_at)
   };
-}
-
-function normalizeRedditComment(c) {
-  const cm = c?.data || c;
-  if (!cm || typeof cm !== 'object') return null;
-  if (cm.title && !cm.body && !cm.bodyHtml && !cm.commentText) return null;
-  const text = firstText(cm.body, cm.body_html?.replace(/<[^>]+>/g, ''), cm.bodyHtml?.replace(/<[^>]+>/g, ''), cm.commentText, cm.content, cm.text, cm.richtextContent?.document);
-  if (!text || text === '[deleted]' || text === '[removed]') return null;
-  return {
-    cid: firstText(cm.id, cm.name),
-    text,
-    user: {
-      uid: firstText(cm.author), nickname: firstText(cm.author) || '?', uniqueId: firstText(cm.author),
-      avatarThumb: firstUrl(cm.author_icon_img, cm.authorIcon), secUid: '', signature: ''
-    },
-    digg_count: num(cm.score, cm.ups),
-    create_time: num(cm.created_utc, cm.created)
-  };
-}
-
-function normalizeLinkedInComment(c) {
-  const cm = c?.data || c;
-  if (!cm || typeof cm !== 'object') return null;
-  const urn = firstText(cm.entityUrn, cm.urn, cm.id);
-  if (/urn:li:(activity|ugcPost|share):/i.test(urn) && !cm.commenter && !cm.comment) return null;
-  const commenter = cm.commenter || cm.actor || cm.author || cm.miniProfile || {};
-  return {
-    cid: urn,
-    text: firstText(cm.message?.text, cm.commentary?.text, cm.comment?.text, cm.text, cm.body, cm.content),
-    user: {
-      uid: firstText(commenter.id, commenter.entityUrn),
-      nickname: firstText(commenter.firstName?.localized?.en_US, commenter.name, commenter.localizedName) || '?',
-      uniqueId: firstText(commenter.vanityName, commenter.publicIdentifier),
-      avatarThumb: firstUrl(commenter.picture, commenter.profilePicture),
-      secUid: '', signature: firstText(commenter.headline, commenter.occupation)
-    },
-    digg_count: num(cm.socialDetail?.totalSocialActivityCounts?.numLikes, cm.numLikes),
-    create_time: cm.createdAt ? Math.floor(cm.createdAt / 1000) : 0
-  };
-}
-
-function normalizeXComment(c) {
-  const result = c?.tweet_results?.result || c?.tweetResult?.result ||
-    c?.content?.itemContent?.tweet_results?.result || c?.content?.itemContent?.tweetResult?.result ||
-    c?.content?.content?.tweetResult?.result || c?.item?.itemContent?.tweet_results?.result || c?.result || c;
-  const tw = result?.tweet || result;
-  if (!tw || typeof tw !== 'object') return null;
-  const legacy = tw.legacy || tw;
-  const userResult = tw.core?.user_results?.result || tw.user_results?.result || tw.user;
-  const user = userResult?.legacy || tw.user?.legacy || tw.user || {};
-  return {
-    cid: firstText(legacy.id_str, legacy.id, tw.rest_id),
-    text: firstText(legacy.full_text, legacy.text, tw.full_text, tw.text),
-    user: {
-      uid: firstText(user.id_str, user.id), nickname: firstText(user.name, user.screen_name) || '?',
-      uniqueId: firstText(user.screen_name),
-      avatarThumb: firstUrl(user.profile_image_url_https, user.profile_image_url),
-      secUid: '', signature: firstText(user.description)
-    },
-    digg_count: num(legacy.favorite_count, legacy.like_count),
-    create_time: legacy.created_at ? Math.floor(new Date(legacy.created_at).getTime()/1000) : 0
-  };
-}
-
-function extractRedditPosts(raw, keyword, limit) {
-  const posts = walkObjects(raw).map(normalizeRedditPost).filter(Boolean);
-  return sortTextPosts(posts, keyword, limit);
-}
-
-function extractRedditComments(raw) {
-  const seen = new Set();
-  return walkObjects(raw).map(normalizeRedditComment).filter(Boolean).filter(c => {
-    const key = c.cid || c.text;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
-function extractLinkedInPosts(raw, keyword, limit) {
-  const posts = walkObjects(raw).map(normalizeLinkedInPost).filter(Boolean);
-  return sortTextPosts(posts, keyword, limit);
-}
-
-function extractLinkedInComments(raw) {
-  const seen = new Set();
-  return walkObjects(raw).map(normalizeLinkedInComment).filter(Boolean).filter(c => {
-    const key = c.cid || c.text;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
-function extractXTweets(raw, keyword, limit) {
-  const posts = walkObjects(raw).map(normalizeXTweet).filter(Boolean);
-  return sortTextPosts(posts, keyword, limit);
-}
-
-function extractXComments(raw, rootTweetId = '') {
-  const seen = new Set();
-  return walkObjects(raw).map(normalizeXComment).filter(Boolean).filter(c => {
-    if (rootTweetId && String(c.cid) === String(rootTweetId)) return false;
-    const key = c.cid || c.text;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
 }
 
 async function tkGet(path, params = {}) {
@@ -2498,255 +2198,6 @@ async function igFetchUser(username) {
   };
 }
 
-// ─────────────────────────────────────────
-// REDDIT API  (tikhub.io)
-// ─────────────────────────────────────────
-async function rdSearchPosts(keyword, count = 12) {
-  let posts = [];
-  let lastErr = null;
-  for (const query of textSearchQueries(keyword, 'reddit')) {
-    for (const need_format of [true, false]) {
-      try {
-        const d = await tkGet('/api/v1/reddit/app/fetch_dynamic_search', {
-          query, search_type: 'post', need_format
-        });
-        posts = posts.concat(extractRedditPosts(d?.data, query, count));
-      } catch (e) {
-        lastErr = e;
-        console.warn('[rdSearch] query failed:', query, e.message);
-      }
-      if (posts.length >= count) break;
-    }
-    if (posts.length >= count) break;
-  }
-  const rows = sortTextPosts(dedupeContent(posts, 100), keyword, count);
-  if (!rows.length && lastErr) console.warn('[rdSearch] all attempts empty; last error:', lastErr.message);
-  return rows;
-}
-
-async function rdSubredditHot(subreddit) {
-  const sub = subreddit.replace(/^r\//, '').trim();
-  let posts = [];
-  for (const need_format of [true, false]) {
-    const d = await tkGet('/api/v1/reddit/app/fetch_subreddit_feed', {
-      subreddit_name: sub, sort: 'HOT', need_format
-    });
-    posts = posts.concat(extractRedditPosts(d?.data, sub, 12));
-    if (posts.length) break;
-  }
-  return { posts: sortTextPosts(dedupeContent(posts, 50), sub, 12) };
-}
-
-function rdExtractPostId(url) {
-  // Extract Reddit post ID from: https://www.reddit.com/r/sub/comments/POST_ID/title/
-  const m = url.match(/\/comments\/([a-zA-Z0-9_]+)/);
-  if (m) return m[1];
-  const raw = String(url).trim().replace(/^t3_/, '');
-  return /^[a-zA-Z0-9_]{4,12}$/.test(raw) ? raw : null;
-}
-
-async function rdFetchComments(postUrl, cursor = '') {
-  let url = postUrl;
-  const postId = rdExtractPostId(url);
-  if (!postId) throw new Error('无法解析 Reddit 帖子 ID');
-  let list = [];
-  let after = '';
-  for (const need_format of [true, false]) {
-    const params = { post_id: postId, sort_type: 'CONFIDENCE', need_format };
-    if (cursor) params.after = cursor;
-    const d = await tkGet('/api/v1/reddit/app/fetch_post_comments', {
-      ...params
-    });
-    list = extractRedditComments(d?.data);
-    after = d?.data?.after || d?.data?.next || '';
-    if (list.length) break;
-  }
-  return {
-    list,
-    hasMore: !!after,
-    nextCursor: after
-  };
-}
-
-async function rdFetchUser(username) {
-  const d = await tkGet('/api/v1/reddit/app/fetch_user_profile', { username });
-  const u = d?.data?.user || d?.data?.profile || d?.data || null;
-  if (!u) return null;
-  return {
-    nickname:       u.name || u.username || username || '',
-    uniqueId:       u.name || u.username || username || '',
-    followerCount:  0,
-    followingCount: 0,
-    heartCount:     u.total_karma || u.link_karma || u.karma || 0,
-    signature:      u.subreddit?.public_description || u.description || '',
-    avatarMedium:   (u.icon_img || u.snoovatar_img || '').replace(/&amp;/g, '&'),
-    _reddit: true
-  };
-}
-
-// ─────────────────────────────────────────
-// LINKEDIN API  (tikhub.io)
-// ─────────────────────────────────────────
-async function liSearchPosts(keyword, count = 12) {
-  const queries = textSearchQueries(keyword, 'linkedin');
-  const tokens = queries.flatMap(q => q.toLowerCase().split(/[\s,，/]+/)).map(s => s.replace(/[^a-z0-9\u4e00-\u9fa5]/g, '')).filter(s => s.length >= 2);
-  const full = tokens.join('');
-  const hashtags = [...new Set([full, ...queries.map(q => q.replace(/\s+/g, '')), ...tokens].filter(Boolean))].slice(0, 8);
-  let posts = [];
-  let lastErr = null;
-  for (const hashtag of hashtags) {
-    try {
-      const d = await tkGet('/api/v1/linkedin/web_v2/get_hashtag_feed', { hashtag, count });
-      posts = posts.concat(extractLinkedInPosts(d?.data, hashtag, count));
-    } catch (e) {
-      lastErr = e;
-      console.warn('[liSearch] hashtag failed:', hashtag, e.message);
-    }
-    if (posts.length >= count) break;
-  }
-  if (posts.length < 3) {
-    for (const query of queries.slice(0, 6)) {
-      let users = [];
-      try {
-        const d = await tkGet('/api/v1/linkedin/web_v2/search_users', { keywords: query, count: 8 });
-        users = [...new Set(walkObjects(d?.data).map(normalizeLinkedInUserRef).filter(Boolean))].slice(0, 5);
-      } catch (e) {
-        lastErr = e;
-        console.warn('[liSearch] user search failed:', query, e.message);
-      }
-      for (const username of users) {
-        try {
-          const ud = await tkGet('/api/v1/linkedin/web_v2/get_user_posts', { username, count: 6 });
-          posts = posts.concat(extractLinkedInPosts(ud?.data, query, 6));
-        } catch (e) {
-          lastErr = e;
-          console.warn('[liSearch] user posts failed:', username, e.message);
-        }
-        if (posts.length >= count) break;
-      }
-      if (posts.length >= count) break;
-    }
-  }
-  const rows = sortTextPosts(dedupeContent(posts, 100), keyword, count);
-  if (!rows.length && lastErr) console.warn('[liSearch] all attempts empty; last error:', lastErr.message);
-  return rows;
-}
-
-function liExtractPostId(url) {
-  const urn = url.match(/urn:li:(?:activity|ugcPost|share):\d+/i);
-  if (urn) return urn[0];
-  const m = url.match(/activity[:\-](\d+)/i)
-    || url.match(/ugcPost[:\-](\d+)/i)
-    || url.match(/\/(\d{15,})\/?$/);
-  return m ? m[1] : null;
-}
-
-async function liFetchComments(postId, cursor = '') {
-  const urns = postId.startsWith('urn:')
-    ? [postId]
-    : [`urn:li:activity:${postId}`, `urn:li:ugcPost:${postId}`, `urn:li:share:${postId}`];
-  let lastErr = null;
-  for (const postUrn of urns) {
-    try {
-      const params = { post_urn: postUrn, count: 20 };
-      if (cursor) params.start = cursor;
-      const d = await tkGet('/api/v1/linkedin/web_v2/get_post_comments', params);
-      const list = extractLinkedInComments(d?.data);
-      if (list.length || postId.startsWith('urn:')) {
-        return {
-          list,
-          hasMore: !!(d?.data?.metadata?.nextPageToken || d?.data?.paginationToken),
-          nextCursor: d?.data?.metadata?.nextPageToken || d?.data?.paginationToken || ''
-        };
-      }
-    } catch (e) {
-      lastErr = e;
-    }
-  }
-  if (lastErr) throw lastErr;
-  return { list: [], hasMore: false, nextCursor: '' };
-}
-
-async function liFetchUser(publicId) {
-  const d = await tkGet('/api/v1/linkedin/web_v2/get_user_profile', { username: publicId });
-  const u = d?.data?.profile || d?.data?.miniProfile || d?.data || null;
-  if (!u) return null;
-  return {
-    nickname:       u.firstName?.localized?.en_US || u.localizedName || u.name || publicId || '',
-    uniqueId:       u.vanityName || u.publicIdentifier || publicId || '',
-    followerCount:  u.followingInfo?.followerCount || u.followerCount || 0,
-    followingCount: 0,
-    heartCount:     u.connections?.total || u.numConnections || 0,
-    signature:      u.headline?.localized?.en_US || u.occupation || u.summary || '',
-    avatarMedium:   u.profilePicture?.displayImageReference?.vectorImage?.rootUrl ||
-                    u.picture?.rootUrl || '',
-    _li: true
-  };
-}
-
-// ─────────────────────────────────────────
-// X (TWITTER) API  (tikhub.io)
-// ─────────────────────────────────────────
-async function xSearchTweets(keyword, count = 12) {
-  let posts = [];
-  let lastErr = null;
-  for (const query of textSearchQueries(keyword, 'x')) {
-    for (const searchType of ['Top', 'Latest']) {
-      try {
-        const d = await tkGet('/api/v1/twitter/web/fetch_search_timeline', {
-          keyword: query, search_type: searchType
-        });
-        posts = posts.concat(extractXTweets(d?.data, query, count));
-      } catch (e) {
-        lastErr = e;
-        console.warn('[xSearch] query failed:', query, searchType, e.message);
-      }
-      if (posts.length >= count) return sortTextPosts(dedupeContent(posts, 100), keyword, count);
-    }
-  }
-  const rows = sortTextPosts(dedupeContent(posts, 100), keyword, count);
-  if (!rows.length && lastErr) console.warn('[xSearch] all attempts empty; last error:', lastErr.message);
-  return rows;
-}
-
-function xExtractTweetId(url) {
-  const m = url.match(/\/status\/(\d+)/);
-  return m ? m[1] : null;
-}
-
-async function xFetchReplies(tweetId, cursor = '') {
-  const params = { tweet_id: tweetId };
-  if (cursor) params.cursor = cursor;
-  const d = await tkGet('/api/v1/twitter/web/fetch_post_comments', params);
-  const nextCur = findByKey(d?.data, k => ['cursor', 'next_cursor', 'nextCursor'].includes(k)) || '';
-  let list = extractXComments(d?.data, tweetId);
-  if (!list.length) {
-    const latest = await tkGet('/api/v1/twitter/web/fetch_latest_post_comments', params);
-    list = extractXComments(latest?.data, tweetId);
-  }
-  return {
-    list,
-    hasMore: !!nextCur,
-    nextCursor: nextCur
-  };
-}
-
-async function xFetchUser(screenName) {
-  const d = await tkGet('/api/v1/twitter/web/fetch_user_profile', { screen_name: screenName });
-  const u = d?.data?.user?.result?.legacy || d?.data?.legacy || d?.data?.user || d?.data || null;
-  if (!u) return null;
-  return {
-    nickname:       u.name || screenName || '',
-    uniqueId:       u.screen_name || screenName || '',
-    followerCount:  u.followers_count || 0,
-    followingCount: u.friends_count || 0,
-    heartCount:     u.statuses_count || 0,
-    signature:      u.description || '',
-    avatarMedium:   (u.profile_image_url_https || '').replace('_normal', '_400x400'),
-    _x: true
-  };
-}
-
 function fmtNum(n) {
   if (!n) return '0';
   return n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'K' : String(n);
@@ -2808,17 +2259,15 @@ function normalizeRankedResult(result, videos, keyword) {
   return rows.concat(fill).slice(0, Math.min(5, videos.length));
 }
 
-// ── AI ranks videos/posts/tweets by relevance + engagement ──
+// ── AI ranks videos/posts by relevance + engagement ──
 async function aiRankVideos(videos, keyword, platform = S.platform || 'tiktok') {
   const fallback = () => localRankVideos(videos, keyword);
   if (!videos.length) return [];
   if (!S.config.aiKey || S.config.provider === 'keyword') return fallback();
 
-  const platformName = { tiktok:'TikTok', instagram:'Instagram', reddit:'Reddit', linkedin:'LinkedIn', x:'X/Twitter' }[platform] || platform;
-  const contentLabel = { tiktok:'videos', instagram:'posts/Reels', reddit:'posts', linkedin:'posts', x:'tweets' }[platform] || 'content';
-  const textGuidance = ['reddit', 'linkedin', 'x'].includes(platform)
-    ? 'These are mostly text-based posts/tweets. Judge relevance from title/body text first; thumbnails are optional and should not matter.'
-    : 'These may be video or media posts. Judge relevance from title/caption and engagement.';
+  const platformName = { tiktok:'TikTok', instagram:'Instagram' }[platform] || platform;
+  const contentLabel = { tiktok:'videos', instagram:'posts/Reels' }[platform] || 'content';
+  const textGuidance = 'These may be video or media posts. Judge relevance from title/caption and engagement.';
   const prompt = `You are analyzing ${platformName} search results for keyword: "${keyword}".
 Pick the best 5 ${contentLabel}. Prioritize topic relevance, commercial/problem-solving intent, and engagement.
 ${textGuidance}
@@ -2866,16 +2315,14 @@ function showVideoPicker(videos, ranked) {
   S.selectedAwemeIds = new Set(display.map(v => v.awemeId));
 
   grid.innerHTML = display.map((v, i) => {
-    const isTextPlatform = ['reddit', 'linkedin', 'x'].includes(v.platform);
     const thumbStyle = v.coverUrl
       ? `background-image:url(${ha(v.coverUrl)})`
       : 'background:var(--bg-3)';
-    const likeIcon = v.platform === 'reddit' ? '⬆️' : (v.platform === 'linkedin' ? '👍' : '❤️');
+    const likeIcon = '❤️';
     return `<div class="vcard selected" data-id="${ha(v.awemeId)}" onclick="toggleVideoCard(this)">
       <div class="vcard-thumb ${v.coverUrl ? '' : 'vcard-no-thumb'}" style="${thumbStyle}">
         <div class="vcard-rank">#${i+1}</div>
         <div class="vcard-sel-badge">✓ 已选</div>
-        ${!v.coverUrl && isTextPlatform ? `<div class="vcard-text-thumb">${h(v.title)}</div>` : ''}
       </div>
       <div class="vcard-body">
         <div class="vcard-author">${h(v.author)}</div>
@@ -2891,7 +2338,7 @@ function showVideoPicker(videos, ranked) {
   }).join('');
 
   const n = display.length;
-  const titleMap = { tiktok:'📹 AI 推荐视频', instagram:'📸 AI 推荐帖子 / Reels', reddit:'📋 AI 推荐帖子', linkedin:'💼 AI 推荐帖子', x:'🐦 AI 推荐推文' };
+  const titleMap = { tiktok:'📹 AI 推荐视频', instagram:'📸 AI 推荐帖子 / Reels' };
   document.getElementById('vp-title').innerHTML = `${titleMap[S.platform] || '📋 AI 推荐内容'} <span style="font-size:11px;color:var(--t2);font-weight:400">（共 ${n} 个，点击卡片切换选中）</span>`;
   document.getElementById('video-picker').style.display = 'block';
   updateSelCount();
@@ -2972,20 +2419,6 @@ const PLATFORM_A_KW = {
     'link please','drop the link','where to get this','how to order',
     'where is this from','source?','shop link','how do i buy',
     'where can i find this','can you share the link','how to get this'
-  ],
-  reddit: [
-    'where can i get this','any coupons','promo code','discount code',
-    'still looking for','tried everything','does this actually work',
-    'any good alternatives','how do i get this to work','where to order'
-  ],
-  linkedin: [
-    'how do i get access','dm me your pricing','interested in a demo',
-    'can we schedule a call','send me the details','how to purchase this',
-    'looking for a vendor','need this for my team','how do i buy'
-  ],
-  x: [
-    'drop the link','link please','where to buy this','how do i get this',
-    'dms open','where can i find','how to get this','anyone selling'
   ]
 };
 
@@ -2995,20 +2428,6 @@ const PLATFORM_B_KW = {
   instagram: [
     'collab','partnership','gifted','pr package','haul',
     'unboxing','review','tutorial','is this worth','any discount'
-  ],
-  reddit: [
-    'anyone else','has anyone','is it worth','tips','advice',
-    'experience with','opinions','thoughts on this','what do you think',
-    'is this legit','any reviews'
-  ],
-  linkedin: [
-    'connect','networking','collaborate','partnership','b2b',
-    'enterprise','case study','let\'s connect','message me','reach out',
-    'open to opportunities','industry insights'
-  ],
-  x: [
-    'is this legit','has anyone tried','what do you think','opinion',
-    'anyone else','agree','interesting take','anyone know'
   ]
 };
 
@@ -3258,10 +2677,7 @@ IMPORTANT:
 function buildAiPrompt(platform) {
   const ctx = {
     tiktok:    { role:'TikTok comment',    aEx:'"card declined","where to buy","payment failed"',        bEx:'"how much?","tutorial?","where to get"',    cEx:'"love this!","amazing","so cool"',        dEx:'pure emoji, "lol", spam, off-topic' },
-    instagram: { role:'Instagram comment', aEx:'"link please","where to get this","how to order"',    bEx:'"how much?","collab?","is this available"', cEx:'"gorgeous","fire","love it"',             dEx:'follow spam, pure emoji, off-topic' },
-    reddit:    { role:'Reddit comment',    aEx:'"where can I buy","payment failed","any alternatives"', bEx:'"worth it?","price range?","anyone tried"',  cEx:'"interesting","not bad tbh","upvoted"',   dEx:'memes, jokes, pure reactions, off-topic' },
-    linkedin:  { role:'LinkedIn comment',  aEx:'"how do I get access?","DM me pricing","demo request"', bEx:'"enterprise plan?","B2B use case?","case study?"', cEx:'"great post","insightful","well said"', dEx:'empty praise, generic congrats, spam' },
-    x:         { role:'X (Twitter) reply', aEx:'"drop the link","where to buy?","how to get this"',    bEx:'"legit?","how much?","anyone tried this"',  cEx:'"cool","interesting take","not bad"',    dEx:'ratio bait, pure emoji, "lol", bots' }
+    instagram: { role:'Instagram comment', aEx:'"link please","where to get this","how to order"',    bEx:'"how much?","collab?","is this available"', cEx:'"gorgeous","fire","love it"',             dEx:'follow spam, pure emoji, off-topic' }
   };
   const c = ctx[platform] || ctx.tiktok;
   return [
@@ -3362,7 +2778,7 @@ async function searchAndShowPicker(keyword) {
   const btn = document.getElementById('btn-go');
   btn.disabled = true;
   btn.innerHTML = '<span class="spin"></span> AI 搜索中...';
-  const pLabel = { tiktok:'视频', instagram:'帖子', reddit:'帖子', linkedin:'帖子', x:'推文' }[S.platform] || '内容';
+  const pLabel = { tiktok:'视频', instagram:'帖子' }[S.platform] || '内容';
   setProgress(0, `搜索相关${pLabel}...`);
   document.getElementById('video-picker').style.display = 'none';
   try {
@@ -3375,24 +2791,10 @@ async function searchAndShowPicker(keyword) {
       } else {
         posts = await igSearchPosts(keyword, 12);
       }
-    } else if (S.platform === 'reddit') {
-      if (S.mode === 'subreddit') {
-        const r = await rdSubredditHot(keyword);
-        posts = r.posts;
-      } else {
-        posts = await rdSearchPosts(keyword, 12);
-      }
-    } else if (S.platform === 'linkedin') {
-      posts = await liSearchPosts(keyword, 12);
-    } else if (S.platform === 'x') {
-      posts = await xSearchTweets(keyword, 12);
     } else {
       posts = await apiSearchVideosWithMeta(keyword, 12);
     }
     if (!posts.length) {
-      if (S.platform === 'linkedin') {
-        throw new Error('未搜索到 LinkedIn 帖子。TikHub 当前没有 LinkedIn 关键词帖子搜索接口，已尝试 hashtag 和相关用户帖子；请换成更常见的英文 hashtag/行业词，或粘贴 LinkedIn 帖子链接直接抓取');
-      }
       throw new Error(`未搜索到${pLabel}，请换一个关键词`);
     }
     setProgress(55, `已找到 ${posts.length} 个${pLabel}，AI 分析相关性...`);
@@ -3427,20 +2829,6 @@ async function scrapeByUrl(postUrl) {
       const sc = await igGetShortcode(postUrl);
       if (!sc) throw new Error('无法从链接提取 Instagram 帖子 ID，请确认链接有效');
       await scrapeComments([sc], { platform: 'instagram' });
-    } else if (S.platform === 'reddit') {
-      setProgress(10, '解析 Reddit 帖子链接...');
-      if (!postUrl.includes('reddit.com')) throw new Error('请输入有效的 Reddit 帖子链接');
-      await scrapeComments([postUrl], { platform: 'reddit' });
-    } else if (S.platform === 'linkedin') {
-      setProgress(10, '解析 LinkedIn 帖子链接...');
-      const lid = liExtractPostId(postUrl);
-      if (!lid) throw new Error('无法解析 LinkedIn 帖子链接，请确认格式正确');
-      await scrapeComments([lid], { platform: 'linkedin' });
-    } else if (S.platform === 'x') {
-      setProgress(10, '解析 X 推文链接...');
-      const tid = xExtractTweetId(postUrl);
-      if (!tid) throw new Error('无法解析 X 推文链接，请确认格式正确（含 /status/）');
-      await scrapeComments([tid], { platform: 'x' });
     } else {
       setProgress(10, '解析视频 ID...');
       const id = await apiGetAwemeId(postUrl);
@@ -3487,12 +2875,6 @@ async function scrapeComments(awemeIds, opts = {}) {
   let fetchFn;
   if (platform === 'instagram') {
     fetchFn = (id, cursor) => igFetchComments(id, cursor);
-  } else if (platform === 'reddit') {
-    fetchFn = (id, cursor) => rdFetchComments(id, cursor);
-  } else if (platform === 'linkedin') {
-    fetchFn = (id, cursor) => liFetchComments(id, cursor);
-  } else if (platform === 'x') {
-    fetchFn = (id, cursor) => xFetchReplies(id, cursor);
   } else {
     fetchFn = (id, cursor) => apiFetchComments(id, cursor, PER_CALL);
   }
@@ -3555,7 +2937,7 @@ async function scrapeComments(awemeIds, opts = {}) {
       }
     }
 
-    const emptyLabel = { tiktok:'视频', instagram:'帖子/Reel', reddit:'帖子', linkedin:'帖子', x:'推文' }[platform] || '内容';
+    const emptyLabel = { tiktok:'视频', instagram:'帖子/Reel' }[platform] || '内容';
     if (!raw.length) throw new Error(`未获取到评论（${emptyLabel}可能已关闭评论区、无公开评论，或当前 Catcher 接口无该内容评论权限）`);
 
     setProgress(62, `正在对 ${raw.length} 条评论打分...`);
@@ -3715,9 +3097,7 @@ function extractSocialLinks(bio) {
     else if (/wa\.me|whatsapp/i.test(url))    label = 'WA';
     else if (/youtube\.com|youtu\.be/i.test(url)) label = 'YT';
     else if (/facebook\.com|fb\.com/i.test(url))  label = 'FB';
-    else if (/twitter\.com|x\.com/i.test(url))    label = 'X';
     else if (/t\.me\/|telegram/i.test(url))       label = 'TG';
-    else if (/linkedin\.com/i.test(url))          label = 'LI';
     else if (/weibo\.com/i.test(url))             label = '微博';
     else { const d = url.match(/\/\/(?:www\.)?([^/]+)/); if (d) label = d[1].split('.')[0].toUpperCase().slice(0, 6); }
     links.push({ label, url });
@@ -3771,9 +3151,6 @@ function openProfile(idx) {
   const handle = c.user.uniqueId;
   const plat = c.platform || 'tiktok';
   const url = plat === 'instagram' ? `https://www.instagram.com/${handle}/`
-    : plat === 'reddit'   ? `https://www.reddit.com/user/${handle}/`
-    : plat === 'linkedin' ? `https://www.linkedin.com/in/${handle}/`
-    : plat === 'x'        ? `https://x.com/${handle}`
     : `https://www.tiktok.com/@${handle}`;
   window.open(url, '_blank');
 }
@@ -3802,9 +3179,6 @@ async function openUserModal(idx) {
   if (c.user.uniqueId && S.config.token) {
     try {
       if (plat === 'instagram')     profile = await igFetchUser(c.user.uniqueId);
-      else if (plat === 'reddit')   profile = await rdFetchUser(c.user.uniqueId);
-      else if (plat === 'linkedin') profile = await liFetchUser(c.user.uniqueId);
-      else if (plat === 'x')        profile = await xFetchUser(c.user.uniqueId);
       else                          profile = await apiFetchUser(c.user.uniqueId);
     } catch(e) { console.warn(e); }
   }
@@ -3822,25 +3196,7 @@ async function openUserModal(idx) {
 
   let statsHtml = '';
   if (profile) {
-    if (profile._reddit) {
-      statsHtml = `<div class="profile-stats">
-        <div class="pstat"><div class="pstat-v">${fmt(profile.heartCount)}</div><div class="pstat-l">业力值</div></div>
-        <div class="pstat"><div class="pstat-v">—</div><div class="pstat-l">关注者</div></div>
-        <div class="pstat"><div class="pstat-v">—</div><div class="pstat-l">帖子数</div></div>
-      </div>`;
-    } else if (profile._li) {
-      statsHtml = `<div class="profile-stats">
-        <div class="pstat"><div class="pstat-v">${fmt(profile.followerCount)}</div><div class="pstat-l">关注者</div></div>
-        <div class="pstat"><div class="pstat-v">${fmt(profile.followingCount)}</div><div class="pstat-l">关注</div></div>
-        <div class="pstat"><div class="pstat-v">${fmt(profile.heartCount)}</div><div class="pstat-l">联系人</div></div>
-      </div>`;
-    } else if (profile._x) {
-      statsHtml = `<div class="profile-stats">
-        <div class="pstat"><div class="pstat-v">${fmt(profile.followerCount)}</div><div class="pstat-l">关注者</div></div>
-        <div class="pstat"><div class="pstat-v">${fmt(profile.followingCount)}</div><div class="pstat-l">正在关注</div></div>
-        <div class="pstat"><div class="pstat-v">${fmt(profile.heartCount)}</div><div class="pstat-l">推文数</div></div>
-      </div>`;
-    } else if (profile._ig) {
+    if (profile._ig) {
       statsHtml = `<div class="profile-stats">
         <div class="pstat"><div class="pstat-v">${fmt(profile.followerCount)}</div><div class="pstat-l">粉丝</div></div>
         <div class="pstat"><div class="pstat-v">${fmt(profile.followingCount)}</div><div class="pstat-l">关注</div></div>
@@ -3882,14 +3238,8 @@ async function openUserModal(idx) {
     const lb = document.getElementById('modal-link-btn');
     lb.style.display = 'inline-flex';
     const profileUrl = plat === 'instagram' ? `https://www.instagram.com/${handle}/`
-      : plat === 'reddit'   ? `https://www.reddit.com/user/${handle}/`
-      : plat === 'linkedin' ? `https://www.linkedin.com/in/${handle}/`
-      : plat === 'x'        ? `https://x.com/${handle}`
       : `https://www.tiktok.com/@${handle}`;
     lb.textContent = plat === 'instagram' ? '📷 IG 主页'
-      : plat === 'reddit'   ? '👾 Reddit 主页'
-      : plat === 'linkedin' ? '💼 LinkedIn 主页'
-      : plat === 'x'        ? '𝕏 X 主页'
       : '🎵 TikTok 主页';
     lb.onclick = () => window.open(profileUrl, '_blank');
   }
@@ -3909,9 +3259,6 @@ function doExport(fmt) {
     const rows = list.map((c, i) => {
       const plat = c.platform || 'tiktok';
       const profileUrl = plat === 'instagram' ? `https://www.instagram.com/${c.user.uniqueId||''}/`
-        : plat === 'reddit'   ? `https://www.reddit.com/user/${c.user.uniqueId||''}/`
-        : plat === 'linkedin' ? `https://www.linkedin.com/in/${c.user.uniqueId||''}/`
-        : plat === 'x'        ? `https://x.com/${c.user.uniqueId||''}`
         : (c.user.uniqueId ? `https://www.tiktok.com/@${c.user.uniqueId}` : '');
       return [
         i+1, plat,
@@ -3929,9 +3276,6 @@ function doExport(fmt) {
     const data = list.map(c => {
       const plat = c.platform || 'tiktok';
       const profileUrl = plat === 'instagram' ? `https://www.instagram.com/${c.user.uniqueId||''}/`
-        : plat === 'reddit'   ? `https://www.reddit.com/user/${c.user.uniqueId||''}/`
-        : plat === 'linkedin' ? `https://www.linkedin.com/in/${c.user.uniqueId||''}/`
-        : plat === 'x'        ? `https://x.com/${c.user.uniqueId||''}`
         : (c.user.uniqueId ? `https://www.tiktok.com/@${c.user.uniqueId}` : null);
       return {
         comment_id: c.id, platform: plat, text: c.text,
