@@ -2085,6 +2085,44 @@ function dedupeContent(posts, limit) {
   const seen = new Set();
   return posts.filter(p => p && p.awemeId && !seen.has(String(p.awemeId)) && seen.add(String(p.awemeId))).slice(0, limit);
 }
+
+function walkObjects(obj, depth = 0, out = [], seen = new Set()) {
+  if (!obj || depth > 10 || seen.has(obj) || typeof obj !== 'object') return out;
+  seen.add(obj);
+  if (!Array.isArray(obj)) out.push(obj);
+  const vals = Array.isArray(obj) ? obj : Object.values(obj);
+  vals.slice(0, 80).forEach(v => walkObjects(v, depth + 1, out, seen));
+  return out;
+}
+function findByKey(obj, keyMatcher, depth = 0, seen = new Set()) {
+  if (!obj || depth > 6 || seen.has(obj) || typeof obj !== 'object') return undefined;
+  seen.add(obj);
+  for (const [k, v] of Object.entries(obj)) {
+    if (keyMatcher(k) && v != null && (typeof v !== 'object' || typeof v === 'string')) return v;
+  }
+  for (const v of Object.values(obj)) {
+    const found = findByKey(v, keyMatcher, depth + 1, seen);
+    if (found !== undefined && found !== '') return found;
+  }
+  return undefined;
+}
+function textPostScore(post, keyword = '') {
+  if (!post) return 0;
+  const hay = `${post.title || ''} ${post.author || ''} ${post.uniqueId || ''}`.toLowerCase();
+  const hits = searchTerms(keyword).filter(t => hay.includes(t)).length;
+  const textScore = Math.min((post.title || '').length / 12, 12);
+  const authorScore = post.author && !post.author.includes('/?') && post.author !== '?' ? 4 : 0;
+  const engagementScore = Math.min(Math.log10((post.likeCount || 0) + (post.commentCount || 0) + 1) * 3, 9);
+  return hits * 20 + textScore + authorScore + engagementScore;
+}
+function sortTextPosts(posts, keyword, limit) {
+  const seen = new Set();
+  return posts
+    .filter(p => p && p.awemeId && p.title && p.title !== '（无标题）')
+    .filter(p => !seen.has(String(p.awemeId)) && seen.add(String(p.awemeId)))
+    .sort((a, b) => textPostScore(b, keyword) - textPostScore(a, keyword))
+    .slice(0, limit);
+}
 function mapContentItems(raw, directArrays, normalizer, limit, label) {
   const candidates = [...directArrays.filter(a => Array.isArray(a) && a.length), ...collectArrays(raw)];
   const best = candidates
@@ -2271,7 +2309,8 @@ function normalizeIgComment(node) {
 function normalizeRedditComment(c) {
   const cm = c?.data || c;
   if (!cm || typeof cm !== 'object') return null;
-  const text = firstText(cm.body, cm.bodyHtml?.replace(/<[^>]+>/g, ''), cm.content, cm.text);
+  if (cm.title && !cm.body && !cm.bodyHtml && !cm.commentText) return null;
+  const text = firstText(cm.body, cm.body_html?.replace(/<[^>]+>/g, ''), cm.bodyHtml?.replace(/<[^>]+>/g, ''), cm.commentText, cm.content, cm.text, cm.richtextContent?.document);
   if (!text || text === '[deleted]' || text === '[removed]') return null;
   return {
     cid: firstText(cm.id, cm.name),
@@ -2288,10 +2327,12 @@ function normalizeRedditComment(c) {
 function normalizeLinkedInComment(c) {
   const cm = c?.data || c;
   if (!cm || typeof cm !== 'object') return null;
+  const urn = firstText(cm.entityUrn, cm.urn, cm.id);
+  if (/urn:li:(activity|ugcPost|share):/i.test(urn) && !cm.commenter && !cm.comment) return null;
   const commenter = cm.commenter || cm.actor || cm.author || cm.miniProfile || {};
   return {
-    cid: firstText(cm.entityUrn, cm.urn, cm.id),
-    text: firstText(cm.message?.text, cm.commentary?.text, cm.comment?.text, cm.text),
+    cid: urn,
+    text: firstText(cm.message?.text, cm.commentary?.text, cm.comment?.text, cm.text, cm.body, cm.content),
     user: {
       uid: firstText(commenter.id, commenter.entityUrn),
       nickname: firstText(commenter.firstName?.localized?.en_US, commenter.name, commenter.localizedName) || '?',
@@ -2305,7 +2346,9 @@ function normalizeLinkedInComment(c) {
 }
 
 function normalizeXComment(c) {
-  const result = c?.tweet_results?.result || c?.tweetResult?.result || c?.content?.itemContent?.tweet_results?.result || c;
+  const result = c?.tweet_results?.result || c?.tweetResult?.result ||
+    c?.content?.itemContent?.tweet_results?.result || c?.content?.itemContent?.tweetResult?.result ||
+    c?.content?.content?.tweetResult?.result || c?.item?.itemContent?.tweet_results?.result || c?.result || c;
   const tw = result?.tweet || result;
   if (!tw || typeof tw !== 'object') return null;
   const legacy = tw.legacy || tw;
@@ -2323,6 +2366,52 @@ function normalizeXComment(c) {
     digg_count: num(legacy.favorite_count, legacy.like_count),
     create_time: legacy.created_at ? Math.floor(new Date(legacy.created_at).getTime()/1000) : 0
   };
+}
+
+function extractRedditPosts(raw, keyword, limit) {
+  const posts = walkObjects(raw).map(normalizeRedditPost).filter(Boolean);
+  return sortTextPosts(posts, keyword, limit);
+}
+
+function extractRedditComments(raw) {
+  const seen = new Set();
+  return walkObjects(raw).map(normalizeRedditComment).filter(Boolean).filter(c => {
+    const key = c.cid || c.text;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function extractLinkedInPosts(raw, keyword, limit) {
+  const posts = walkObjects(raw).map(normalizeLinkedInPost).filter(Boolean);
+  return sortTextPosts(posts, keyword, limit);
+}
+
+function extractLinkedInComments(raw) {
+  const seen = new Set();
+  return walkObjects(raw).map(normalizeLinkedInComment).filter(Boolean).filter(c => {
+    const key = c.cid || c.text;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function extractXTweets(raw, keyword, limit) {
+  const posts = walkObjects(raw).map(normalizeXTweet).filter(Boolean);
+  return sortTextPosts(posts, keyword, limit);
+}
+
+function extractXComments(raw, rootTweetId = '') {
+  const seen = new Set();
+  return walkObjects(raw).map(normalizeXComment).filter(Boolean).filter(c => {
+    if (rootTweetId && String(c.cid) === String(rootTweetId)) return false;
+    const key = c.cid || c.text;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 async function tkGet(path, params = {}) {
@@ -2413,27 +2502,39 @@ async function igFetchUser(username) {
 // REDDIT API  (tikhub.io)
 // ─────────────────────────────────────────
 async function rdSearchPosts(keyword, count = 12) {
-  // fetch_dynamic_search: param is 'query', search_type defaults to 'post'
   let posts = [];
+  let lastErr = null;
   for (const query of textSearchQueries(keyword, 'reddit')) {
-    const d = await tkGet('/api/v1/reddit/app/fetch_dynamic_search', {
-      query, search_type: 'post', need_format: true
-    });
-    posts = posts.concat(mapContentItems(d?.data, [arr(d?.data?.posts), arr(d?.data?.data), arr(d?.data?.children), arr(d?.data)], normalizeRedditPost, count, 'rdSearch'));
+    for (const need_format of [true, false]) {
+      try {
+        const d = await tkGet('/api/v1/reddit/app/fetch_dynamic_search', {
+          query, search_type: 'post', need_format
+        });
+        posts = posts.concat(extractRedditPosts(d?.data, query, count));
+      } catch (e) {
+        lastErr = e;
+        console.warn('[rdSearch] query failed:', query, e.message);
+      }
+      if (posts.length >= count) break;
+    }
     if (posts.length >= count) break;
   }
-  return dedupeContent(posts, count);
+  const rows = sortTextPosts(dedupeContent(posts, 100), keyword, count);
+  if (!rows.length && lastErr) console.warn('[rdSearch] all attempts empty; last error:', lastErr.message);
+  return rows;
 }
 
 async function rdSubredditHot(subreddit) {
   const sub = subreddit.replace(/^r\//, '').trim();
-  // fetch_subreddit_feed: param is 'subreddit_name'
-  const d = await tkGet('/api/v1/reddit/app/fetch_subreddit_feed', {
-    subreddit_name: sub, sort: 'HOT', need_format: true
-  });
-  return {
-    posts: mapContentItems(d?.data, [arr(d?.data?.posts), arr(d?.data?.data), arr(d?.data?.children), arr(d?.data)], normalizeRedditPost, 12, 'rdSubreddit')
-  };
+  let posts = [];
+  for (const need_format of [true, false]) {
+    const d = await tkGet('/api/v1/reddit/app/fetch_subreddit_feed', {
+      subreddit_name: sub, sort: 'HOT', need_format
+    });
+    posts = posts.concat(extractRedditPosts(d?.data, sub, 12));
+    if (posts.length) break;
+  }
+  return { posts: sortTextPosts(dedupeContent(posts, 50), sub, 12) };
 }
 
 function rdExtractPostId(url) {
@@ -2444,23 +2545,26 @@ function rdExtractPostId(url) {
   return /^[a-zA-Z0-9_]{4,12}$/.test(raw) ? raw : null;
 }
 
-async function rdFetchComments(postUrl) {
+async function rdFetchComments(postUrl, cursor = '') {
   let url = postUrl;
-  // fetch_post_comments requires just the post_id (e.g. "abc123"), not the full URL
   const postId = rdExtractPostId(url);
   if (!postId) throw new Error('无法解析 Reddit 帖子 ID');
-  const d = await tkGet('/api/v1/reddit/app/fetch_post_comments', {
-    post_id: postId, need_format: true
-  });
-  let list = mapCommentItems(d?.data, [arr(d?.data?.comments), arr(d?.data?.data), arr(d?.data?.children), arr(d?.data)], normalizeRedditComment, 'rdComments');
-  if (!list.length) {
-    const raw = await tkGet('/api/v1/reddit/app/fetch_post_comments', { post_id: postId });
-    list = mapCommentItems(raw?.data, [arr(raw?.data?.comments), arr(raw?.data?.data), arr(raw?.data?.children), arr(raw?.data)], normalizeRedditComment, 'rdCommentsRaw');
+  let list = [];
+  let after = '';
+  for (const need_format of [true, false]) {
+    const params = { post_id: postId, sort_type: 'CONFIDENCE', need_format };
+    if (cursor) params.after = cursor;
+    const d = await tkGet('/api/v1/reddit/app/fetch_post_comments', {
+      ...params
+    });
+    list = extractRedditComments(d?.data);
+    after = d?.data?.after || d?.data?.next || '';
+    if (list.length) break;
   }
   return {
     list,
-    hasMore: false,
-    nextCursor: ''
+    hasMore: !!after,
+    nextCursor: after
   };
 }
 
@@ -2484,31 +2588,48 @@ async function rdFetchUser(username) {
 // LINKEDIN API  (tikhub.io)
 // ─────────────────────────────────────────
 async function liSearchPosts(keyword, count = 12) {
-  // No direct keyword search endpoint for LinkedIn posts.
-  // Try several hashtag approximations so multi-word keywords do not collapse to a single broad word.
   const queries = textSearchQueries(keyword, 'linkedin');
   const tokens = queries.flatMap(q => q.toLowerCase().split(/[\s,，/]+/)).map(s => s.replace(/[^a-z0-9\u4e00-\u9fa5]/g, '')).filter(s => s.length >= 2);
   const full = tokens.join('');
-  const hashtags = [...new Set([full, ...tokens].filter(Boolean))].slice(0, 4);
+  const hashtags = [...new Set([full, ...queries.map(q => q.replace(/\s+/g, '')), ...tokens].filter(Boolean))].slice(0, 8);
   let posts = [];
+  let lastErr = null;
   for (const hashtag of hashtags) {
-    const d = await tkGet('/api/v1/linkedin/web_v2/get_hashtag_feed', { hashtag, count });
-    posts = posts.concat(mapContentItems(d?.data, [arr(d?.data?.elements), arr(d?.data?.posts), arr(d?.data?.data), arr(d?.data?.items), arr(d?.data)], normalizeLinkedInPost, count, 'liSearch'));
+    try {
+      const d = await tkGet('/api/v1/linkedin/web_v2/get_hashtag_feed', { hashtag, count });
+      posts = posts.concat(extractLinkedInPosts(d?.data, hashtag, count));
+    } catch (e) {
+      lastErr = e;
+      console.warn('[liSearch] hashtag failed:', hashtag, e.message);
+    }
     if (posts.length >= count) break;
   }
   if (posts.length < 3) {
-    for (const query of queries.slice(0, 4)) {
-      const d = await tkGet('/api/v1/linkedin/web_v2/search_users', { keywords: query, count: 5 });
-      const users = [...new Set(collectArrays(d?.data).flatMap(a => a.map(normalizeLinkedInUserRef)).filter(Boolean))].slice(0, 4);
+    for (const query of queries.slice(0, 6)) {
+      let users = [];
+      try {
+        const d = await tkGet('/api/v1/linkedin/web_v2/search_users', { keywords: query, count: 8 });
+        users = [...new Set(walkObjects(d?.data).map(normalizeLinkedInUserRef).filter(Boolean))].slice(0, 5);
+      } catch (e) {
+        lastErr = e;
+        console.warn('[liSearch] user search failed:', query, e.message);
+      }
       for (const username of users) {
-        const ud = await tkGet('/api/v1/linkedin/web_v2/get_user_posts', { username, count: 4 });
-        posts = posts.concat(mapContentItems(ud?.data, [arr(ud?.data?.elements), arr(ud?.data?.posts), arr(ud?.data?.data), arr(ud?.data?.items), arr(ud?.data)], normalizeLinkedInPost, 4, 'liUserPosts'));
+        try {
+          const ud = await tkGet('/api/v1/linkedin/web_v2/get_user_posts', { username, count: 6 });
+          posts = posts.concat(extractLinkedInPosts(ud?.data, query, 6));
+        } catch (e) {
+          lastErr = e;
+          console.warn('[liSearch] user posts failed:', username, e.message);
+        }
         if (posts.length >= count) break;
       }
       if (posts.length >= count) break;
     }
   }
-  return dedupeContent(posts, count);
+  const rows = sortTextPosts(dedupeContent(posts, 100), keyword, count);
+  if (!rows.length && lastErr) console.warn('[liSearch] all attempts empty; last error:', lastErr.message);
+  return rows;
 }
 
 function liExtractPostId(url) {
@@ -2521,7 +2642,6 @@ function liExtractPostId(url) {
 }
 
 async function liFetchComments(postId, cursor = '') {
-  // get_post_comments requires full URN: urn:li:activity:XXXX
   const urns = postId.startsWith('urn:')
     ? [postId]
     : [`urn:li:activity:${postId}`, `urn:li:ugcPost:${postId}`, `urn:li:share:${postId}`];
@@ -2531,7 +2651,7 @@ async function liFetchComments(postId, cursor = '') {
       const params = { post_urn: postUrn, count: 20 };
       if (cursor) params.start = cursor;
       const d = await tkGet('/api/v1/linkedin/web_v2/get_post_comments', params);
-      const list = mapCommentItems(d?.data, [arr(d?.data?.elements), arr(d?.data?.comments), arr(d?.data?.data), arr(d?.data)], normalizeLinkedInComment, 'liComments');
+      const list = extractLinkedInComments(d?.data);
       if (list.length || postId.startsWith('urn:')) {
         return {
           list,
@@ -2568,19 +2688,25 @@ async function liFetchUser(publicId) {
 // X (TWITTER) API  (tikhub.io)
 // ─────────────────────────────────────────
 async function xSearchTweets(keyword, count = 12) {
-  // Correct endpoint: fetch_search_timeline (not search_timeline)
   let posts = [];
+  let lastErr = null;
   for (const query of textSearchQueries(keyword, 'x')) {
-    for (const searchType of ['Latest', 'Top']) {
-      const d = await tkGet('/api/v1/twitter/web/fetch_search_timeline', {
-        keyword: query, search_type: searchType
-      });
-      const entries = arr(d?.data?.timeline?.instructions).flatMap(i => arr(i.entries).concat(arr(i.addEntries?.entries)));
-      posts = posts.concat(mapContentItems(d?.data, [entries, arr(d?.data?.tweets), arr(d?.data?.data), arr(d?.data)], normalizeXTweet, count, 'xSearch'));
-      if (posts.length >= count) return dedupeContent(posts, count);
+    for (const searchType of ['Top', 'Latest']) {
+      try {
+        const d = await tkGet('/api/v1/twitter/web/fetch_search_timeline', {
+          keyword: query, search_type: searchType
+        });
+        posts = posts.concat(extractXTweets(d?.data, query, count));
+      } catch (e) {
+        lastErr = e;
+        console.warn('[xSearch] query failed:', query, searchType, e.message);
+      }
+      if (posts.length >= count) return sortTextPosts(dedupeContent(posts, 100), keyword, count);
     }
   }
-  return dedupeContent(posts, count);
+  const rows = sortTextPosts(dedupeContent(posts, 100), keyword, count);
+  if (!rows.length && lastErr) console.warn('[xSearch] all attempts empty; last error:', lastErr.message);
+  return rows;
 }
 
 function xExtractTweetId(url) {
@@ -2589,24 +2715,14 @@ function xExtractTweetId(url) {
 }
 
 async function xFetchReplies(tweetId, cursor = '') {
-  // Correct endpoint: fetch_post_comments (not fetch_tweet_replies)
   const params = { tweet_id: tweetId };
   if (cursor) params.cursor = cursor;
   const d = await tkGet('/api/v1/twitter/web/fetch_post_comments', params);
-  const entries = d?.data?.timeline?.instructions?.flatMap(i =>
-    i.entries || i.addEntries?.entries || []
-  ) || [];
-  // find next cursor
-  const cursorEntry = entries.find(e =>
-    e.content?.cursorType === 'Bottom' ||
-    e.content?.content?.cursorType === 'Bottom'
-  );
-  const nextCur = cursorEntry?.content?.value || cursorEntry?.content?.content?.value || d?.data?.next_cursor || '';
-  let list = mapCommentItems(d?.data, [entries, arr(d?.data?.replies), arr(d?.data?.data), arr(d?.data)], normalizeXComment, 'xComments');
+  const nextCur = findByKey(d?.data, k => ['cursor', 'next_cursor', 'nextCursor'].includes(k)) || '';
+  let list = extractXComments(d?.data, tweetId);
   if (!list.length) {
     const latest = await tkGet('/api/v1/twitter/web/fetch_latest_post_comments', params);
-    const latestEntries = arr(latest?.data?.timeline?.instructions).flatMap(i => arr(i.entries).concat(arr(i.addEntries?.entries)));
-    list = mapCommentItems(latest?.data, [latestEntries, arr(latest?.data?.replies), arr(latest?.data?.data), arr(latest?.data)], normalizeXComment, 'xLatestComments');
+    list = extractXComments(latest?.data, tweetId);
   }
   return {
     list,
@@ -3372,7 +3488,7 @@ async function scrapeComments(awemeIds, opts = {}) {
   if (platform === 'instagram') {
     fetchFn = (id, cursor) => igFetchComments(id, cursor);
   } else if (platform === 'reddit') {
-    fetchFn = (id) => rdFetchComments(id);
+    fetchFn = (id, cursor) => rdFetchComments(id, cursor);
   } else if (platform === 'linkedin') {
     fetchFn = (id, cursor) => liFetchComments(id, cursor);
   } else if (platform === 'x') {
