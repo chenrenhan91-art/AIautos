@@ -1045,44 +1045,6 @@ function corsHeaders() {
         </div>
       </div>
 
-      <!-- 自定义关键词 -->
-      <div class="card" style="margin-bottom:14px">
-        <div class="card-header">
-          <span class="card-title">🎯 自定义高意向关键词</span>
-          <span id="kw-count" style="font-size:11px;color:var(--accent);font-weight:600"></span>
-        </div>
-        <div class="card-body">
-          <div class="form-group" style="margin-bottom:14px">
-            <div class="form-label" style="display:flex;align-items:center;gap:6px">
-              业务描述
-              <span style="font-size:11px;font-weight:400;color:var(--t3)">告诉 AI 你的产品/服务，自动生成关键词</span>
-            </div>
-            <div style="display:flex;gap:8px">
-              <input id="cfg-biz" class="form-input" style="flex:1"
-                placeholder="例：跨境电商虚拟信用卡，帮助用户完成 TikTok Shop / Shopify 支付绑卡"
-                autocomplete="off">
-              <button id="btn-genkw" onclick="generateKeywords()" style="
-                padding:0 16px;border-radius:8px;border:1px solid var(--border);
-                background:var(--bg-3);color:var(--accent);font-size:12.5px;font-weight:600;
-                cursor:pointer;white-space:nowrap;transition:background .15s;
-              " onmouseover="this.style.background='var(--bg-2)'" onmouseout="this.style.background='var(--bg-3)'">
-                ✨ AI 生成
-              </button>
-            </div>
-          </div>
-          <div class="form-group">
-            <div class="form-label" style="display:flex;align-items:center;gap:6px">
-              高意向关键词列表
-              <span style="font-size:11px;font-weight:400;color:var(--t3)">逗号分隔，保存后生效</span>
-            </div>
-            <textarea id="cfg-kw" class="form-input" rows="3"
-              style="resize:vertical;font-size:12.5px;line-height:1.6"
-              placeholder="例：payment failed, card declined, how to buy, 怎么买, 虚拟卡"
-              oninput="updateKwCount()"></textarea>
-          </div>
-        </div>
-      </div>
-
     </div><!-- /tab-config -->
 
     <!-- ═══ TAB: pricing (订阅计划) ═══ -->
@@ -1292,10 +1254,7 @@ const S = {
     provider: 'keyword',
     aiKey: '',
     batch: 15,
-    proxyUrl: 'https://tikhub-proxy.chenrenhan91.workers.dev',
-    biz: '',
-    keywords: [],
-    keywordsI18n: []   // auto-translated, not shown in UI
+    proxyUrl: ''
   }
 };
 
@@ -1735,19 +1694,12 @@ function saveConfig() {
   S.config.aiKey    = document.getElementById('cfg-aikey').value.trim();
   S.config.proxyUrl = document.getElementById('cfg-proxy').value.trim();
   S.config.batch    = 15;
-  S.config.biz      = document.getElementById('cfg-biz').value.trim();
-  S.config.keywords = document.getElementById('cfg-kw').value
-    .split(',').map(s => s.trim()).filter(Boolean);
   try { localStorage.setItem('cl_cfg', JSON.stringify(S.config)); } catch(_) {}
   toast('配置已保存', 's');
   updateStatusDot();
   const hint = document.getElementById('cfg-save-hint');
   hint.textContent = '✓ 已保存';
   setTimeout(() => { hint.textContent = ''; }, 2200);
-  // auto-translate custom keywords in background if AI is available
-  if (S.config.keywords.length && S.config.provider !== 'keyword' && S.config.aiKey) {
-    expandKeywordsI18n();
-  }
 }
 
 function loadConfigUI() {
@@ -1755,98 +1707,10 @@ function loadConfigUI() {
   document.getElementById('cfg-provider').value = S.config.provider;
   document.getElementById('cfg-aikey').value    = S.config.aiKey;
   document.getElementById('cfg-proxy').value    = S.config.proxyUrl || '';
-
-  document.getElementById('cfg-biz').value      = S.config.biz || '';
-  document.getElementById('cfg-kw').value       = S.config.keywords.join(', ');
   onProviderChange();
-  updateKwCount();
 }
 
-// Translate custom keywords to all major languages via AI, store in keywordsI18n
-async function expandKeywordsI18n() {
-  const kws = S.config.keywords;
-  if (!kws.length) return;
-  const langs = 'Spanish,Portuguese,Indonesian,Thai,Vietnamese,Arabic,Hindi,Japanese,Korean,French,German,Turkish,Russian,Malay,Tagalog';
-  const prompt = `Translate each keyword/phrase below into every language listed (${langs}).
-Return ONLY a raw JSON array of strings — all translations flat, no nesting, no markdown fences.
-Keywords: ${kws.map(k => `"${k}"`).join(', ')}`;
-  try {
-    let translations = [];
-    if (S.config.provider === 'gemini') {
-      const txt = await callGeminiText(prompt, { maxOutputTokens: 2000, temperature: 0.1 });
-      const m = txt.replace(/^```[a-z]*\n?/,'').replace(/\n?```$/,'').trim().match(/\[[\s\S]*\]/);
-      if (m) translations = JSON.parse(m[0]);
-    } else if (S.config.provider === 'openai') {
-      const r = await fetch('https://api.openai.com/v1/chat/completions', {
-        method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer '+S.config.aiKey},
-        body: JSON.stringify({ model:'gpt-4o-mini',
-          messages:[{ role:'user', content: prompt }], temperature:0.1, max_tokens:2000 })
-      });
-      if (r.ok) {
-        const d = await r.json();
-        const txt = d.choices?.[0]?.message?.content || '[]';
-        const m = txt.replace(/^```[a-z]*\n?/,'').replace(/\n?```$/,'').trim().match(/\[[\s\S]*\]/);
-        if (m) translations = JSON.parse(m[0]);
-      }
-    }
-    if (translations.length) {
-      S.config.keywordsI18n = translations.map(s => (s+'').toLowerCase().trim()).filter(Boolean);
-      try { localStorage.setItem('cl_cfg', JSON.stringify(S.config)); } catch(_) {}
-    }
-  } catch(e) { /* silent — i18n expansion is best-effort */ }
-}
 
-function updateKwCount() {
-  const kws = (document.getElementById('cfg-kw').value || '')
-    .split(',').map(s => s.trim()).filter(Boolean);
-  const el = document.getElementById('kw-count');
-  if (el) el.textContent = kws.length ? `${kws.length} 个关键词` : '';
-}
-
-async function generateKeywords() {
-  const biz = document.getElementById('cfg-biz').value.trim();
-  if (!biz) { toast('请先填写业务描述', 'w'); return; }
-  if (!S.config.aiKey || S.config.provider === 'keyword') {
-    toast('请先在「AI 引擎」中配置 Gemini 或 OpenAI Key', 'w'); return;
-  }
-  const btn = document.getElementById('btn-genkw');
-  btn.disabled = true;
-  btn.textContent = '生成中...';
-  try {
-    const prompt = `你是一个营销关键词分析师。根据以下业务描述，生成 15-20 个高意图关键词（用户在评论中表达购买意向、遇到问题、寻求推荐等），中英文均可，适合用于在 TikTok 评论中识别潜在客户。
-业务描述：${biz}
-要求：
-- 每个关键词 1-4 个词，贴近真实用户表达习惯
-- 覆盖：购买意向、使用问题、竞品对比、推荐需求等场景
-- 只返回关键词列表，逗号分隔，不要编号或额外说明`;
-
-    let keywords = '';
-    if (S.config.provider === 'gemini') {
-      keywords = (await callGeminiText(prompt, { temperature: 0.3, maxOutputTokens: 300 })).trim();
-    } else {
-      const r = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST', headers: { 'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + S.config.aiKey },
-        body: JSON.stringify({ model: 'gpt-4o-mini',
-          messages: [{ role: 'user', content: prompt }], max_tokens: 300, temperature: 0.3 })
-      });
-      if (!r.ok) throw new Error('OpenAI ' + r.status);
-      const d = await r.json();
-      keywords = d.choices?.[0]?.message?.content?.trim() || '';
-    }
-    if (!keywords) throw new Error('AI 未返回内容，请重试');
-    // strip any stray fences
-    keywords = keywords.replace(/```[\s\S]*?```/g, '').trim();
-    document.getElementById('cfg-kw').value = keywords;
-    updateKwCount();
-    toast('关键词已生成，检查后点击「保存配置」', 's');
-  } catch (err) {
-    toast('生成失败：' + err.message, 'e');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '🤖 AI 生成';
-  }
-}
 
 function updateStatusDot() {
   const ok = !!S.config.token;
@@ -2117,27 +1981,35 @@ function normalizeIgComment(node) {
 async function tkGet(path, params = {}) {
   if (!S.config.token) throw new Error('请先在「API 配置」中填写 Catcher Token');
   const proxy = (S.config.proxyUrl || '').replace(/\/$/, '');
-  const base  = proxy || BASE;
-  const url = new URL(base + path);
-  Object.entries(params).forEach(([k, v]) => {
-    if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v));
-  });
-  let resp;
-  try {
-    resp = await fetch(url.toString(), {
+  const bases = proxy ? [proxy, BASE] : [BASE];
+
+  async function attempt(base) {
+    const url = new URL(base + path);
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v));
+    });
+    const resp = await fetch(url.toString(), {
       headers: { Authorization: 'Bearer ' + S.config.token }
     });
-  } catch (err) {
-    if (err.name === 'TypeError') {
-      throw new Error('网络请求失败（CORS）。已部署的页面需配置 CORS 代理地址，请到「设置」页查看配置说明');
+    if (!resp.ok) {
+      const txt = await resp.text().catch(() => resp.statusText);
+      throw new Error(`Catcher API ${resp.status}: ${txt.slice(0, 180)}`);
     }
-    throw err;
+    return resp.json();
   }
-  if (!resp.ok) {
-    const txt = await resp.text().catch(() => resp.statusText);
-    throw new Error(`Catcher API ${resp.status}: ${txt.slice(0, 180)}`);
+
+  let lastErr;
+  for (const base of bases) {
+    try { return await attempt(base); }
+    catch (err) {
+      // Only fall through to next base for network/CORS errors
+      if (err.name === 'TypeError' || err.message.includes('Failed to fetch')) {
+        lastErr = err; continue;
+      }
+      throw err;
+    }
   }
-  return resp.json();
+  throw new Error('网络请求失败，请检查网络连接或在「设置」中配置代理地址');
 }
 
 // ─────────────────────────────────────────
@@ -2591,15 +2463,7 @@ function kwScore(text, platform = 'tiktok', likes = 0) {
   let raw = 0;
   const reasons = [];
 
-  // 2. Custom keywords (user-defined, +55 each, max 3 counted)
-  const allCust = [...S.config.keywords, ...S.config.keywordsI18n];
-  const hitCust = allCust.filter(k => k && t.includes(k.toLowerCase()));
-  if (hitCust.length) {
-    raw += Math.min(hitCust.length, 3) * 55;
-    reasons.push(`自定义: ${hitCust.slice(0, 2).join(', ')}`);
-  }
-
-  // 3. Platform-specific A signals (+52 each, max 3)
+  // 2. Platform-specific A signals (+52 each, max 3)
   const hitPA = (PLATFORM_A_KW[platform] || []).filter(k => t.includes(k));
   if (hitPA.length) {
     raw += Math.min(hitPA.length, 3) * 52;
@@ -2700,14 +2564,18 @@ function buildAiPrompt(platform) {
 }
 
 function parseJsonArray(txt) {
-  // Strip ```json ... ``` code fences if present
   const stripped = txt.replace(/^```[a-z]*\n?/, '').replace(/\n?```$/, '').trim();
   const m = stripped.match(/\[[\s\S]*\]/);
-  return m ? JSON.parse(m[0]) : [];
+  if (!m) return [];
+  try { return JSON.parse(m[0]); } catch (_) {
+    // Repair: strip control chars that break JSON strings
+    try { return JSON.parse(m[0].replace(/[\x00-\x1F\x7F]/g, ' ')); } catch (_) { return []; }
+  }
 }
 
 async function aiScoreBatch(batch, provider, platform = 'tiktok') {
-  const items = batch.map((c, i) => `${i+1}. "${c.text.replace(/"/g, "'").slice(0, 120)}"`).join('\n');
+  const sanitize = s => s.replace(/[\r\n\t]+/g, ' ').replace(/\\/g, '').replace(/"/g, "'").slice(0, 120);
+  const items = batch.map((c, i) => `${i+1}. "${sanitize(c.text)}"`).join('\n');
   if (provider === 'openai') {
     const r = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -3354,7 +3222,7 @@ try {
   const saved = JSON.parse(localStorage.getItem('cl_cfg') || '{}');
   Object.assign(S.config, saved);
   // Migrate: if proxy URL was never saved, keep the built-in default
-  if (!S.config.proxyUrl) S.config.proxyUrl = 'https://tikhub-proxy.chenrenhan91.workers.dev';
+  if (S.config.proxyUrl === undefined) S.config.proxyUrl = '';
 } catch(_) {}
 
 loadConfigUI();
