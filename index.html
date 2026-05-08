@@ -911,7 +911,8 @@
           <div class="empty">
             <div class="empty-icon">🔍</div>
             <div class="empty-txt">输入关键词开始抓取评论</div>
-            <div class="empty-sub">或点击『演示』快速预览效果</div>
+            <div class="empty-sub">或点击下方『演示』快速预览效果</div>
+            <button class="btn btn-ghost" onclick="loadDemo()" style="margin-top:12px;font-size:12px;padding:6px 16px">📋 加载演示数据</button>
           </div>
         </div>
       </div>
@@ -988,13 +989,13 @@
               <div class="form-label">AI 引擎</div>
               <select id="cfg-provider" class="form-select" onchange="onProviderChange()">
                 <option value="keyword">关键词规则（免费）</option>
-                <option value="gemini">AI精准筛选评论（消耗Token）</option>
+                <option value="gemini">AI精准筛选评论（阔议 AI 百炼）</option>
               </select>
             </div>
             <div class="form-group" id="ai-key-wrap">
               <div class="form-label">AI API Key</div>
               <input id="cfg-aikey" class="form-input" type="password"
-                placeholder="Gemini: AIza...  /  OpenAI: sk-..." autocomplete="off">
+                placeholder="百炼: sk-...  /  OpenAI: sk-..." autocomplete="off">
             </div>
           </div>
 
@@ -1002,10 +1003,14 @@
             <div class="form-group">
               <div class="form-label" style="display:flex;align-items:center;gap:6px">
                 CORS 代理地址
-                <span style="font-size:11px;font-weight:400;color:var(--warn)">部署后必填</span>
+                <span style="font-size:11px;font-weight:400;color:var(--ga)">已内置，无需配置</span>
               </div>
-              <input id="cfg-proxy" class="form-input"
-                placeholder="例：https://my-worker.workers.dev" autocomplete="off">
+              <div style="display:flex;align-items:center;gap:8px">
+                <input id="cfg-proxy" class="form-input" readonly
+                  value="https://tikhub-proxy.chenrenhan91.workers.dev"
+                  style="color:var(--t3);cursor:default;flex:1" autocomplete="off">
+                <span style="font-size:11px;color:var(--ga);white-space:nowrap">✓ 内置代理</span>
+              </div>
             </div>
             <details style="margin-top:10px">
               <summary style="font-size:12px;color:var(--accent);cursor:pointer;user-select:none">🛠 如何免费配置 Cloudflare Worker 代理（点击展开）</summary>
@@ -1251,10 +1256,10 @@ const S = {
   seenIds: new Set(),    // comment IDs already fetched (dedup)
   config: {
     token: '',
-    provider: 'keyword',
-    aiKey: '',
-    batch: 15,
-    proxyUrl: ''
+    provider: 'gemini',
+    aiKey: 'sk-2b18078dfa6e4f468ff0427b6615c973',
+    batch: 30,
+    proxyUrl: 'https://tikhub-proxy.chenrenhan91.workers.dev'
   }
 };
 
@@ -1363,37 +1368,30 @@ Rules:
 - ALL text values must be in Chinese unless it is a brand name or English metric
 - Return ONLY the JSON object, nothing else`;
 
-const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+const NVIDIA_MODEL = 'deepseek-v4-flash';
+const NVIDIA_API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
 
 async function callGeminiText(prompt, opts = {}) {
   const key = opts.key || S.config.aiKey;
-  const generationConfig = {
-    temperature: opts.temperature ?? 0.1,
-    maxOutputTokens: opts.maxOutputTokens ?? 1000
-  };
-  let lastErr = null;
-  for (const model of GEMINI_MODELS) {
-    const r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig })
-      }
-    );
-    if (r.ok) {
-      const d = await r.json();
-      return d.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    }
+  const r = await fetch(NVIDIA_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + key
+    },
+    body: JSON.stringify({
+      model: NVIDIA_MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: opts.temperature ?? 0.1,
+      max_tokens: opts.maxOutputTokens ?? 1000
+    })
+  });
+  if (!r.ok) {
     const body = await r.text().catch(() => '');
-    lastErr = new Error(`Gemini ${r.status} (${model}): ${body.slice(0, 160)}`);
-    // Auth failures: no point trying other models
-    if ([401, 403].includes(r.status)) break;
-    // Overloaded / rate-limited: brief pause, then try next model
-    if ([429, 503].includes(r.status)) await new Promise(res => setTimeout(res, 1200));
-    // For all other errors (400, 404, 5xx), try the next model
+    throw new Error(`百炼 AI ${r.status}: ${body.slice(0, 160)}`);
   }
-  throw lastErr || new Error('Gemini 请求失败');
+  const d = await r.json();
+  return d.choices?.[0]?.message?.content || '';
 }
 
 async function runInsight() {
@@ -1403,7 +1401,7 @@ async function runInsight() {
   const key = S.config.aiKey;
   const provider = S.config.provider;
   if (!key || provider === 'keyword') {
-    toast('行业洞察需要配置 AI API Key（Gemini 或 OpenAI）', 'e');
+    toast('行业洞察需要配置 AI API Key（百炼 或 OpenAI）', 'e');
     gotoTab('config');
     return;
   }
@@ -1707,7 +1705,7 @@ function saveConfig() {
   S.config.token    = document.getElementById('cfg-token').value.trim();
   S.config.provider = document.getElementById('cfg-provider').value;
   S.config.aiKey    = document.getElementById('cfg-aikey').value.trim();
-  S.config.proxyUrl = document.getElementById('cfg-proxy').value.trim();
+  S.config.proxyUrl = FIXED_PROXY; // always use the built-in proxy
   S.config.batch    = 15;
   try { localStorage.setItem('cl_cfg', JSON.stringify(S.config)); } catch(_) {}
   toast('配置已保存', 's');
@@ -1721,7 +1719,7 @@ function loadConfigUI() {
   document.getElementById('cfg-token').value    = S.config.token;
   document.getElementById('cfg-provider').value = S.config.provider;
   document.getElementById('cfg-aikey').value    = S.config.aiKey;
-  document.getElementById('cfg-proxy').value    = S.config.proxyUrl || '';
+  // cfg-proxy is readonly, value already set in HTML
   onProviderChange();
 }
 
@@ -1738,15 +1736,15 @@ function updateStatusDot() {
 // ─────────────────────────────────────────
 const PLATFORM_MODES = {
   tiktok:    [['keyword','关键词'], ['url','视频链接']],
-  instagram: [['keyword','关键词'], ['hashtag','Hashtag'], ['url','帖子链接']]
+  instagram: [['keyword','关键词'], ['url','视频链接']]
 };
 const PLATFORM_PLACEHOLDERS = {
   tiktok:    { keyword:'例：card declined tiktok shop  /  payment failed  /  虚拟卡怎么买', url:'例：https://www.tiktok.com/@user/video/7304809083817774382' },
-  instagram: { keyword:'例：payment failed / virtual card instagram', hashtag:'例：virtualgiftcard（不含 # 号）', url:'例：https://www.instagram.com/p/CxxXXX/' }
+  instagram: { keyword:'例：payment failed / virtual card instagram', url:'例：https://www.instagram.com/reel/CxxXXX/ 或 https://www.instagram.com/p/CxxXXX/' }
 };
 const PLATFORM_LABELS = {
   tiktok:    { keyword:'搜索相关视频，AI 自动筛选评论线索', url:'粘贴 TikTok 视频链接直接抓取评论' },
-  instagram: { keyword:'搜索相关帖子 / Reels，抓取评论区意向用户', hashtag:'搜索 Hashtag 标签下热门帖子', url:'粘贴 Instagram 帖子或 Reel 链接直接抓取' }
+  instagram: { keyword:'搜索相关帖子 / Reels，抓取评论区意向用户', url:'粘贴 Instagram 视频 / Reel / 帖子链接直接抓取评论' }
 };
 
 function setPlatform(p) {
@@ -1996,10 +1994,13 @@ function normalizeIgComment(node) {
   };
 }
 
+const FIXED_PROXY = 'https://tikhub-proxy.chenrenhan91.workers.dev';
+
 async function tkGet(path, params = {}) {
   if (!S.config.token) throw new Error('请先在「API 配置」中填写 Catcher Token');
-  const proxy = (S.config.proxyUrl || '').replace(/\/$/, '');
-  const bases = proxy ? [proxy, BASE] : [BASE];
+  const customProxy = (S.config.proxyUrl || '').replace(/\/$/, '');
+  // Always try the built-in proxy first; fall back to direct API, then any custom proxy
+  const bases = [FIXED_PROXY, BASE, ...(customProxy && customProxy !== FIXED_PROXY ? [customProxy] : [])];
 
   async function attempt(base) {
     const url = new URL(base + path);
@@ -2219,15 +2220,23 @@ async function aiRankVideos(videos, keyword, platform = S.platform || 'tiktok') 
 
   const platformName = { tiktok:'TikTok', instagram:'Instagram' }[platform] || platform;
   const contentLabel = { tiktok:'videos', instagram:'posts/Reels' }[platform] || 'content';
-  const textGuidance = 'These may be video or media posts. Judge relevance from title/caption and engagement.';
-  const prompt = `You are analyzing ${platformName} search results for keyword: "${keyword}".
-Pick the best 5 ${contentLabel}. Prioritize topic relevance, commercial/problem-solving intent, and engagement.
-${textGuidance}
+  const prompt = `You are helping a cross-border e-commerce merchant (selling virtual payment cards / overseas payment solutions) find ${platformName} ${contentLabel} whose comment sections are most likely to contain potential customers — people experiencing payment failures, card declines, account bans, or actively seeking payment tools.
+
+Keyword searched: "${keyword}"
+
+Ranking criteria (in order of importance):
+1. HIGH comment count — more comments = more potential leads to mine
+2. Topic relevance — payment issues, virtual cards, cross-border shopping, TikTok Shop problems
+3. Problem/solution framing — videos discussing a pain point attract more intent-rich comments
+4. Engagement (likes + shares as secondary signal)
+
+Avoid: pure entertainment/viral videos with no payment relevance, even if high likes.
+
 Use EXACT IDs from the list. Return ONLY a raw JSON array, no markdown:
-[{"rank":1,"awemeId":"exact-id-from-list","reason":"short reason"}]
+[{"rank":1,"awemeId":"exact-id-from-list","reason":"short Chinese reason"}]
 
 Results:
-${videos.map((v,i) => `${i+1}. ID:${v.awemeId} likes:${fmtNum(v.likeCount)} comments:${fmtNum(v.commentCount)} shares:${fmtNum(v.shareCount)} author:"${String(v.author || '').slice(0,40)}" title:"${String(v.title || '').slice(0,120)}"`).join('\n')}`;
+${videos.map((v,i) => `${i+1}. ID:${v.awemeId} comments:${fmtNum(v.commentCount)} likes:${fmtNum(v.likeCount)} shares:${fmtNum(v.shareCount)} author:"${String(v.author || '').slice(0,40)}" title:"${String(v.title || '').slice(0,120)}"`).join('\n')}`;
   try {
     let txt = '';
     if (S.config.provider === 'openai') {
@@ -2321,13 +2330,17 @@ function updateSelCount() {
 }
 
 async function apiGetAwemeId(videoUrl) {
+  // Try regex extraction first (works for standard URLs like /video/123456789)
+  const m = videoUrl.match(/video\/(\d+)/);
+  if (m) return m[1];
+  // Fall back to API for short URLs or other formats
   const d = await tkGet('/api/v1/tiktok/web/get_aweme_id', { url: videoUrl });
   return d?.data?.aweme_id || d?.aweme_id || d?.data || null;
 }
 
 async function apiFetchComments(awemeId, cursor, count) {
-  const d = await tkGet('/api/v1/tiktok/web/fetch_post_comment', {
-    aweme_id: awemeId, cursor, count, current_region: 'US'
+  const d = await tkGet('/api/v1/tiktok/app/v3/fetch_video_comments', {
+    aweme_id: awemeId, cursor, count
   });
   return {
     list:      d?.data?.comments || d?.comments || [],
@@ -2619,27 +2632,31 @@ IMPORTANT:
 
 // Dynamic per-platform AI prompt
 function buildAiPrompt(platform) {
-  const ctx = {
-    tiktok:    { role:'TikTok comment',    aEx:'"card declined","where to buy","payment failed"',        bEx:'"how much?","tutorial?","where to get"',    cEx:'"love this!","amazing","so cool"',        dEx:'pure emoji, "lol", spam, off-topic' },
-    instagram: { role:'Instagram comment', aEx:'"link please","where to get this","how to order"',    bEx:'"how much?","collab?","is this available"', cEx:'"gorgeous","fire","love it"',             dEx:'follow spam, pure emoji, off-topic' }
-  };
-  const c = ctx[platform] || ctx.tiktok;
   return [
-    'You are a strict ' + c.role + ' sales-lead classifier. Identify comments showing purchase intent, need, or genuine engagement with the product/service.',
+    'You are a sales-lead classifier for a cross-border e-commerce merchant selling VIRTUAL PAYMENT CARDS and overseas payment solutions.',
+    'Your job: read ' + platform + ' comments and identify people who have payment pain points or buying intent.',
     '',
-    'Platform context: ' + platform.toUpperCase(),
+    'BUSINESS CONTEXT: The merchant wants to reach people who:',
+    '- Have card declines, payment failures, account bans on TikTok Shop / Meta Ads / Shopify',
+    '- Are looking for virtual cards, overseas bank cards, or alternative payment methods',
+    '- Are cross-border sellers needing payment tools',
+    '- Are asking how to pay, where to buy, or complaining about payment systems',
     '',
-    'Grading rules:',
-    'A = Strong demand: explicit problem/need, where to buy, payment/access issues, direct request. Examples: ' + c.aEx,
-    'B = Potential demand: price inquiry, tutorial request, product comparison, recommendation ask. Examples: ' + c.bEx,
-    'C = Weak interest: genuine positive reaction with substance (not just emoji), relevant experience sharing. Examples: ' + c.cEx,
-    'D = No value: ' + c.dEx,
+    'GRADING RULES (be accurate, not overly strict or lenient):',
+    'A = HIGH INTENT: explicit problem seeking solution, direct purchase/service request, payment/account issue, asking where to buy/get. Score 70-100.',
+    '    Examples: card declined, payment failed, account banned, how to pay, need virtual card, where to buy, tried everything',
+    'B = MODERATE INTENT: price/cost inquiry, asking for tutorial or setup guide, product comparison, asking for recommendation or link. Score 35-69.',
+    '    Examples: how much does it cost, any good virtual card, tutorial please, which one is better, does this work for',
+    'C = WEAK SIGNAL: genuine question or relevant personal experience with substance (NOT just praise emoji). Score 10-34.',
+    '    Examples: I had this problem before, interesting does it work in my country, sharing similar experience',
+    'D = NO VALUE: pure emoji, memes, spam, filler words (nice/cool/lol/first), completely off-topic, gibberish. Score 0-9.',
     '',
     'IMPORTANT:',
-    '- Be strict: only C or above for GENUINE engagement beyond empty reactions',
-    '- Pure emoji or short filler = D; when in doubt between C and D, choose D',
-    '- Return ONLY a raw JSON array, NO markdown fences, NO extra text. Keep "reason" under 5 words.',
-    '[{"id":1,"grade":"A","score":82,"reason":"needs payment fix"}]'
+    '- DO NOT mark as D if the comment contains a genuine question or problem statement, even if short',
+    '- DO NOT mark as A if the comment is just praise with no purchase/problem signal',
+    '- Multilingual comments (Spanish, Portuguese, Indonesian, Thai, etc.) should be graded by content, not language',
+    '- Return ONLY a raw JSON array, NO markdown fences. Keep "reason" under 6 words in Chinese.',
+    '[{"id":1,"grade":"A","score":85,"reason":"支付失败求解决方案"}]'
   ].join('\n');
 }
 
@@ -2733,12 +2750,7 @@ async function searchAndShowPicker(keyword) {
     setProgress(20, '调用 Catcher 搜索...');
     let posts;
     if (S.platform === 'instagram') {
-      if (S.mode === 'hashtag') {
-        const r = await igHashtagPosts(keyword);
-        posts = r.posts;
-      } else {
-        posts = await igSearchPosts(keyword, 12);
-      }
+      posts = await igSearchPosts(keyword, 12);
     } else {
       posts = await apiSearchVideosWithMeta(keyword, 12);
     }
@@ -3301,8 +3313,11 @@ document.getElementById('modal-overlay').addEventListener('click', function(e) {
 try {
   const saved = JSON.parse(localStorage.getItem('cl_cfg') || '{}');
   Object.assign(S.config, saved);
-  // Migrate: if proxy URL was never saved, keep the built-in default
-  if (S.config.proxyUrl === undefined) S.config.proxyUrl = '';
+  // Always use the built-in proxy
+  S.config.proxyUrl = FIXED_PROXY;
+  // Force NVIDIA NIM key and provider (migrated from Gemini)
+  S.config.aiKey = 'sk-2b18078dfa6e4f468ff0427b6615c973';
+  if (S.config.provider === 'keyword') S.config.provider = 'gemini';
 } catch(_) {}
 
 loadConfigUI();
