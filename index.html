@@ -860,7 +860,7 @@
         </div>
         <div style="display:flex;gap:8px;align-items:center">
           <input id="q-input" class="search-input-big" type="text"
-            placeholder="例：card declined tiktok shop / payment failed / 虚拟卡怎么买"
+            placeholder="例：宠物零食 / 美妆护肤 / 数码配件 / dropshipping / 小众穿搭"
             onkeydown="if(event.key==='Enter')startScraping()">
           <button class="btn btn-primary" id="btn-go" onclick="startScraping()">🔍 搜索</button>
           <button class="btn btn-ghost" onclick="clearAll()">清空</button>
@@ -1739,8 +1739,8 @@ const PLATFORM_MODES = {
   instagram: [['keyword','关键词'], ['url','视频链接']]
 };
 const PLATFORM_PLACEHOLDERS = {
-  tiktok:    { keyword:'例：card declined tiktok shop  /  payment failed  /  虚拟卡怎么买', url:'例：https://www.tiktok.com/@user/video/7304809083817774382' },
-  instagram: { keyword:'例：payment failed / virtual card instagram', url:'例：https://www.instagram.com/reel/CxxXXX/ 或 https://www.instagram.com/p/CxxXXX/' }
+  tiktok:    { keyword:'例：宠物零食 / 美妆护肤 / 数码配件 / dropshipping / skincare', url:'例：https://www.tiktok.com/@user/video/7304809083817774382' },
+  instagram: { keyword:'例：宠物用品 / 小众穿搭 / 家居好物 / 健身器材 / skin care', url:'例：https://www.instagram.com/reel/CxxXXX/ 或 https://www.instagram.com/p/CxxXXX/' }
 };
 const PLATFORM_LABELS = {
   tiktok:    { keyword:'搜索相关视频，AI 自动筛选评论线索', url:'粘贴 TikTok 视频链接直接抓取评论' },
@@ -2220,17 +2220,17 @@ async function aiRankVideos(videos, keyword, platform = S.platform || 'tiktok') 
 
   const platformName = { tiktok:'TikTok', instagram:'Instagram' }[platform] || platform;
   const contentLabel = { tiktok:'videos', instagram:'posts/Reels' }[platform] || 'content';
-  const prompt = `You are helping a cross-border e-commerce merchant (selling virtual payment cards / overseas payment solutions) find ${platformName} ${contentLabel} whose comment sections are most likely to contain potential customers — people experiencing payment failures, card declines, account bans, or actively seeking payment tools.
+  const prompt = `You are helping cross-border e-commerce merchants find ${platformName} ${contentLabel} whose comment sections are most likely to contain high purchase-intent viewers.
 
 Keyword searched: "${keyword}"
 
 Ranking criteria (in order of importance):
 1. HIGH comment count — more comments = more potential leads to mine
-2. Topic relevance — payment issues, virtual cards, cross-border shopping, TikTok Shop problems
-3. Problem/solution framing — videos discussing a pain point attract more intent-rich comments
+2. Topic relevance — content related to the searched keyword and shopping/buying behavior
+3. Engagement quality — videos that attract questions, purchase inquiries, and product discussion
 4. Engagement (likes + shares as secondary signal)
 
-Avoid: pure entertainment/viral videos with no payment relevance, even if high likes.
+Avoid: pure comedy/reaction videos where comments are just laughing emojis with no product interest, even if high likes.
 
 Use EXACT IDs from the list. Return ONLY a raw JSON array, no markdown:
 [{"rank":1,"awemeId":"exact-id-from-list","reason":"short Chinese reason"}]
@@ -2647,11 +2647,11 @@ IMPORTANT:
 // Dynamic per-platform AI prompt
 function buildAiPrompt(platform) {
   return [
-    'You are a sales-lead classifier for a cross-border e-commerce merchant selling VIRTUAL PAYMENT CARDS and overseas payment solutions.',
-    'Your job: read ' + platform + ' comments and identify people who have payment pain points or buying intent.',
+    'You are a purchase-intent classifier for cross-border e-commerce merchants.',
+    'Your job: read ' + platform + ' comments and identify people who show buying intent or shopping behavior for ANY product.',
     '',
-    'BUSINESS CONTEXT: The merchant sells virtual payment cards to cross-border shoppers.',
-    'TARGET AUDIENCE: Anyone who shows shopping/buying intent on ANY product — they are potential customers who may face payment issues at checkout.',
+    'GOAL: Find commenters who are actively shopping — they are potential buyers or warm leads for any cross-border e-commerce merchant.',
+    'Grade ONLY by how strongly the person wants to buy / is considering buying. Product category does not matter.',
     'Your goal: find people actively shopping or buying, at any level of intent.',
     '',
     'GRADING RULES:',
@@ -3280,18 +3280,18 @@ function dl(content, name, mime) {
 // ─────────────────────────────────────────
 function loadDemo() {
   const demo = [
-    { grade:'A', score:92, reason:'A词: card declined', text:"My card keeps getting declined on TikTok shop, I've tried everything. Anyone know how to fix this?", user:{ nickname:'Sarah_M', uniqueId:'sarah_m88', uid:'u1', avatarUrl:'' }, likes:47, time:'2025/4/28', awemeId:'demo001' },
-    { grade:'A', score:88, reason:'A词: payment failed', text:"Payment failed again!! I need help, I've been trying to pay for ads for 3 days", user:{ nickname:'AdsBoss', uniqueId:'ads_boss99', uid:'u2', avatarUrl:'' }, likes:23, time:'2025/4/27', awemeId:'demo001' },
-    { grade:'A', score:85, reason:'关键词: 付款失败', text:"跨境收款老是被冻结，有没有靠谱的解决方案？求推荐虚拟卡", user:{ nickname:'跨境王者', uniqueId:'cbking2024', uid:'u3', avatarUrl:'' }, likes:61, time:'2025/4/26', awemeId:'demo002' },
-    { grade:'B', score:65, reason:'B词: where can i buy', text:"Where can I buy a virtual card for TikTok ads? Any recommendations?", user:{ nickname:'MarketingPro', uniqueId:'mktpro77', uid:'u4', avatarUrl:'' }, likes:15, time:'2025/4/25', awemeId:'demo001' },
-    { grade:'B', score:58, reason:'B词: price', text:"What's the price for this type of virtual card? Is it worth it?", user:{ nickname:'Lisa_Digital', uniqueId:'lisa_dig', uid:'u5', avatarUrl:'' }, likes:8, time:'2025/4/25', awemeId:'demo002' },
-    { grade:'B', score:55, reason:'疑问句', text:"Does this work with Facebook Ads as well? Looking to scale my dropshipping", user:{ nickname:'DropshipKing', uniqueId:'dship_k', uid:'u6', avatarUrl:'' }, likes:12, time:'2025/4/24', awemeId:'demo001' },
-    { grade:'B', score:52, reason:'关键词: 怎么买', text:"这个虚拟卡怎么买？有没有中文教程？", user:{ nickname:'新手卖家', uniqueId:'newbie_seller', uid:'u7', avatarUrl:'' }, likes:34, time:'2025/4/23', awemeId:'demo002' },
-    { grade:'C', score:25, reason:'C词: nice', text:"Nice video! Very helpful content 👏", user:{ nickname:'TechFan', uniqueId:'techfan01', uid:'u8', avatarUrl:'' }, likes:5, time:'2025/4/22', awemeId:'demo001' },
-    { grade:'C', score:22, reason:'C词: 不错', text:"讲得不错，收藏了", user:{ nickname:'路人甲', uniqueId:'lurker123', uid:'u9', avatarUrl:'' }, likes:3, time:'2025/4/21', awemeId:'demo002' },
-    { grade:'D', score:5, reason:'纯表情/极短', text:"😂😂😂", user:{ nickname:'EmojiGuy', uniqueId:'emoji_g', uid:'u10', avatarUrl:'' }, likes:2, time:'2025/4/20', awemeId:'demo001' },
-    { grade:'D', score:8, reason:'无需求信号', text:"First!!!", user:{ nickname:'FirstComment', uniqueId:'first_c', uid:'u11', avatarUrl:'' }, likes:1, time:'2025/4/20', awemeId:'demo002' },
-    { grade:'A', score:91, reason:'A词: account banned', text:"My TikTok seller account got banned, I urgently need an alternative payment solution", user:{ nickname:'Seller_Jake', uniqueId:'jake_sells', uid:'u12', avatarUrl:'' }, likes:78, time:'2025/4/19', awemeId:'demo001' },
+    { grade:'A', score:92, reason:'询问购买方式', text:"how to buy it? where can I order?", user:{ nickname:'belle_shopper', uniqueId:'belle.536981', uid:'u1', avatarUrl:'' }, likes:47, time:'2025/4/28', awemeId:'demo001' },
+    { grade:'A', score:88, reason:'询问购买地点', text:"mua ở đâu ạ?", user:{ nickname:'PetBloom VN', uniqueId:'petbloomvn', uid:'u2', avatarUrl:'' }, likes:23, time:'2025/4/27', awemeId:'demo001' },
+    { grade:'A', score:85, reason:'询问下单方式', text:"how to order po?", user:{ nickname:'ogie_buyer', uniqueId:'ogietamaldita', uid:'u3', avatarUrl:'' }, likes:18, time:'2025/4/26', awemeId:'demo001' },
+    { grade:'A', score:82, reason:'询问发货地区', text:"does this ship to Philippines? how much is shipping?", user:{ nickname:'Lyn_PH', uniqueId:'lyn_ph99', uid:'u4', avatarUrl:'' }, likes:31, time:'2025/4/26', awemeId:'demo002' },
+    { grade:'B', score:65, reason:'产品对比询问', text:"which color is better, the pink or blue one?", user:{ nickname:'StyleHunter', uniqueId:'style_hunt', uid:'u5', avatarUrl:'' }, likes:15, time:'2025/4/25', awemeId:'demo001' },
+    { grade:'B', score:58, reason:'想要拥有', text:"I need this for my cat!! tagging @myfriend", user:{ nickname:'CatMom_Lisa', uniqueId:'lisa_catmom', uid:'u6', avatarUrl:'' }, likes:44, time:'2025/4/25', awemeId:'demo002' },
+    { grade:'B', score:52, reason:'询问规格可用性', text:"is this available in size L? my dog is big", user:{ nickname:'DogDad_K', uniqueId:'dogdad_k', uid:'u7', avatarUrl:'' }, likes:12, time:'2025/4/24', awemeId:'demo002' },
+    { grade:'C', score:28, reason:'真实体验分享', text:"I bought one last month and my cat loves it!", user:{ nickname:'HappyPetOwner', uniqueId:'happypet01', uid:'u8', avatarUrl:'' }, likes:67, time:'2025/4/23', awemeId:'demo001' },
+    { grade:'C', score:22, reason:'有实质内容互动', text:"这个质量看起来不错，值得入手", user:{ nickname:'购物达人', uniqueId:'shopper_cn', uid:'u9', avatarUrl:'' }, likes:8, time:'2025/4/22', awemeId:'demo002' },
+    { grade:'D', score:3, reason:'纯表情', text:"😂😂😂", user:{ nickname:'EmojiGuy', uniqueId:'emoji_g', uid:'u10', avatarUrl:'' }, likes:2, time:'2025/4/21', awemeId:'demo001' },
+    { grade:'D', score:5, reason:'无意义抢楼', text:"First!!!", user:{ nickname:'FirstComment', uniqueId:'first_c', uid:'u11', avatarUrl:'' }, likes:1, time:'2025/4/21', awemeId:'demo002' },
+    { grade:'A', score:90, reason:'直接询价', text:"how much? and do you have wholesale price?", user:{ nickname:'Seller_Jake', uniqueId:'jake_sells', uid:'u12', avatarUrl:'' }, likes:29, time:'2025/4/20', awemeId:'demo001' },
   ].map((c, i) => ({ ...c, id: 'demo_' + i }));
 
   S.comments = [...S.comments, ...demo];
