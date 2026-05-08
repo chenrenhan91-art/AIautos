@@ -2379,7 +2379,21 @@ const SPAM_KW = [
 
 // Platform-specific A-level signals (purchase/access intent)
 const PLATFORM_A_KW = {
-  tiktok: [],
+  tiktok: [
+    'link please','drop the link','where to get','how to order','how to buy',
+    'where is this from','source?','shop link','how do i buy','how to get this',
+    'where can i find','can you send the link','where to purchase','buy link',
+    'order link','shop now','how to get it','want to buy','want to order',
+    'send link','drop link','link?','link pls','where buy','how buy',
+    // Filipino/Tagalog TikTok common
+    'paano bilhin','saan mabibili','pano order','san makuha','magkano po',
+    // Vietnamese TikTok common
+    'mua ở đâu','link mua','mua như thế nào','order ở đâu','giá bao nhiêu',
+    // Indonesian TikTok common
+    'beli dimana','link beli','cara order','harga berapa','dimana beli',
+    // Thai TikTok common
+    'ซื้อที่ไหน','สั่งซื้อยังไง','ลิงก์ซื้อ','ราคาเท่าไหร่'
+  ],
   instagram: [
     'link please','drop the link','where to get this','how to order',
     'where is this from','source?','shop link','how do i buy',
@@ -2636,28 +2650,29 @@ function buildAiPrompt(platform) {
     'You are a sales-lead classifier for a cross-border e-commerce merchant selling VIRTUAL PAYMENT CARDS and overseas payment solutions.',
     'Your job: read ' + platform + ' comments and identify people who have payment pain points or buying intent.',
     '',
-    'BUSINESS CONTEXT: The merchant wants to reach people who:',
-    '- Have card declines, payment failures, account bans on TikTok Shop / Meta Ads / Shopify',
-    '- Are looking for virtual cards, overseas bank cards, or alternative payment methods',
-    '- Are cross-border sellers needing payment tools',
-    '- Are asking how to pay, where to buy, or complaining about payment systems',
+    'BUSINESS CONTEXT: The merchant sells virtual payment cards to cross-border shoppers.',
+    'TARGET AUDIENCE: Anyone who shows shopping/buying intent on ANY product — they are potential customers who may face payment issues at checkout.',
+    'Your goal: find people actively shopping or buying, at any level of intent.',
     '',
-    'GRADING RULES (be accurate, not overly strict or lenient):',
-    'A = HIGH INTENT: explicit problem seeking solution, direct purchase/service request, payment/account issue, asking where to buy/get. Score 70-100.',
-    '    Examples: card declined, payment failed, account banned, how to pay, need virtual card, where to buy, tried everything',
-    'B = MODERATE INTENT: price/cost inquiry, asking for tutorial or setup guide, product comparison, asking for recommendation or link. Score 35-69.',
-    '    Examples: how much does it cost, any good virtual card, tutorial please, which one is better, does this work for',
-    'C = WEAK SIGNAL: genuine question or relevant personal experience with substance (NOT just praise emoji). Score 10-34.',
-    '    Examples: I had this problem before, interesting does it work in my country, sharing similar experience',
-    'D = NO VALUE: pure emoji, memes, spam, filler words (nice/cool/lol/first), completely off-topic, gibberish. Score 0-9.',
+    'GRADING RULES:',
+    'A = STRONG BUY INTENT: direct purchase action, asking where/how to buy or order, payment/checkout problem, asking price, asking for link/purchase channel, shipping to their country. Score 70-100.',
+    '    Examples: "how to buy", "where to order", "how much", "does it ship to [country]", "payment failed", "card declined", "send me the link", "how to get", "mua ở đâu" (where to buy), "怎么买", "在哪买"',
+    'B = MODERATE INTENT: comparing products before buying, asking product specs or availability, asking if it works in their region, tagging someone to share a product they want, wanting-to-own statements. Score 35-69.',
+    '    Examples: "does this work in [country]", "which color/size is better", "is this available in [place]", "tag your friend", "I need this", "want one", "how long shipping", "is it worth it"',
+    'C = WEAK SIGNAL: genuine engaged comment with substance — not just reaction emoji. Includes: personal experience sharing, real product question, meaningful positive reaction with words. Score 10-34.',
+    '    Examples: "I bought one and love it", "tried this and it works", "my [pet/kid/etc] would love this", "does anyone have experience with", substantive product opinions',
+    'D = NO VALUE: pure emoji only, bot-like spam, filler words with zero substance (nice/cool/lol/first/😂😂), completely off-topic, gibberish, self-promotion links. Score 0-9.',
     '',
     'IMPORTANT:',
     '- Use ONLY grades A, B, C, or D. Never use any other letter grade.',
-    '- DO NOT mark as D if the comment contains a genuine question or problem statement, even if short',
-    '- DO NOT mark as A if the comment is just praise with no purchase/problem signal',
-    '- Multilingual comments (Spanish, Portuguese, Indonesian, Thai, etc.) should be graded by content, not language',
+    '- Grade by SHOPPING INTENT on any product, NOT by whether they mention payment cards specifically.',
+    '- Short purchase questions ("how to buy?", "price?", "link?") = A even if brief.',
+    '- "I want this" / "need this" / tagging friends = B.',
+    '- Substantive comments with real words (not just emoji) that show engagement = C.',
+    '- Only pure emoji / filler / spam = D.',
+    '- Multilingual comments (Vietnamese, Spanish, Indonesian, Thai, Arabic, etc.) grade by content intent, not language.',
     '- Return ONLY a raw JSON array, NO markdown fences. Keep "reason" under 6 words in Chinese.',
-    '[{"id":1,"grade":"A","score":85,"reason":"支付失败求解决方案"}]'
+    '[{"id":1,"grade":"A","score":85,"reason":"询问购买方式"}]'
   ].join('\n');
 }
 
