@@ -302,6 +302,29 @@
     .bio-snippet { font-size: 11px; color: var(--t3); line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .row-acts { display: flex; gap: 4px; padding-top: 4px; }
 
+    /* ─── Tag Actions ─── */
+    .tag-btn {
+      padding: 3px 7px; border-radius: 5px; font-size: 12px; cursor: pointer;
+      border: 1px solid transparent; background: transparent; color: var(--t3);
+      transition: all .14s; line-height: 1;
+    }
+    .tag-btn:hover { border-color: var(--border); }
+    .tag-btn.t-saved { border-color: var(--accent); background: var(--accent-glow); }
+    .tag-btn.t-contacted { border-color: var(--success); background: rgba(56,193,114,.12); }
+    .tag-btn.t-skip { border-color: var(--border); background: var(--bg-1); opacity: .6; }
+    .tag-btn:disabled { opacity: .5; cursor: default; }
+    /* ─── Reply Panel ─── */
+    .reply-panel {
+      margin-top: 8px; padding: 10px 12px; background: var(--bg-1);
+      border: 1px solid var(--accent); border-radius: 8px;
+      font-size: 12px; color: var(--t2); line-height: 1.7;
+    }
+    .reply-panel-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .reply-panel-ttl { font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: .4px; }
+    /* ─── Leads Tab ─── */
+    .leads-empty { text-align: center; padding: 60px 20px; color: var(--t3); }
+    .leads-empty-icon { font-size: 40px; margin-bottom: 12px; }
+
     /* ─── Empty ─── */
     .empty { padding: 64px 20px; text-align: center; }
     .empty-icon { font-size: 42px; margin-bottom: 14px; opacity: .5; }
@@ -799,6 +822,10 @@
       <span class="ni">🔍</span> 工作台
       <span class="nav-badge" id="nb">0</span>
     </div>
+    <div class="nav-item" data-tab="leads" onclick="gotoTab('leads')">
+      <span class="ni">📌</span> 线索库
+      <span class="nav-badge" id="nb-leads"></span>
+    </div>
     <div class="nav-item" data-tab="insight" onclick="gotoTab('insight')">
       <span class="ni">📊</span> 行业洞察
     </div>
@@ -918,6 +945,34 @@
       </div>
 
     </div><!-- /tab-search -->
+
+    <!-- ═══ TAB: leads (线索库) ═══ -->
+    <div id="tab-leads" class="tab" style="display:none">
+      <div class="filter-bar" style="margin-bottom:14px">
+        <div class="ftabs">
+          <div class="ftab on" data-lf="all" onclick="setLeadsFilter('all')">全部 (<span id="lfc-all">0</span>)</div>
+          <div class="ftab" data-lf="saved" onclick="setLeadsFilter('saved')" style="color:var(--accent)">📌 待联系 (<span id="lfc-saved">0</span>)</div>
+          <div class="ftab" data-lf="contacted" onclick="setLeadsFilter('contacted')" style="color:var(--success)">✅ 已联系 (<span id="lfc-contacted">0</span>)</div>
+          <div class="ftab" data-lf="skip" onclick="setLeadsFilter('skip')" style="color:var(--t3)">❌ 无意向 (<span id="lfc-skip">0</span>)</div>
+        </div>
+        <div class="export-btns">
+          <button class="btn btn-ghost btn-sm" onclick="doExport('csv')">⬇ CSV</button>
+          <button class="btn btn-ghost btn-sm" onclick="doExport('json')">⬇ JSON</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div class="t-head">
+          <div>等级</div><div>评论内容</div><div>用户 / 社媒</div>
+        </div>
+        <div class="t-body" id="leads-body">
+          <div class="leads-empty">
+            <div class="leads-empty-icon">📌</div>
+            <h3 style="font-size:15px;margin-bottom:6px;color:var(--t2)">还没有收藏的线索</h3>
+            <p style="font-size:12px">在工作台评论列表里点击 📌✅❌ 标记，线索会出现在这里</p>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-leads -->
 
     <!-- ═══ TAB: insight (行业品类洞察) ═══ -->
     <div id="tab-insight" class="tab" style="display:none">
@@ -1263,7 +1318,7 @@ const S = {
   }
 };
 
-const TITLES = { search:'工作台', insight:'行业品类洞察', config:'设置', pricing:'订阅计划' };
+const TITLES = { search:'工作台', leads:'📌 线索库', insight:'行业品类洞察', config:'设置', pricing:'订阅计划' };
 const GRADE_LABEL = { A:'强需求', B:'潜在需求', C:'弱兴趣', D:'无效' };
 
 // ─────────────────────────────────────────
@@ -1276,18 +1331,7 @@ function gotoTab(t) {
   document.getElementById('tab-' + t).style.display = 'block';
   document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.tab === t));
   document.getElementById('page-title').textContent = TITLES[t] || t;
-}
-
-// ─────────────────────────────────────────
-// NAVIGATION
-// ─────────────────────────────────────────
-function gotoTab(t) {
-  if (t === 'dashboard' || t === 'results') t = 'search';
-  S.tab = t;
-  document.querySelectorAll('.tab').forEach(el => el.style.display = 'none');
-  document.getElementById('tab-' + t).style.display = 'block';
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.tab === t));
-  document.getElementById('page-title').textContent = TITLES[t] || t;
+  if (t === 'leads') renderLeads();
 }
 
 // ─────────────────────────────────────────
@@ -2934,10 +2978,12 @@ async function scrapeComments(awemeIds, opts = {}) {
     S.lastAwemeIds = awemeIds;
 
     S.comments = [...S.comments, ...kept];
+    persistComments();
     setProgress(100, '完成！');
     syncStats();
     renderTable();
     updateBadge();
+    updateLeadsBadge();
     updateContinueBtn();
     const ab = kept.filter(c => c.grade === 'A' || c.grade === 'B').length;
     const total = raw.length;
@@ -2958,14 +3004,130 @@ function clearAll() {
   S.lastAwemeIds = [];
   S.lastCursors = {};
   S.seenIds = new Set();
+  localStorage.removeItem(CC_KEY);
   syncStats();
   renderTable();
+  renderLeads();
   updateBadge();
+  updateLeadsBadge();
   updateContinueBtn();
   toast('已清空', 'i');
 }
 
-// ── Continue scraping: resume from last cursor with same videos ──
+// ─────────────────────────────────────────
+// PERSISTENCE & TAGGING
+// ─────────────────────────────────────────
+const CC_KEY = 'cc_data_v1';
+
+function persistComments() {
+  try {
+    const toSave = S.comments.slice(-500).map(c => {
+      const { _replyLoading, ...rest } = c;
+      return rest;
+    });
+    localStorage.setItem(CC_KEY, JSON.stringify(toSave));
+  } catch(e) { console.warn('persist failed', e); }
+}
+
+function loadPersistedComments() {
+  try {
+    const data = JSON.parse(localStorage.getItem(CC_KEY) || 'null');
+    if (Array.isArray(data) && data.length) {
+      S.comments = data;
+      syncStats();
+      renderTable();
+      updateBadge();
+      updateLeadsBadge();
+    }
+  } catch(e) { console.warn('load failed', e); }
+}
+
+function tagComment(idx, tag) {
+  const c = S.comments[idx];
+  if (!c) return;
+  c.tag = c.tag === tag ? null : tag;
+  persistComments();
+  renderTable();
+  if (S.tab === 'leads') renderLeads();
+  updateLeadsBadge();
+  const msgs = { saved:'已收藏到线索库 📌', contacted:'已标记为已联系 ✅', skip:'已标记为无意向 ❌' };
+  toast(c.tag ? (msgs[c.tag] || '已标记') : '已取消标记', 'i');
+}
+
+async function genReply(idx) {
+  const c = S.comments[idx];
+  if (!c || c._replyLoading) return;
+  c._replyLoading = true;
+  renderTable();
+  if (S.tab === 'leads') renderLeads();
+  const txt = (c.text||'').replace(/`/g,"'").replace(/\n/g,' ').slice(0,200);
+  const reason = (c.reason||'购买意向').replace(/`/g,"'");
+  const prompt = `你是跨境电商商家的社媒引流专家。用户在视频下留了这条评论：「${txt}」
+AI评级 ${c.grade}（${reason}）
+
+请用和评论原文相同的语言，写2条自然的引流回复：
+1.【评论回复】20字内，让对方想点头像看主页
+2.【私信开场】30字内，主动私信的第一句，自然不推销
+
+只输出这两行：
+【评论回复】……
+【私信开场】……`;
+  try {
+    const result = await callGeminiText(prompt, { temperature: 0.7, maxOutputTokens: 300 });
+    c._replyText = result.trim();
+  } catch(e) {
+    toast('AI生成失败：' + e.message, 'e');
+  } finally {
+    c._replyLoading = false;
+    persistComments();
+    renderTable();
+    if (S.tab === 'leads') renderLeads();
+  }
+}
+
+// ─────────────────────────────────────────
+// LEADS TAB
+// ─────────────────────────────────────────
+let leadsFilter = 'all';
+
+function setLeadsFilter(f) {
+  leadsFilter = f;
+  document.querySelectorAll('[data-lf]').forEach(el => el.classList.toggle('on', el.dataset.lf === f));
+  renderLeads();
+}
+
+function renderLeads() {
+  const tagged = S.comments.filter(c => c.tag);
+  const byTag = t => tagged.filter(c => c.tag === t);
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('lfc-all', tagged.length);
+  set('lfc-saved', byTag('saved').length);
+  set('lfc-contacted', byTag('contacted').length);
+  set('lfc-skip', byTag('skip').length);
+  const list = leadsFilter === 'all' ? tagged : byTag(leadsFilter);
+  const body = document.getElementById('leads-body');
+  if (!body) return;
+  if (!list.length) {
+    body.innerHTML = `<div class="leads-empty">
+      <div class="leads-empty-icon">📌</div>
+      <h3 style="font-size:15px;margin-bottom:6px;color:var(--t2)">${tagged.length ? '该分类暂无线索' : '还没有收藏的线索'}</h3>
+      <p style="font-size:12px">${tagged.length ? '切换上方分类查看' : '在工作台评论列表里点击 📌✅❌ 标记，线索会出现在这里'}</p>
+    </div>`;
+  } else {
+    body.innerHTML = list.map((c, i) => row(c, i + 1)).join('');
+  }
+  updateLeadsBadge();
+}
+
+function updateLeadsBadge() {
+  const nb = document.getElementById('nb-leads');
+  if (!nb) return;
+  const n = S.comments.filter(c => c.tag === 'saved').length;
+  nb.style.display = n ? 'inline' : 'none';
+  nb.textContent = n;
+}
+
+// ─── Continue scraping: resume from last cursor with same videos ───
 async function continueScrapingMore() {
   if (!S.lastAwemeIds.length) { toast('没有可继续的抓取任务，请先搜索', 'w'); return; }
   const btn = document.getElementById('btn-continue');
@@ -3109,7 +3271,18 @@ function row(c, n) {
         <button class="act-btn" onclick="copyText(${idx})">复制</button>
         ${handle ? `<button class="act-btn" onclick="openProfile(${idx})">主页</button>` : ''}
         <button class="act-btn" onclick="openUserModal(${idx})">资料</button>
+        <button class="tag-btn${c.tag === 'saved' ? ' t-saved' : ''}" onclick="event.stopPropagation();tagComment(${idx},'saved')" title="收藏到线索库">📌</button>
+        <button class="tag-btn${c.tag === 'contacted' ? ' t-contacted' : ''}" onclick="event.stopPropagation();tagComment(${idx},'contacted')" title="标记已联系">✅</button>
+        <button class="tag-btn${c.tag === 'skip' ? ' t-skip' : ''}" onclick="event.stopPropagation();tagComment(${idx},'skip')" title="标记无意向">❌</button>
+        ${(c.grade === 'A' || c.grade === 'B') ? `<button class="tag-btn" onclick="event.stopPropagation();genReply(${idx})" title="AI生成引流话术"${c._replyLoading ? ' disabled' : ''}>${c._replyLoading ? '⏳' : '🤖'}</button>` : ''}
       </div>
+      ${c._replyText ? `<div class="reply-panel" onclick="event.stopPropagation()">
+        <div class="reply-panel-hd">
+          <span class="reply-panel-ttl">🤖 AI 引流话术</span>
+          <button class="act-btn" onclick="navigator.clipboard.writeText(S.comments[${idx}]._replyText||'').then(()=>toast('已复制','s'))">复制</button>
+        </div>
+        <div style="white-space:pre-wrap">${h(c._replyText)}</div>
+      </div>` : ''}
     </div>
   </div>`;
 }
@@ -3229,11 +3402,18 @@ function closeModal() { document.getElementById('modal-overlay').classList.remov
 // EXPORT
 // ─────────────────────────────────────────
 function doExport(fmt) {
-  const list = S.filter === 'all' ? S.comments : S.comments.filter(c => c.grade === S.filter);
+  let list;
+  if (S.tab === 'leads') {
+    const tagged = S.comments.filter(c => c.tag);
+    list = leadsFilter === 'all' ? tagged : tagged.filter(c => c.tag === leadsFilter);
+  } else {
+    list = S.filter === 'all' ? S.comments : S.comments.filter(c => c.grade === S.filter);
+  }
   if (!list.length) { toast('没有可导出的数据', 'w'); return; }
 
   if (fmt === 'csv') {
-    const cols = ['序号','平台','评论内容','用户昵称','账号','等级','分数','评分理由','点赞数','时间','内容ID','主页链接'];
+    const cols = ['序号','平台','评论内容','用户昵称','账号','等级','分数','评分理由','点赞数','时间','内容ID','主页链接','标记状态'];
+    const tagLabel = { saved:'待联系', contacted:'已联系', skip:'无意向' };
     const rows = list.map((c, i) => {
       const plat = c.platform || 'tiktok';
       const profileUrl = plat === 'instagram' ? `https://www.instagram.com/${c.user.uniqueId||''}/`
@@ -3245,7 +3425,7 @@ function doExport(fmt) {
         c.user.uniqueId||'',
         c.grade||'', c.score||'',
         `"${(c.reason||'').replace(/"/g,'""')}"`,
-        c.likes||0, c.time||'', c.awemeId||'', profileUrl
+        c.likes||0, c.time||'', c.awemeId||'', profileUrl, tagLabel[c.tag]||''
       ];
     });
     dl('\uFEFF' + [cols.join(','), ...rows.map(r => r.join(','))].join('\n'),
@@ -3341,6 +3521,7 @@ try {
 loadConfigUI();
 updateStatusDot();
 setPlatform('tiktok');
+loadPersistedComments();
 gotoTab('search');
 setTimeout(() => toast('欢迎使用 Comment Catcher！输入关键词搜索相关热点视频，抓取评论区意向客户！', 'i'), 600);
 </script>
