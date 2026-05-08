@@ -2586,7 +2586,7 @@ function kwScore(text, platform = 'tiktok', likes = 0) {
 
   // 7. Question sentence — bonus only when topic-relevant OR text long enough to be substantive
   const isQ = t.includes('?') || t.includes('？');
-  const hasSignal = hitCust.length || hitPA.length || hitA.length || hitPB.length || hitB.length;
+  const hasSignal = hitPA.length || hitA.length || hitPB.length || hitB.length;
   if (isQ) {
     if (hasSignal && bare.length >= 10) {
       raw += 15;  // compound: question + topic signal = higher confidence
