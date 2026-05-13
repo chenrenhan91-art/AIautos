@@ -2895,31 +2895,130 @@ function normalizeRdComment(d) {
   };
 }
 
-// Fetch Reddit popular feed and filter by keyword client-side
+// Translate Chinese keyword to English for Reddit search
+async function rdTranslateKeyword(keyword) {
+  const q = keyword.toLowerCase();
+  const map = [
+    [/玩具工厂|玩具制造|toy\s*factory/, 'toy factory manufacturer'],
+    [/玩具/, 'toys'],
+    [/工厂|制造厂|制造商|供应商/, 'manufacturer supplier wholesale'],
+    [/电商|网店|网购/, 'ecommerce online store'],
+    [/dropshipping|代发货|一件代发/, 'dropshipping'],
+    [/shopify/, 'shopify'],
+    [/亚马逊|amazon/, 'amazon fba'],
+    [/跨境/, 'cross border ecommerce'],
+    [/宠物/, 'pets'],
+    [/美妆|化妆品|护肤/, 'skincare beauty'],
+    [/家居|家具|家装/, 'home furniture'],
+    [/服装|衣服|穿搭/, 'fashion clothing'],
+    [/3c|电子产品|数码/, 'electronics gadgets'],
+    [/手机/, 'smartphone'],
+    [/耳机/, 'headphones'],
+    [/健身|运动/, 'fitness'],
+    [/食品|零食|食物/, 'food snacks'],
+    [/母婴|婴儿|儿童/, 'baby parenting'],
+    [/二手车|汽车|汽配/, 'cars automotive'],
+    [/saas|软件/, 'saas software'],
+    [/b2b|批发/, 'wholesale business'],
+    [/创业|生意/, 'small business'],
+  ];
+  for (const [re, result] of map) {
+    if (re.test(q)) return result;
+  }
+  // AI translation fallback
+  try {
+    const txt = await callGeminiText(
+      `Translate this keyword to 1-3 English words suitable for Reddit community search (no explanation, just the words): "${keyword}"`,
+      { maxOutputTokens: 20, temperature: 0 }
+    );
+    const result = txt.trim().replace(/^["'`]|["'`]$/g, '').slice(0, 50);
+    if (result && /[a-z]/i.test(result)) return result;
+  } catch(e) { /* ignore */ }
+  return keyword;
+}
+
+// Find relevant subreddits using community search (post search API is unreliable)
+async function rdFindSubreddits(query, maxCount = 4) {
+  try {
+    const d = await tkGet('/api/v1/reddit/app/fetch_dynamic_search', {
+      query, search_type: 'community'
+    });
+    const edges = d?.data?.search?.dynamic?.components?.main?.edges || [];
+    const children = edges.flatMap(e => e?.node?.children || []);
+    return children
+      .filter(c => c?.__typename === 'SearchCommunity' && !c?.community?.isNsfw && !c?.community?.isQuarantined)
+      .map(c => c?.community?.name)
+      .filter(Boolean)
+      .slice(0, maxCount);
+  } catch(e) {
+    console.warn('[rdFindSubreddits] failed:', e.message);
+    return [];
+  }
+}
+
+// Fetch Reddit posts: find relevant subreddits first, then fetch their TOP posts
 async function rdFetchPopular(keyword, count = 15) {
-  const subreddit = rdSubredditForKeyword(keyword);
-  if (subreddit) {
+  const queries = [];
+
+  // For Chinese keywords, try English translation FIRST (Reddit is English)
+  if (/[\u4e00-\u9fa5]/.test(keyword)) {
     try {
-      const sd = await tkGet('/api/v1/reddit/app/fetch_subreddit_feed', { subreddit_name: subreddit, sort: 'HOT', time: 'WEEK', need_format: true });
-      const rows = mapContentItems(sd, [arr(sd?.data?.subredditfeed?.subredditV3?.elements?.edges)], normalizeRdPost, count, 'rdSubreddit')
-        .map(v => ({ ...v, subreddit: v.subreddit || `r/${subreddit}` }))
-        .filter(v => v.commentCount > 0 || v.likeCount > 0);
-      if (rows.length) return rows.slice(0, count);
-    } catch (err) {
-      console.warn('[rdSubreddit] failed, falling back to popular feed:', err.message);
+      const en = await rdTranslateKeyword(keyword.trim());
+      if (en && en !== keyword.trim()) queries.push(en);
+    } catch(e) { /* ignore */ }
+  }
+  // Also try the original keyword
+  queries.push(keyword.trim());
+
+  const allPosts = [];
+  const seenIds = new Set();
+  function addPosts(posts) {
+    for (const p of posts) {
+      if (p.awemeId && !seenIds.has(p.awemeId)) { seenIds.add(p.awemeId); allPosts.push(p); }
     }
   }
-  const d = await tkGet('/api/v1/reddit/app/fetch_popular_feed', { sort: 'TOP', time: 'WEEK', need_format: true });
-  const normalized = mapContentItems(d, [arr(d?.data?.posts), arr(d?.data?.children), arr(d?.data), arr(d)], normalizeRdPost, 30, 'rdSearch');
-  const terms = searchTerms(keyword);
-  if (terms.length) {
-    const filtered = normalized.filter(v => {
-      const hay = `${v.title} ${v.subreddit} ${v.author}`.toLowerCase();
-      return terms.some(t => t.length <= 3 ? new RegExp(`\\b${t}\\b`, 'i').test(hay) : hay.includes(t));
-    });
-    const useful = filtered.filter(v => v.commentCount > 0 || v.likeCount > 0);
-    if (useful.length) return useful.slice(0, count);
+
+  // PRIMARY: community search → subreddit feed
+  for (const q of queries) {
+    const subs = await rdFindSubreddits(q, 3);
+    for (const sub of subs) {
+      try {
+        const sd = await tkGet('/api/v1/reddit/app/fetch_subreddit_feed', {
+          subreddit_name: sub, sort: 'TOP', time: 'MONTH', need_format: true
+        });
+        const rows = mapContentItems(
+          sd, [arr(sd?.data?.subredditfeed?.subredditV3?.elements?.edges)],
+          normalizeRdPost, 10, 'rdSub'
+        ).map(v => ({ ...v, subreddit: v.subreddit || `r/${sub}` }))
+          .filter(v => v.commentCount > 0 || v.likeCount > 0);
+        addPosts(rows);
+      } catch(err) {
+        console.warn('[rdFeed] ' + sub + ' failed:', err.message);
+      }
+      if (allPosts.length >= count) break;
+    }
+    if (allPosts.length >= count) break;
   }
+  if (allPosts.length >= 3) return allPosts.slice(0, count);
+
+  // FALLBACK 1: hardcoded subreddit mapping
+  const knownSub = rdSubredditForKeyword(keyword);
+  if (knownSub) {
+    try {
+      const sd = await tkGet('/api/v1/reddit/app/fetch_subreddit_feed', { subreddit_name: knownSub, sort: 'HOT', time: 'WEEK', need_format: true });
+      const rows = mapContentItems(sd, [arr(sd?.data?.subredditfeed?.subredditV3?.elements?.edges)], normalizeRdPost, count, 'rdKnownSub')
+        .map(v => ({ ...v, subreddit: v.subreddit || `r/${knownSub}` }))
+        .filter(v => v.commentCount > 0 || v.likeCount > 0);
+      addPosts(rows);
+      if (allPosts.length) return allPosts.slice(0, count);
+    } catch(err) {
+      console.warn('[rdKnownSub] failed:', err.message);
+    }
+  }
+
+  // FALLBACK 2: popular feed (last resort)
+  const d = await tkGet('/api/v1/reddit/app/fetch_popular_feed', { sort: 'TOP', time: 'WEEK', need_format: true });
+  const normalized = mapContentItems(d, [arr(d?.data?.posts), arr(d?.data?.children), arr(d?.data), arr(d)], normalizeRdPost, 30, 'rdPopular');
   return normalized.filter(v => v.commentCount > 0 || v.likeCount > 0).slice(0, count);
 }
 
