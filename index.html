@@ -3126,10 +3126,32 @@ async function searchAndShowPicker(keyword) {
     setProgress(20, '调用 Catcher 搜索...');
     let posts;
     if (S.platform === 'instagram') {
-      posts = await igSearchPosts(keyword, 12);
-      // Pre-filter: remove 0-comment posts (useless for scraping) but keep at least 5
-      const withComments = posts.filter(p => (p.commentCount || 0) > 0);
-      if (withComments.length >= 3) posts = withComments;
+      posts = await igSearchPosts(keyword, 20);
+      // Tiered quality filter: find the highest threshold that still yields >= 3 posts.
+      // This prevents low-engagement outliers (1 comment, 6 likes) from filling the picker
+      // when there are clearly better posts available.
+      let filtered = posts;
+      for (const minComments of [10, 5, 2, 1]) {
+        const above = posts.filter(p => (p.commentCount || 0) >= minComments);
+        if (above.length >= 3) { filtered = above; break; }
+      }
+      posts = filtered;
+      // Supplement with hashtag top posts when candidates are scarce (< 5 quality posts)
+      if (posts.length < 5) {
+        try {
+          setProgress(30, '补充搜索热门标签帖子...');
+          const ht = await igHashtagPosts(keyword);
+          // Merge: add hashtag posts not already in results, then re-sort by commentCount
+          const existingIds = new Set(posts.map(p => String(p.awemeId)));
+          const extra = (ht.posts || []).filter(p => !existingIds.has(String(p.awemeId)));
+          posts = [...posts, ...extra].sort((a, b) => (b.commentCount || 0) - (a.commentCount || 0));
+          // Re-apply tiered filter on merged pool
+          for (const minComments of [10, 5, 2, 1]) {
+            const above = posts.filter(p => (p.commentCount || 0) >= minComments);
+            if (above.length >= 3) { posts = above; break; }
+          }
+        } catch (_) { /* hashtag supplement is best-effort */ }
+      }
     } else if (S.platform === 'reddit') {
       posts = await rdFetchPopular(keyword, 15);
     } else {
