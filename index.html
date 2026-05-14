@@ -2463,6 +2463,12 @@ const PLATFORM_A_KW = {
     'where can i find','can you send the link','where to purchase','buy link',
     'order link','shop now','how to get it','want to buy','want to order',
     'send link','drop link','link?','link pls','where buy','how buy',
+    'add to cart','adding to cart','just ordered','already ordered','take my money',
+    'need the link','where can i buy','can i buy','how to purchase','purchase link',
+    'buy this now','need this now','how do i get one','where do i get',
+    // Chinese social media e-commerce signals
+    '种草了','下单了','加购了','心动了','在哪买','怎么入手','求链接','能买到吗',
+    '有没有链接','怎么购买','哪里可以买','链接呢','求购买方式',
     // Filipino/Tagalog TikTok common
     'paano bilhin','saan mabibili','pano order','san makuha','magkano po',
     // Vietnamese TikTok common
@@ -2498,6 +2504,40 @@ const A_KW = [
   'anyone know','looking to buy','does anyone','can someone','please help',
   // ZH
   '怎么买','有没有','求推荐','付款失败','被拒','封号','收款被冻结','怎么解决','求助','买不了','无法付款',
+  '种草','下单','加购','心动','在哪买','怎么入手','怎么买到','想买','准备入手','打算买','哪里有卖',
+  '求推荐','求链接','求购买方式','哪里能买','在哪里购买','怎么获得','哪里有','求个链接',
+  '买了吗','买过吗','有人买过吗','值得买吗','好用吗','用过吗',
+  // Korean buy signals
+  '구매하고 싶어','어디서 살 수 있어','사고 싶다','사고싶어','구매 가능한가요','링크 주세요','링크 알려주세요',
+  // Japanese buy signals
+  '買いたい','どこで買える','購入したい','リンク教えて','リンクください',
+  // Bahasa Malaysia
+  'nak beli','nak beli ni','macam mana nak beli','link beli','boleh share link',
+  // Arabic buy signals
+  'أريد شراء','كيف أشتري هذا','اين أشتري','شاركني الرابط',
+  // Thai buy signals
+  'อยากซื้อ','ซื้อได้ที่ไหน','อยากได้','ส่งลิงค์ให้หน่อย',
+  // Vietnamese buy signals
+  'muốn mua','mua ở đâu vậy','chia sẻ link','link đâu vậy',
+  // Indonesian buy signals
+  'mau beli','bisa beli dimana','minta linknya','link dong','pengen beli',
+  // Filipino buy signals
+  'gusto kong bilhin','saan makakabili','paki-share ang link','gusto ko ito',
+  // Spanish buy signals
+  'quiero comprar','cómo puedo comprar','dónde puedo comprar','comparte el enlace',
+  // Portuguese buy signals
+  'quero comprar','como posso comprar','onde posso comprar','compartilha o link',
+  // German buy signals
+  'kaufen möchte','wo kann ich das kaufen','link bitte',
+  // French buy signals
+  'veux acheter','où puis-je acheter','partage le lien',
+  // Russian buy signals
+  'хочу купить','где это купить','пришлите ссылку',
+  // Turkish buy signals
+  'satın almak istiyorum','nereden satın alabilirim','linki paylaşır mısın',
+  // Hindi buy signals
+  'खरीदना चाहता हूं','कहाँ से खरीदें','लिंक शेयर करें',
+
   // ES (Spanish)
   'cómo comprar','necesito ayuda','pago fallido','cuenta bloqueada','buscando',
   'dónde comprar','no funciona','alguna solución','cómo puedo','qué debo hacer',
@@ -2640,7 +2680,7 @@ function kwScore(text, platform = 'tiktok', likes = 0) {
   if (!text) return { grade: 'D', score: 5, reason: '空评论' };
   const t = text.toLowerCase();
   const bare = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim();
-  if (bare.length < 3) return { grade: 'D', score: 0, reason: '纯表情/极短' };
+  if (bare.length < 2) return { grade: 'D', score: 0, reason: '纯表情/极短' };
 
   // 1. Spam gate — immediate D, no further processing
   if (SPAM_KW.some(k => t.includes(k))) return { grade: 'D', score: 2, reason: '垃圾/引流' };
@@ -2682,17 +2722,24 @@ function kwScore(text, platform = 'tiktok', likes = 0) {
   if (isQ) {
     if (hasSignal && bare.length >= 10) {
       raw += 15;  // compound: question + topic signal = higher confidence
-    } else if (!hasSignal && bare.length >= 15) {
-      raw += 22;  // standalone question, stricter length gate (was ≥8, now ≥15)
+    } else if (!hasSignal && bare.length >= 8) {
+      raw += 22;  // standalone question without keyword — requires some substance
       if (!reasons.length) reasons.push('疑问句');
     }
   }
 
-  // 8. C keywords — weak positive, only counts with substance (+9 each, max 3)
+  // 8. C keywords — weak positive, counts even for short words (+9 each, max 3)
   const hitC = C_KW.filter(k => t.includes(k));
-  if (hitC.length && bare.length >= 6) {
+  if (hitC.length && bare.length >= 2) {
     raw += Math.min(hitC.length, 3) * 9;
     if (!reasons.length) reasons.push(`C: ${hitC[0]}`);
+  }
+
+  // 8b. Substance floor — real comment with 12+ chars but no keyword → minimum C
+  //     handles non-EN languages and reactions not in keyword lists
+  if (raw < 8 && bare.length >= 12) {
+    raw += 8;
+    if (!reasons.length) reasons.push('有实质内容');
   }
 
   // 9. Likes bonus (high-engagement comments get slight boost, max +8)
@@ -2733,22 +2780,23 @@ function buildAiPrompt(platform) {
     'Your goal: keep real people, discard bots and noise.',
     '',
     'GRADING RULES:',
-    'A = STRONG BUY INTENT: asking where/how to buy or order, asking price, asking for link/purchase channel, asking about shipping to their country, payment/checkout problem. Score 70-100.',
-    '    Examples: "how to buy", "where to order", "how much", "does it ship to [country]", "send me the link", "link please", "mua ở đâu", "怎么买", "在哪买", "magkano po"',
-    'B = MODERATE INTENT: expressing desire to own, wanting-to-own statements, tagging a friend to share a product, asking product specs/size/color/availability, asking if it works in their region, product comparison. Score 35-69.',
-    '    Examples: "I need this!", "want one", "I need this for my dog", "my cat would love this", "does this come in XL?", "which color is better", "is this available in PH?", "@friend look at this", "is it worth it"',
+    'A = STRONG BUY INTENT: asking where/how to buy or order, asking price, asking for link/purchase channel, asking about shipping to their country, payment/checkout problem, "adding to cart", "just ordered", "take my money". Score 70-100.',
+    '    Examples: "how to buy", "where to order", "how much", "does it ship to [country]", "send me the link", "link please", "adding to cart!", "just ordered!", "take my money 😭", "mua ở đâu", "怎么买", "在哪买", "种草了！", "下单了", "求链接", "magkano po"',
+    'B = MODERATE INTENT: expressing desire to own ("I want/need this"), wanting-to-own statements, tagging a friend to share a product, asking product specs/size/color/availability, asking if it works in their region, product comparison, sharing purchase experience. Score 35-69.',
+    '    Examples: "I need this!", "want one", "I need this for my dog", "my cat would love this", "does this come in XL?", "which color is better", "is this available in PH?", "@friend look at this", "is it worth it", "I already bought this and it\'s amazing", "种草", "心动了", "我需要这个", "this would be perfect for my...", "I\'m buying this"',
     'C = GENUINE ENGAGEMENT: any comment with real words (not just emoji/spam) showing authentic reaction to or interest in the content. This is the DEFAULT grade for most real non-spam human comments.',
-    '    C examples: "so cute!", "love this!", "this is amazing", "great quality", "omg 😍 this is so cool", "been using it, works great", "my dog goes crazy for this type of toy", "does anyone have experience with this brand?"',
-    'D = NO VALUE: pure emoji with zero words, bot/spam, extremely short filler with no meaning ("first!", "lol", "ok", single emoji row), completely off-topic self-promotion, gibberish.',
-    '    D examples: "😂😂😂", "❤️❤️❤️", "First!!!", "nice" (single word alone), promotional spam links, copy-paste repetitive text',
+    '    C examples: "so cute!", "love this!", "this is amazing", "great quality", "omg 😍 this is so cool", "been using it, works great", "my dog goes crazy for this type of toy", "does anyone have experience with this brand?", "nice!", "不错", "awesome", "lol this is too funny", "haha relatable"',
+    'D = NO VALUE: ONLY pure emoji rows with zero real words, bot/spam, completely off-topic self-promotion, copy-paste gibberish, or absolutely meaningless filler that adds zero information ("First!!!", random numbers, single-emoji rows).',
+    '    D examples: "😂😂😂", "❤️❤️❤️❤️", "First!!!", "lmao ok", promotional spam links "@everyone follow me", copy-paste repetitive text',
     '',
     'IMPORTANT:',
     '- Use ONLY grades A, B, C, or D. Never use any other letter grade.',
-    '- C is the DEFAULT for real human comments. Most genuine comments from real users should be C or higher.',
-    '- Short enthusiastic reactions with real words ("so cute!", "love this!", "amazing!") = C, NOT D.',
-    '- "I want/need this", "my pet would love this", tagging a friend = B.',
-    '- Only truly empty or spammy content (pure emoji rows, "first!", single-word filler) = D.',
-    '- Multilingual comments grade by content intent, not language.',
+    '- C is the DEFAULT for real human comments. Any genuine comment with real words = at minimum C.',
+    '- Short enthusiastic reactions with real words ("so cute!", "nice!", "love this!", "amazing!") = C, NOT D.',
+    '- "I want/need this", "I\'m buying this", "perfect for my...", tagging a friend at a product = B.',
+    '- Expressions of desire or purchase action in ANY language = A or B.',
+    '- D is ONLY for truly empty content: pure emoji rows, "First!!!", spam links, gibberish with no meaning.',
+    '- When in doubt between C and D: choose C. When in doubt between B and C: choose B if any desire/intent is implied.',
     '- Multilingual support: grade by intent and engagement quality regardless of language or comment age.',
     '- Return ONLY a raw JSON array, NO markdown fences. Keep "reason" under 6 words in Chinese.',
     '[{"id":1,"grade":"A","score":85,"reason":"询问购买方式"}]'
@@ -2803,12 +2851,14 @@ async function scoreAll(comments, platformOverride = '') {
       const scores = await aiScoreBatch(batch, S.config.provider, platform);
       batch.forEach((c, j) => {
         const s = scores.find(x => Number(x.id) === j + 1);
-        const aiScore = s?.score || 10;
+        // If AI didn't return an entry for this comment, fall back to kwScore (not D)
+        const kw = s ? null : kwScore(c.text, platform, c.likes || 0);
+        const aiScore = s?.score ?? kw?.score ?? 10;
         // Apply likes bonus on top of AI score (display nudge only, grade kept from AI)
         const score = Math.min(aiScore + Math.min(Math.floor((c.likes || 0) / 500), 8), 100);
-        const rawGrade = s?.grade || 'D';
+        const rawGrade = (s?.grade ?? kw?.grade ?? 'D').toString().toUpperCase();
         const grade = ['A', 'B', 'C', 'D'].includes(rawGrade) ? rawGrade : 'D';
-        results.push({ idx: i + j, grade, score, reason: s?.reason || '' });
+        results.push({ idx: i + j, grade, score, reason: s?.reason || kw?.reason || '' });
       });
     } catch (e) {
       console.warn('AI batch error, falling back to keyword:', e.message);
