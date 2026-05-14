@@ -2747,7 +2747,7 @@ function buildAiPrompt(platform) {
     '- "I want/need this", "my pet would love this", tagging a friend = B.',
     '- Only truly empty or spammy content (pure emoji rows, "first!", single-word filler) = D.',
     '- Multilingual comments grade by content intent, not language.',
-    '- IMPORTANT: All comments provided have already been filtered to be from the last 5 days only. Focus purely on grading purchase intent and engagement quality.',
+    '- Multilingual support: grade by intent and engagement quality regardless of language or comment age.',
     '- Return ONLY a raw JSON array, NO markdown fences. Keep "reason" under 6 words in Chinese.',
     '[{"id":1,"grade":"A","score":85,"reason":"询问购买方式"}]'
   ].join('\n');
@@ -3195,8 +3195,11 @@ async function scrapeComments(awemeIds, opts = {}) {
         for (const c of res.list) {
           const text = (c.text || c.content || '').trim();
           if (!text) continue;
-          const cid = c.cid || c.comment_id || `${awemeIds[vi]}_${raw.length}`;
+          // cid fallback: use stable composite key so cross-video dedup works
+          const cid = c.cid || c.comment_id ||
+            `${awemeIds[vi]}_${(c.user?.uid || c.user?.id || '')}_${text.slice(0, 30)}`;
           if (S.seenIds.has(cid)) continue;
+          S.seenIds.add(cid); // realtime dedup — prevents cross-video duplicates
           raw.push({
             id: cid,
             text,
@@ -3235,27 +3238,17 @@ async function scrapeComments(awemeIds, opts = {}) {
     const emptyLabel = { tiktok:'视频', instagram:'帖子/Reel', reddit:'帖子' }[platform] || '内容';
     if (!raw.length) throw new Error(`未获取到评论（${emptyLabel}可能已关闭评论区、无公开评论，或当前 Catcher 接口无该内容评论权限）`);
 
-    // 过滤：只保留近 5 天内的评论（无时间戳的评论保留）
-    const nowSecs = Math.floor(Date.now() / 1000);
-    const fiveDaysAgo = nowSecs - 5 * 24 * 3600;
-    const filteredRaw = raw.filter(c => !c.create_time || c.create_time >= fiveDaysAgo);
-    const outdatedCount = raw.length - filteredRaw.length;
-    if (outdatedCount > 0) console.info(`[时间过滤] 已过滤 ${outdatedCount} 条超过5天的评论`);
-
-    if (!filteredRaw.length) throw new Error(`所获取的评论均超过5天，无近期评论可分析（共扫描 ${raw.length} 条）`);
-
-    setProgress(62, `正在对 ${filteredRaw.length} 条近5天评论打分...`);
-    const scores = await scoreAll(filteredRaw, platform);
+    setProgress(62, `正在对 ${raw.length} 条评论打分...`);
+    const scores = await scoreAll(raw, platform);
     scores.forEach(s => {
-      if (filteredRaw[s.idx]) { filteredRaw[s.idx].grade = s.grade; filteredRaw[s.idx].score = s.score; filteredRaw[s.idx].reason = s.reason; }
+      if (raw[s.idx]) { raw[s.idx].grade = s.grade; raw[s.idx].score = s.score; raw[s.idx].reason = s.reason; }
     });
-    filteredRaw.forEach(c => { if (!c.grade) { c.grade = 'D'; c.score = 10; c.reason = '未评分'; } });
+    raw.forEach(c => { if (!c.grade) { c.grade = 'D'; c.score = 10; c.reason = '未评分'; } });
 
     // 只保留 A/B/C 级，丢弃无需求的 D 级
-    const kept = filteredRaw.filter(c => c.grade !== 'D');
+    const kept = raw.filter(c => c.grade !== 'D');
 
-    // Record seen IDs and last used aweme IDs for continue-scraping
-    raw.forEach(c => S.seenIds.add(c.id));
+    // Record last used aweme IDs for continue-scraping (seenIds already populated in loop)
     S.lastPlatform = platform;
     S.lastAwemeIds = awemeIds;
 
@@ -3269,8 +3262,7 @@ async function scrapeComments(awemeIds, opts = {}) {
     updateContinueBtn();
     const ab = kept.filter(c => c.grade === 'A' || c.grade === 'B').length;
     const total = raw.length;
-    const outdatedMsg = outdatedCount > 0 ? `，过滤 ${outdatedCount} 条超5天旧评论` : '';
-    toast(`${resume ? '继续抓取完成！' : '抓取完成！'}共扫描 ${total} 条${outdatedMsg}，近5天有效 ${filteredRaw.length} 条，A+B+C 共 ${kept.length} 条（A+B 线索 ${ab} 条）`, 's');
+    toast(`${resume ? '继续抓取完成！' : '抓取完成！'}共扫描 ${total} 条，A+B+C 共 ${kept.length} 条（A+B 线索 ${ab} 条）`, 's');
     setTimeout(hideProgress, 2200);
     gotoTab('results');
   } catch (err) {
