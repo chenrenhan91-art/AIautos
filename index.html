@@ -2092,7 +2092,9 @@ async function tkGet(path, params = {}) {
 async function igSearchPosts(keyword, count = 12) {
   // search_reels returns media posts matching the keyword
   const d = await tkGet('/api/v1/instagram/v2/search_reels', { keyword });
-  return mapContentItems(d?.data, [arr(d?.data?.items), arr(d?.data?.reels), arr(d?.data?.medias), arr(d?.data?.clips), arr(d?.data)], normalizeIgPost, count, 'igSearch');
+  const posts = mapContentItems(d?.data, [arr(d?.data?.items), arr(d?.data?.reels), arr(d?.data?.medias), arr(d?.data?.clips), arr(d?.data)], normalizeIgPost, count, 'igSearch');
+  // Sort by comment count desc so AI ranker and local ranker see the best posts first
+  return posts.sort((a, b) => (b.commentCount || 0) - (a.commentCount || 0));
 }
 
 async function igHashtagPosts(hashtag) {
@@ -3075,6 +3077,9 @@ async function searchAndShowPicker(keyword) {
     let posts;
     if (S.platform === 'instagram') {
       posts = await igSearchPosts(keyword, 12);
+      // Pre-filter: remove 0-comment posts (useless for scraping) but keep at least 5
+      const withComments = posts.filter(p => (p.commentCount || 0) > 0);
+      if (withComments.length >= 3) posts = withComments;
     } else if (S.platform === 'reddit') {
       posts = await rdFetchPopular(keyword, 15);
     } else {
